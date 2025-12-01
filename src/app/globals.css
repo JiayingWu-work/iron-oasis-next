@@ -1,26 +1,327 @@
-@import "tailwindcss";
+/* -----------------------------
+   Tailwind base
+----------------------------- */
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+/* -----------------------------
+   Global base styles
+----------------------------- */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  line-height: 1.4;
+  color: #111827;
+  background-color: #f3f4f6;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+}
+
+/* -----------------------------
+   Layout
+----------------------------- */
+
+.app {
+  height: 100vh;
+  display: flex;
+  margin: 0 auto;
+  background: #e5e7eb;
+}
+
+.main {
+  flex: 1;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.main-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* big summary, skinny entry */
+  gap: 1rem;
+}
+
+/* -----------------------------
+   Dashboard header & week nav
+----------------------------- */
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.main-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.main-subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.week-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.week-btn {
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.week-btn:hover {
+  background: #e5e7eb;
+}
+
+/* -----------------------------
+   Cards & shared UI elements
+----------------------------- */
+
+.card {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.field-row input[type='date'],
+.field-row select {
+  padding: 0.25rem 0.4rem;
+  font-size: 0.9rem;
+}
+
+.hint {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.client-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.client-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Buttons */
+
+.primary-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: none;
+  background: #111827;
+  color: #ffffff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.primary-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.secondary-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background: #f3f4f6;
+}
+
+/* Warning text */
+
+.warning-text {
+  margin-top: 0.5rem;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+/* -----------------------------
+   Tables
+----------------------------- */
+
+.table {
+  width: 100%;
+  margin-top: 0.5rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+  border: 1px solid #e5e7eb;
+  padding: 0.35rem 0.5rem;
+}
+
+.table thead {
+  background: #f9fafb;
+}
+
+.table th {
+  text-align: left;
+}
+
+/* -----------------------------
+   Add package form
+----------------------------- */
+
+.add-package {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.add-package-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.add-package-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.add-package-form select,
+.add-package-form input[type='number'],
+.add-package-form input[type='date'] {
+  width: 100%;
+  padding: 0.35rem 0.4rem;
+  border-radius: 0.45rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+}
+
+/* -----------------------------
+   Sidebar
+----------------------------- */
+
+.sidebar {
+  width: 260px;
+  padding: 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: #111827;
+  color: #f9fafb;
+}
+
+.sidebar-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.sidebar-subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.sidebar-section h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #d1d5db;
+}
+
+.sidebar-btn {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.4rem;
+  border-radius: 0.4rem;
+  border: 1px dashed #4b5563;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  cursor: not-allowed;
+}
+
+.sidebar-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.trainer-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.trainer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.05s ease;
+}
+
+.trainer-item:hover {
+  background: #1f2937;
+  transform: translateY(-1px);
+}
+
+.trainer-item--active {
+  background: #2563eb;
+}
+
+.trainer-name {
+  font-weight: 500;
+}
+
+.trainer-tier {
+  font-size: 0.75rem;
+  color: #d1d5db;
 }
