@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import type { Client, Session, Package } from '@/types'
-import { TRAINERS } from '@/mock'
+import type { Client, Session, Package, Trainer } from '@/types'
 import { formatDateToInput, getWeekRange, shiftDateByDays } from '@/lib/date'
 import Sidebar from '@/components/SideBar'
 import DashboardHeader from '@/components/DashboardHeader'
@@ -46,10 +45,21 @@ type TrainerWeekResponse = {
   weekEnd: string
 }
 
+type TrainerRow = {
+  id: string
+  name: string
+  tier: 1 | 2 | 3
+}
+
+type TrainersResponse = {
+  trainers: TrainerRow[]
+}
 export default function Dashboard() {
   const [clients, setClients] = useState<Client[]>([])
   const [packages, setPackages] = useState<Package[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
+  const [trainers, setTrainers] = useState<Trainer[]>([])
+
   const [selectedTrainerId, setSelectedTrainerId] = useState<string>('jiaying')
   const [noPackageClientIds, setNoPackageClientIds] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -59,11 +69,29 @@ export default function Dashboard() {
   const [weekStart, setWeekStart] = useState<string>(initialWeek.start)
   const [weekEnd, setWeekEnd] = useState<string>(initialWeek.end)
 
-  const selectedTrainer = TRAINERS.find((t) => t.id === selectedTrainerId)!
+  const selectedTrainer = trainers.find((t) => t.id === selectedTrainerId)
 
-  /* -----------------------------
-     LOAD DATA FROM API
-  ----------------------------- */
+  useEffect(() => {
+    async function loadTrainers() {
+      const res = await fetch('/api/trainers')
+      if (!res.ok) {
+        console.error('Failed to load trainers')
+        return
+      }
+
+      const data: TrainersResponse = await res.json()
+
+      setTrainers(
+        data.trainers.map((t) => ({
+          id: t.id,
+          name: t.name,
+          tier: t.tier,
+        })),
+      )
+    }
+
+    loadTrainers()
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -131,31 +159,9 @@ export default function Dashboard() {
     load()
   }, [selectedTrainerId, selectedDate])
 
-  const visibleClients = useMemo(
-    () => clients, // API already scoped to this trainer
-    [clients],
-  )
+  const visibleClients = useMemo(() => clients, [clients])
 
-  const trainerSessions = useMemo(
-    () => sessions, // API already scoped to this trainer + week
-    [sessions],
-  )
-
-  // // Week range always based on selectedDate (Monday → Sunday)
-  // const { start: weekStart, end: weekEnd } = useMemo(
-  //   () => getWeekRange(selectedDate),
-  //   [selectedDate],
-  // )
-
-  // const visibleClients = useMemo(
-  //   () => clients.filter((c) => c.trainerId === selectedTrainerId),
-  //   [clients, selectedTrainerId],
-  // )
-
-  // const trainerSessions = useMemo(
-  //   () => sessions.filter((s) => s.trainerId === selectedTrainerId),
-  //   [sessions, selectedTrainerId],
-  // )
+  const trainerSessions = useMemo(() => sessions, [sessions])
 
   const handleAddSessions = async (date: string, clientIds: string[]) => {
     setNoPackageClientIds([])
@@ -191,10 +197,10 @@ export default function Dashboard() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         clientId,
-        trainerId: selectedTrainer.id,
+        trainerId: selectedTrainer?.id,
         sessionsPurchased,
         startDate,
-        trainerTier: selectedTrainer.tier,
+        trainerTier: selectedTrainer?.tier,
       }),
     })
 
@@ -228,10 +234,14 @@ export default function Dashboard() {
     setSelectedDate((prev) => shiftDateByDays(prev, 7))
   }
 
+  if (trainers.length === 0 || !selectedTrainer) {
+    return <div>Loading...</div>
+  }
+
   return (
     <div className="app">
       <Sidebar
-        trainers={TRAINERS}
+        trainers={trainers}
         selectedTrainerId={selectedTrainerId}
         onSelectTrainer={setSelectedTrainerId}
       />
