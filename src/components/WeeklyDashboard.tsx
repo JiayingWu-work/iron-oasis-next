@@ -52,27 +52,68 @@ export default function WeeklyDashboard({
   ----------------------------- */
 
   const rows = clients.map((client) => {
-    const clientPackages = packages.filter((p) => p.clientId === client.id)
-    const totalPurchased = clientPackages.reduce(
-      (sum, p) => sum + p.sessionsPurchased,
-      0,
-    )
+    const clientPackages = packages
+      .filter((p) => p.clientId === client.id)
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))
 
     const allClientSessions = sessions.filter((s) => s.clientId === client.id)
     const weeklyClientSessions = weeklySessions.filter(
       (s) => s.clientId === client.id,
     )
 
-    const totalUsed = allClientSessions.length
-    const remaining = Math.max(totalPurchased - totalUsed, 0)
     const weekCount = weeklyClientSessions.length
+
+    // Per-package usage
+    const pkgStats = clientPackages.map((p) => {
+      const usedForPkg = allClientSessions.filter((s) => s.packageId === p.id)
+        .length
+      const remainingForPkg = Math.max(p.sessionsPurchased - usedForPkg, 0)
+
+      return {
+        pkg: p,
+        usedForPkg,
+        remainingForPkg,
+      }
+    })
+
+    const activePkgs = pkgStats.filter((x) => x.remainingForPkg > 0)
+
+    // 1) Decide which packages conceptually matter:
+    //    - if any active → show only active
+    //    - else if any exist → show all finished
+    let toDisplay: typeof pkgStats = []
+    if (activePkgs.length > 0) {
+      toDisplay = activePkgs
+    } else if (pkgStats.length > 0) {
+      toDisplay = pkgStats
+    }
+
+    // 2) Only show the *latest 2* packages in the UI
+    const displayPkgs = toDisplay.slice(-2)
+
+    let packageDisplay = '0'
+    let usedDisplay = '0'
+    let remainingDisplay = '0'
+    let totalRemaining = 0
+
+    if (displayPkgs.length > 0) {
+      const sessionsNums = displayPkgs.map((x) => x.pkg.sessionsPurchased)
+      const usedNums = displayPkgs.map((x) => x.usedForPkg)
+      const remainingNums = displayPkgs.map((x) => x.remainingForPkg)
+
+      packageDisplay = sessionsNums.join(' + ')
+      usedDisplay = usedNums.join(' + ')
+      remainingDisplay = remainingNums.join(' + ')
+      totalRemaining = remainingNums.reduce((a, b) => a + b, 0)
+    }
 
     return {
       client,
-      totalPurchased,
-      totalUsed,
-      remaining,
+      packageDisplay,
+      usedDisplay,
+      remainingDisplay,
       weekCount,
+      totalRemaining,
     }
   })
 
@@ -185,9 +226,13 @@ export default function WeeklyDashboard({
           {rows.map((row) => (
             <tr key={row.client.id}>
               <td>{row.client.name}</td>
-              <td>{row.totalPurchased}</td>
-              <td>{row.totalUsed}</td>
-              <td>{row.remaining}</td>
+              <td>{row.packageDisplay}</td>
+              <td>{row.usedDisplay}</td>
+              <td
+                className={row.totalRemaining === 0 ? 'text-red-remaining' : ''}
+              >
+                {row.remainingDisplay}
+              </td>
               <td>{row.weekCount}</td>
             </tr>
           ))}

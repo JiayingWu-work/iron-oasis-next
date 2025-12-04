@@ -206,6 +206,11 @@ h2 {
   text-align: left;
 }
 
+.text-red-remaining {
+  color: #e31710; /* Bootstrap soft red */
+  font-weight: 600;
+}
+
 /* -----------------------------
    Add package form
 ----------------------------- */
