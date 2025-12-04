@@ -90,27 +90,41 @@ export default function Dashboard() {
       )
 
       setPackages(
-        data.packages.map((p: ApiPackage) => ({
-          id: p.id,
-          clientId: p.client_id,
-          trainerId: p.trainer_id,
-          sessionsPurchased: Number(p.sessions_purchased),
-          startDate: p.start_date,
-          salesBonus:
-            p.sales_bonus === null || p.sales_bonus === undefined
-              ? undefined
-              : Number(p.sales_bonus),
-        })),
+        data.packages.map((p: ApiPackage) => {
+          const startDate =
+            typeof p.start_date === 'string'
+              ? p.start_date.slice(0, 10) // '2025-12-03T...' -> '2025-12-03'
+              : new Date(p.start_date).toISOString().slice(0, 10)
+
+          return {
+            id: p.id,
+            clientId: p.client_id,
+            trainerId: p.trainer_id,
+            sessionsPurchased: Number(p.sessions_purchased),
+            startDate,
+            salesBonus:
+              p.sales_bonus === null || p.sales_bonus === undefined
+                ? undefined
+                : Number(p.sales_bonus),
+          } as Package
+        }),
       )
 
       setSessions(
-        data.sessions.map((s) => ({
-          id: s.id,
-          date: s.date,
-          trainerId: s.trainer_id,
-          clientId: s.client_id,
-          packageId: s.package_id,
-        })),
+        data.sessions.map((s: ApiSession) => {
+          const date =
+            typeof s.date === 'string'
+              ? s.date.slice(0, 10)
+              : new Date(s.date).toISOString().slice(0, 10)
+
+          return {
+            id: s.id,
+            date, // now 'YYYY-MM-DD'
+            trainerId: s.trainer_id,
+            clientId: s.client_id,
+            packageId: s.package_id,
+          } as Session
+        }),
       )
     }
 
