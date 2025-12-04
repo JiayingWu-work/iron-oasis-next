@@ -83,12 +83,11 @@ export async function GET(req: NextRequest) {
       `) as DBPackageRow[])
     : []
 
-  // 4) sessions for this trainer in this week
+  // 4) all sessions for this trainer
   const sessionRows = (await sql`
     SELECT *
     FROM sessions
     WHERE trainer_id = ${trainerId}
-      AND date BETWEEN ${start} AND ${end}
   `) as DBSessionRow[]
 
   return NextResponse.json({
