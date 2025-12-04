@@ -1,121 +1,208 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Client, Session, Package } from '@/types'
-import { TRAINERS, INITIAL_CLIENTS, INITIAL_PACKAGES } from '@/mock'
+import { TRAINERS } from '@/mock'
 import { formatDateToInput, getWeekRange, shiftDateByDays } from '@/lib/date'
-import { pickPackageForSession } from '@/lib/package'
-import { getPricePerClass } from '@/lib/pricing'
 import Sidebar from '@/components/SideBar'
 import DashboardHeader from '@/components/DashboardHeader'
 import WeeklyDashboard from '@/components/WeeklyDashboard'
 import DailyEntry from '@/components/DailyEntry'
 import AddPackageForm from '@/components/AddPackageForm'
 
+type ApiClient = {
+  id: string
+  name: string
+  trainer_id: string
+}
+
+type ApiPackage = {
+  id: string
+  client_id: string
+  trainer_id: string
+  sessions_purchased: number
+  start_date: string
+  sales_bonus: number | null
+}
+
+type ApiSession = {
+  id: string
+  date: string
+  trainer_id: string
+  client_id: string
+  package_id: string
+}
+
+type TrainerWeekResponse = {
+  trainer: {
+    id: string
+    name: string
+    tier: 1 | 2 | 3
+  }
+  clients: ApiClient[]
+  packages: ApiPackage[]
+  sessions: ApiSession[]
+  weekStart: string
+  weekEnd: string
+}
+
 export default function Dashboard() {
-  const [clients] = useState<Client[]>(INITIAL_CLIENTS)
-  const [packages, setPackages] = useState<Package[]>(INITIAL_PACKAGES)
+  const [clients, setClients] = useState<Client[]>([])
+  const [packages, setPackages] = useState<Package[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [selectedTrainerId, setSelectedTrainerId] = useState<string>('jiaying')
   const [noPackageClientIds, setNoPackageClientIds] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState<string>(
     formatDateToInput(new Date()),
   )
+  const initialWeek = getWeekRange(formatDateToInput(new Date()))
+  const [weekStart, setWeekStart] = useState<string>(initialWeek.start)
+  const [weekEnd, setWeekEnd] = useState<string>(initialWeek.end)
 
   const selectedTrainer = TRAINERS.find((t) => t.id === selectedTrainerId)!
 
-  // Week range always based on selectedDate (Monday → Sunday)
-  const { start: weekStart, end: weekEnd } = useMemo(
-    () => getWeekRange(selectedDate),
-    [selectedDate],
-  )
+  /* -----------------------------
+     LOAD DATA FROM API
+  ----------------------------- */
+
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(
+        `/api/trainer/${selectedTrainerId}/week?date=${selectedDate}`,
+      )
+
+      if (!res.ok) {
+        console.error('Failed to load dashboard data')
+        return
+      }
+
+      const data: TrainerWeekResponse = await res.json()
+
+      setWeekStart(data.weekStart)
+      setWeekEnd(data.weekEnd)
+
+      setClients(
+        data.clients.map((c) => ({
+          id: c.id,
+          name: c.name,
+          trainerId: c.trainer_id,
+        })),
+      )
+
+      setPackages(
+        data.packages.map((p: ApiPackage) => ({
+          id: p.id,
+          clientId: p.client_id,
+          trainerId: p.trainer_id,
+          sessionsPurchased: Number(p.sessions_purchased),
+          startDate: p.start_date,
+          salesBonus:
+            p.sales_bonus === null || p.sales_bonus === undefined
+              ? undefined
+              : Number(p.sales_bonus),
+        })),
+      )
+
+      setSessions(
+        data.sessions.map((s) => ({
+          id: s.id,
+          date: s.date,
+          trainerId: s.trainer_id,
+          clientId: s.client_id,
+          packageId: s.package_id,
+        })),
+      )
+    }
+
+    load()
+  }, [selectedTrainerId, selectedDate])
 
   const visibleClients = useMemo(
-    () => clients.filter((c) => c.trainerId === selectedTrainerId),
-    [clients, selectedTrainerId],
+    () => clients, // API already scoped to this trainer
+    [clients],
   )
 
   const trainerSessions = useMemo(
-    () => sessions.filter((s) => s.trainerId === selectedTrainerId),
-    [sessions, selectedTrainerId],
+    () => sessions, // API already scoped to this trainer + week
+    [sessions],
   )
 
-  const handleAddSessions = (date: string, clientIds: string[]) => {
-    // Reset warning first
+  // // Week range always based on selectedDate (Monday → Sunday)
+  // const { start: weekStart, end: weekEnd } = useMemo(
+  //   () => getWeekRange(selectedDate),
+  //   [selectedDate],
+  // )
+
+  // const visibleClients = useMemo(
+  //   () => clients.filter((c) => c.trainerId === selectedTrainerId),
+  //   [clients, selectedTrainerId],
+  // )
+
+  // const trainerSessions = useMemo(
+  //   () => sessions.filter((s) => s.trainerId === selectedTrainerId),
+  //   [sessions, selectedTrainerId],
+  // )
+
+  const handleAddSessions = async (date: string, clientIds: string[]) => {
     setNoPackageClientIds([])
 
-    setSessions((prevSessions) => {
-      const newSessions: Session[] = []
-      const failed: string[] = []
-
-      for (const clientId of clientIds) {
-        const pkg = pickPackageForSession(
-          clientId,
-          selectedTrainerId,
-          date,
-          packages,
-          [...prevSessions, ...newSessions],
-        )
-
-        if (!pkg) {
-          failed.push(clientId)
-          continue
-        }
-
-        newSessions.push({
-          id: `${date}-${clientId}-${crypto.randomUUID()}`,
-          date,
-          trainerId: selectedTrainerId,
-          clientId,
-          packageId: pkg.id,
-        })
-      }
-
-      setNoPackageClientIds(failed)
-
-      return [...prevSessions, ...newSessions]
+    const res = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date,
+        trainerId: selectedTrainerId,
+        clientIds,
+      }),
     })
+
+    if (!res.ok) {
+      // TODO: error UI
+      console.error('Failed to add sessions')
+      return
+    }
+
+    const { newSessions, failed } = await res.json()
+    setSessions((prev) => [...prev, ...newSessions])
+    setNoPackageClientIds(failed ?? [])
   }
-  const handleAddPackage = (
+
+  const handleAddPackage = async (
     clientId: string,
     sessionsPurchased: number,
     startDate: string,
   ) => {
-    const trainerTier = selectedTrainer.tier
-    const pricePerClass = getPricePerClass(trainerTier, sessionsPurchased)
-
-    // bonus %: 0% <13, 3% for 13–20, 5% for 21+
-    let bonusRate = 0
-    if (sessionsPurchased >= 13 && sessionsPurchased <= 20) {
-      bonusRate = 0.03
-    } else if (sessionsPurchased >= 21) {
-      bonusRate = 0.05
-    }
-
-    const salesBonus =
-      bonusRate > 0 ? pricePerClass * sessionsPurchased * bonusRate : 0
-
-    setPackages((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
+    const res = await fetch('/api/packages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         clientId,
         trainerId: selectedTrainer.id,
         sessionsPurchased,
         startDate,
-        salesBonus,
-      },
-    ])
+        trainerTier: selectedTrainer.tier,
+      }),
+    })
+
+    if (!res.ok) {
+      // TODO: error UI
+      console.error('Failed to add package')
+      return
+    }
+
+    const newPkg = await res.json()
+    setPackages((prev) => [...prev, newPkg])
   }
 
-  const handleDeleteSession = (sessionId: string) => {
+  const handleDeleteSession = async (sessionId: string) => {
+    await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' })
     setSessions((prev) => prev.filter((s) => s.id !== sessionId))
   }
 
-  const handleDeletePackage = (id: string) => {
-    setPackages((prev) => prev.filter((p) => p.id !== id))
+  const handleDeletePackage = async (id: string) => {
+    await fetch(`/api/packages/${id}`, { method: 'DELETE' })
 
-    // Also remove any sessions that used this package
+    setPackages((prev) => prev.filter((p) => p.id !== id))
     setSessions((prev) => prev.filter((s) => s.packageId !== id))
   }
 
