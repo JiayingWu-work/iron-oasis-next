@@ -31,6 +31,14 @@ type DBSessionRow = {
   package_id: number
 }
 
+type DBLateFeeRow = {
+  id: number
+  client_id: number
+  trainer_id: number
+  date: string
+  amount: number
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
 
@@ -103,11 +111,20 @@ export async function GET(req: NextRequest) {
       AND date BETWEEN ${start} AND ${end}
   `) as DBSessionRow[]
 
+  // 5) late fees in this week (for this trainer)
+  const lateFeeRows = (await sql`
+    SELECT id, client_id, trainer_id, date, amount
+    FROM late_fees
+    WHERE trainer_id = ${trainerId}
+      AND date BETWEEN ${start} AND ${end}
+  `) as DBLateFeeRow[]
+
   return NextResponse.json({
     trainer,
     clients: clientRows,
     packages: packageRows,
     sessions: sessionRows,
+    lateFees: lateFeeRows,
     weekStart: start,
     weekEnd: end,
   })

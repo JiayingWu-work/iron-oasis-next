@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { isWithinRange } from '@/lib/date'
 import { getPricePerClass } from '@/lib/pricing'
-import type { Client, Package, Session, Trainer } from '@/types'
+import type { Client, Package, Session, Trainer, LateFee } from '@/types'
 
-export type CombinedRowType = 'session' | 'package' | 'bonus'
+export type CombinedRowType = 'session' | 'package' | 'bonus' | 'lateFee'
 
 export interface WeeklyClientRow {
   clientId: number
@@ -19,6 +19,7 @@ export interface WeeklyIncomeSummary {
   totalClassesThisWeek: number
   rate: number
   bonusIncome: number
+  lateFeeIncome: number
   finalWeeklyIncome: number
 }
 
@@ -34,6 +35,7 @@ interface UseWeeklyDashboardArgs {
   clients: Client[]
   packages: Package[]
   sessions: Session[]
+  lateFees: LateFee[]
   weekStart: string
   weekEnd: string
   selectedTrainer: Trainer
@@ -43,6 +45,7 @@ export function useWeeklyDashboardData({
   clients,
   packages,
   sessions,
+  lateFees,
   weekStart,
   weekEnd,
   selectedTrainer,
@@ -60,6 +63,10 @@ export function useWeeklyDashboardData({
       (p) =>
         p.trainerId === selectedTrainer.id &&
         isWithinRange(p.startDate, weekStart, weekEnd),
+    )
+
+    const weeklyLateFees = lateFees.filter((f) =>
+      isWithinRange(f.date, weekStart, weekEnd),
     )
 
     /* -----------------------------
@@ -152,12 +159,14 @@ export function useWeeklyDashboardData({
       0,
     )
 
-    const finalWeeklyIncome = classIncome + bonusIncome
+    const lateFeeIncome = weeklyLateFees.reduce((sum, f) => sum + f.amount, 0)
+    const finalWeeklyIncome = classIncome + bonusIncome + lateFeeIncome
 
     const incomeSummary: WeeklyIncomeSummary = {
       totalClassesThisWeek,
       rate,
       bonusIncome,
+      lateFeeIncome,
       finalWeeklyIncome,
     }
 
@@ -174,7 +183,7 @@ export function useWeeklyDashboardData({
       const totalSale = pricePerClass * p.sessionsPurchased
 
       return {
-        id: p.id, // number
+        id: p.id,
         date: p.startDate,
         clientName: client?.name ?? 'Unknown client',
         type: 'package',
@@ -203,7 +212,7 @@ export function useWeeklyDashboardData({
         : 0
 
       return {
-        id: s.id, // number
+        id: s.id,
         date: s.date,
         clientName: client?.name ?? 'Unknown client',
         type: 'session',
@@ -211,10 +220,22 @@ export function useWeeklyDashboardData({
       }
     })
 
+    const weeklyLateFeeRows: WeeklyBreakdownRow[] = weeklyLateFees.map((f) => {
+      const client = clients.find((c) => c.id === f.clientId)
+      return {
+        id: f.id,
+        date: f.date,
+        clientName: client?.name ?? 'Unknown client',
+        type: 'lateFee',
+        amount: f.amount,
+      }
+    })
+
     const breakdownRows: WeeklyBreakdownRow[] = [
       ...weeklyPackageRows,
       ...weeklyBonusRows,
       ...weeklySessionRows,
+      ...weeklyLateFeeRows,
     ].sort((a, b) => a.date.localeCompare(b.date))
 
     return {
@@ -226,6 +247,7 @@ export function useWeeklyDashboardData({
     clients,
     packages,
     sessions,
+    lateFees,
     weekStart,
     weekEnd,
     selectedTrainer.id,

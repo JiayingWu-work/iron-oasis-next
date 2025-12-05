@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import type { Client, Session, Package, Trainer } from '@/types'
+import type { Client, Session, Package, Trainer, LateFee } from '@/types'
 import { formatDateToInput, getWeekRange, shiftDateByDays } from '@/lib/date'
 import Sidebar from '@/components/SideBar'
 import DashboardHeader from '@/components/DashboardHeader'
 import WeeklyDashboard from '@/components/WeeklyDashboard'
 import DailyEntry from '@/components/DailyEntry'
 import AddPackageForm from '@/components/AddPackageForm'
+import AddLateFeeForm from '@/components/AddLateFeeForm'
 
 type ApiClient = {
   id: number
@@ -32,6 +33,14 @@ type ApiSession = {
   package_id: number
 }
 
+type ApiLateFee = {
+  id: number
+  client_id: number
+  trainer_id: number
+  date: string
+  amount: number
+}
+
 type TrainerWeekResponse = {
   trainer: {
     id: number
@@ -41,6 +50,7 @@ type TrainerWeekResponse = {
   clients: ApiClient[]
   packages: ApiPackage[]
   sessions: ApiSession[]
+  lateFees: ApiLateFee[]
   weekStart: string
   weekEnd: string
 }
@@ -56,6 +66,7 @@ export default function Dashboard() {
   const [clients, setClients] = useState<Client[]>([])
   const [packages, setPackages] = useState<Package[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
+  const [lateFees, setLateFees] = useState<LateFee[]>([])
   const [noPackageClientIds, setNoPackageClientIds] = useState<number[]>([])
 
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -150,6 +161,16 @@ export default function Dashboard() {
           packageId: s.package_id,
         })),
       )
+
+      setLateFees(
+        (data.lateFees ?? []).map((f) => ({
+          id: f.id,
+          clientId: f.client_id,
+          trainerId: f.trainer_id,
+          date: f.date.slice(0, 10),
+          amount: Number(f.amount),
+        })),
+      )
     }
 
     load()
@@ -214,6 +235,38 @@ export default function Dashboard() {
     setPackages((prev) => [...prev, newPkg])
   }
 
+  const handleAddLateFee = async (clientId: number, date: string) => {
+    if (!selectedTrainer) return
+
+    const res = await fetch('/api/late-fees', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientId,
+        trainerId: selectedTrainer.id,
+        date,
+      }),
+    })
+
+    if (!res.ok) {
+      console.error('Failed to add late fee')
+      return
+    }
+
+    const created: ApiLateFee = await res.json()
+
+    setLateFees((prev) => [
+      ...prev,
+      {
+        id: created.id,
+        clientId: created.client_id,
+        trainerId: created.trainer_id,
+        date: created.date.slice(0, 10),
+        amount: Number(created.amount),
+      },
+    ])
+  }
+
   const handleDeleteSession = async (sessionId: number) => {
     await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' })
     setSessions((prev) => prev.filter((s) => s.id !== sessionId))
@@ -223,6 +276,11 @@ export default function Dashboard() {
     await fetch(`/api/packages/${id}`, { method: 'DELETE' })
     setPackages((prev) => prev.filter((p) => p.id !== id))
     setSessions((prev) => prev.filter((s) => s.packageId !== id))
+  }
+
+  const handleDeleteLateFee = async (id: number) => {
+    await fetch(`/api/late-fees/${id}`, { method: 'DELETE' })
+    setLateFees((prev) => prev.filter((f) => f.id !== id))
   }
 
   const handlePrevWeek = () => {
@@ -260,11 +318,13 @@ export default function Dashboard() {
               clients={visibleClients}
               packages={packages}
               sessions={trainerSessions}
+              lateFees={lateFees}
               weekStart={weekStart}
               weekEnd={weekEnd}
               selectedTrainer={selectedTrainer}
               onDeleteSession={handleDeleteSession}
               onDeletePackage={handleDeletePackage}
+              onDeleteLateFee={handleDeleteLateFee}
             />
           </section>
 
@@ -280,6 +340,10 @@ export default function Dashboard() {
             <AddPackageForm
               clients={visibleClients}
               onAddPackage={handleAddPackage}
+            />
+            <AddLateFeeForm
+              clients={visibleClients}
+              onAddLateFee={handleAddLateFee}
             />
           </section>
         </div>

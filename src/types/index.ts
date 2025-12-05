@@ -26,3 +26,11 @@ export interface Session {
   clientId: number
   packageId: number
 }
+
+export type LateFee = {
+  id: number
+  clientId: number
+  trainerId: number
+  date: string
+  amount: number
+}

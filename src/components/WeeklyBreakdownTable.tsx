@@ -4,12 +4,14 @@ interface WeeklyBreakdownTableProps {
   rows: WeeklyBreakdownRow[]
   onDeleteSession: (id: number) => void
   onDeletePackage: (id: number) => void
+  onDeleteLateFee: (id: number) => void
 }
 
 export default function WeeklyBreakdownTable({
   rows,
   onDeleteSession,
   onDeletePackage,
+  onDeleteLateFee,
 }: WeeklyBreakdownTableProps) {
   if (rows.length === 0) {
     return <p className="hint">No records this week.</p>
@@ -36,33 +38,39 @@ export default function WeeklyBreakdownTable({
                 ? 'Sales bonus'
                 : row.type === 'package'
                 ? 'Package purchase'
+                : row.type === 'lateFee'
+                ? 'Late fee'
                 : 'Class'}
             </td>
             <td>${row.amount.toFixed(1)}</td>
             <td>
-              {row.type === 'session' &&
-                onDeleteSession &&
-                typeof row.id === 'number' && (
-                  <button
-                    type="button"
-                    className="secondary-btn"
-                    onClick={() => onDeleteSession(row.id as number)}
-                  >
-                    Delete
-                  </button>
-                )}
-
-              {row.type === 'package' &&
-                onDeletePackage &&
-                typeof row.id === 'number' && (
-                  <button
-                    type="button"
-                    className="secondary-btn"
-                    onClick={() => onDeletePackage(row.id as number)}
-                  >
-                    Delete
-                  </button>
-                )}
+              {row.type === 'session' && onDeleteSession && (
+                <button
+                  type="button"
+                  className="secondary-btn"
+                  onClick={() => onDeleteSession(row.id as number)}
+                >
+                  Delete
+                </button>
+              )}
+              {row.type === 'package' && onDeletePackage && (
+                <button
+                  type="button"
+                  className="secondary-btn"
+                  onClick={() => onDeletePackage(row.id as number)}
+                >
+                  Delete
+                </button>
+              )}
+              {row.type === 'lateFee' && onDeleteLateFee && (
+                <button
+                  type="button"
+                  className="secondary-btn"
+                  onClick={() => onDeleteLateFee(row.id as number)}
+                >
+                  Delete
+                </button>
+              )}
             </td>
           </tr>
         ))}
