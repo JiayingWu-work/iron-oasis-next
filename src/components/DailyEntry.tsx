@@ -5,9 +5,9 @@ interface DailyEntryProps {
   date: string
   onDateChange: (value: string) => void
   clients: Client[]
-  onAddSessions: (date: string, clientIds: string[]) => void
-  noPackageClientIds: string[]
-  setNoPackageClientIds: React.Dispatch<React.SetStateAction<string[]>>
+  onAddSessions: (date: string, clientIds: number[]) => void
+  noPackageClientIds: number[]
+  setNoPackageClientIds: React.Dispatch<React.SetStateAction<number[]>>
 }
 
 export default function DailyEntry({
@@ -18,7 +18,7 @@ export default function DailyEntry({
   noPackageClientIds,
   setNoPackageClientIds,
 }: DailyEntryProps) {
-  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([])
+  const [selectedClientIds, setSelectedClientIds] = useState<number[]>([])
 
   // TODO: create a reusable <AutoDismissAlert /> component to handle all alerts
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function DailyEntry({
     }
   }, [noPackageClientIds, setNoPackageClientIds])
 
-  const handleToggleClient = (id: string) => {
+  const handleToggleClient = (id: number) => {
     setSelectedClientIds((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
     )

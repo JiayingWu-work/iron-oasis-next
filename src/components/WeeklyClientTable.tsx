@@ -1,5 +1,5 @@
 interface WeeklyClientRow {
-  clientId: string
+  clientId: number
   clientName: string
   packageDisplay: string
   usedDisplay: string

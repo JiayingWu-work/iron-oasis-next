@@ -1,28 +1,28 @@
 export interface Trainer {
-  id: string
+  id: number
   name: string
   tier: 1 | 2 | 3
 }
 
 export interface Client {
-  id: string
+  id: number
   name: string
-  trainerId: string
+  trainerId: number
 }
 
 export interface Package {
-  id: string
-  clientId: string
-  trainerId: string
+  id: number
+  clientId: number
+  trainerId: number
   sessionsPurchased: number
   startDate: string // YYYY-MM-DD
   salesBonus?: number
 }
 
 export interface Session {
-  id: string
+  id: number
   date: string // YYYY-MM-DD
-  trainerId: string
-  clientId: string
-  packageId: string
+  trainerId: number
+  clientId: number
+  packageId: number
 }

@@ -1,9 +1,9 @@
-import type { Trainer } from '../types'
+import type { Trainer } from '@/types'
 
 type SidebarProps = {
   trainers: Trainer[]
-  selectedTrainerId: string
-  onSelectTrainer: (id: string) => void
+  selectedTrainerId: number | null
+  onSelectTrainer: (id: number) => void
 }
 
 export default function Sidebar({

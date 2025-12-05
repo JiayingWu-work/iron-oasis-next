@@ -3,7 +3,32 @@ import { isWithinRange } from '@/lib/date'
 import { getPricePerClass } from '@/lib/pricing'
 import type { Client, Package, Session, Trainer } from '@/types'
 
-type CombinedRowType = 'session' | 'package' | 'bonus'
+export type CombinedRowType = 'session' | 'package' | 'bonus'
+
+export interface WeeklyClientRow {
+  clientId: number
+  clientName: string
+  packageDisplay: string
+  usedDisplay: string
+  remainingDisplay: string
+  weekCount: number
+  totalRemaining: number
+}
+
+export interface WeeklyIncomeSummary {
+  totalClassesThisWeek: number
+  rate: number
+  bonusIncome: number
+  finalWeeklyIncome: number
+}
+
+export interface WeeklyBreakdownRow {
+  id: number | string
+  date: string
+  clientName: string
+  type: CombinedRowType
+  amount: number
+}
 
 interface UseWeeklyDashboardArgs {
   clients: Client[]
@@ -41,7 +66,7 @@ export function useWeeklyDashboardData({
        PER-CLIENT SUMMARY ROWS
     ----------------------------- */
 
-    const clientRows = clients.map((client) => {
+    const clientRows: WeeklyClientRow[] = clients.map((client) => {
       const clientPackages = packages
         .filter((p) => p.clientId === client.id)
         .sort((a, b) => a.startDate.localeCompare(b.startDate))
@@ -53,7 +78,6 @@ export function useWeeklyDashboardData({
 
       const weekCount = weeklyClientSessions.length
 
-      // Per-package usage
       const pkgStats = clientPackages.map((p) => {
         const usedForPkg = allClientSessions.filter((s) => s.packageId === p.id)
           .length
@@ -68,7 +92,6 @@ export function useWeeklyDashboardData({
 
       const activePkgs = pkgStats.filter((x) => x.remainingForPkg > 0)
 
-      // 1) Pick conceptually relevant packages
       let toDisplay: typeof pkgStats = []
       if (activePkgs.length > 0) {
         toDisplay = activePkgs
@@ -76,7 +99,6 @@ export function useWeeklyDashboardData({
         toDisplay = pkgStats
       }
 
-      // 2) Only show the latest 2 packages in UI
       const displayPkgs = toDisplay.slice(-2)
 
       let packageDisplay = '0'
@@ -132,7 +154,7 @@ export function useWeeklyDashboardData({
 
     const finalWeeklyIncome = classIncome + bonusIncome
 
-    const incomeSummary = {
+    const incomeSummary: WeeklyIncomeSummary = {
       totalClassesThisWeek,
       rate,
       bonusIncome,
@@ -143,7 +165,7 @@ export function useWeeklyDashboardData({
        BREAKDOWN ROWS
     ----------------------------- */
 
-    const weeklyPackageRows = weeklyPackages.map((p) => {
+    const weeklyPackageRows: WeeklyBreakdownRow[] = weeklyPackages.map((p) => {
       const client = clients.find((c) => c.id === p.clientId)
       const pricePerClass = getPricePerClass(
         selectedTrainer.tier,
@@ -152,28 +174,28 @@ export function useWeeklyDashboardData({
       const totalSale = pricePerClass * p.sessionsPurchased
 
       return {
-        id: p.id,
+        id: p.id, // number
         date: p.startDate,
         clientName: client?.name ?? 'Unknown client',
-        type: 'package' as CombinedRowType,
+        type: 'package',
         amount: totalSale,
       }
     })
 
-    const weeklyBonusRows = weeklyPackages
+    const weeklyBonusRows: WeeklyBreakdownRow[] = weeklyPackages
       .filter((p) => (p.salesBonus ?? 0) > 0)
       .map((p) => {
         const client = clients.find((c) => c.id === p.clientId)
         return {
-          id: `${p.id}-bonus`,
+          id: `${p.id}-bonus`, // string
           date: p.startDate,
           clientName: client?.name ?? 'Unknown client',
-          type: 'bonus' as CombinedRowType,
+          type: 'bonus',
           amount: p.salesBonus ?? 0,
         }
       })
 
-    const weeklySessionRows = weeklySessions.map((s) => {
+    const weeklySessionRows: WeeklyBreakdownRow[] = weeklySessions.map((s) => {
       const client = clients.find((c) => c.id === s.clientId)
       const pkg = packages.find((p) => p.id === s.packageId)
       const price = pkg
@@ -181,15 +203,15 @@ export function useWeeklyDashboardData({
         : 0
 
       return {
-        id: s.id,
+        id: s.id, // number
         date: s.date,
         clientName: client?.name ?? 'Unknown client',
-        type: 'session' as CombinedRowType,
+        type: 'session',
         amount: price * rate,
       }
     })
 
-    const breakdownRows = [
+    const breakdownRows: WeeklyBreakdownRow[] = [
       ...weeklyPackageRows,
       ...weeklyBonusRows,
       ...weeklySessionRows,

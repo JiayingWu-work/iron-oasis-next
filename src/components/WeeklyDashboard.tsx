@@ -11,8 +11,8 @@ interface WeeklyDashboardProps {
   weekStart: string
   weekEnd: string
   selectedTrainer: Trainer
-  onDeleteSession: (id: string) => void
-  onDeletePackage: (id: string) => void
+  onDeleteSession: (id: number) => void
+  onDeletePackage: (id: number) => void
 }
 
 export default function WeeklyDashboard({
@@ -40,15 +40,11 @@ export default function WeeklyDashboard({
       <p className="hint">
         Week: {weekStart} → {weekEnd}
       </p>
-
       <WeeklyClientTable rows={clientRows} />
-
       <WeeklyIncomeSummary {...incomeSummary} />
-
       <h3 style={{ marginTop: '1.25rem', fontSize: '1rem' }}>
         Breakdown of the week
       </h3>
-
       <WeeklyBreakdownTable
         rows={breakdownRows}
         onDeleteSession={onDeleteSession}

@@ -5,7 +5,7 @@ import { formatDateToInput } from '@/lib/date'
 interface AddPackageFormProps {
   clients: Client[]
   onAddPackage: (
-    clientId: string,
+    clientId: number,
     sessionsPurchased: number,
     startDate: string,
   ) => void
@@ -15,7 +15,7 @@ export default function AddPackageForm({
   clients,
   onAddPackage,
 }: AddPackageFormProps) {
-  const [clientId, setClientId] = useState('')
+  const [clientId, setClientId] = useState<number>()
   const [sessionsPurchased, setSessionsPurchased] = useState(0)
   const [startDate, setStartDate] = useState(formatDateToInput(new Date()))
 
@@ -34,7 +34,7 @@ export default function AddPackageForm({
         <div className="field-row">
           <select
             value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
+            onChange={(e) => setClientId(Number(e.target.value))}
           >
             <option value="">Select client…</option>
             {clients.map((c) => (

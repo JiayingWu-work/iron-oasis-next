@@ -3,42 +3,44 @@ import { sql } from '@/lib/db'
 import { getWeekRange } from '@/lib/date'
 
 type DBTrainerRow = {
-  id: string
+  id: number
   name: string
   tier: 1 | 2 | 3
 }
 
 type DBClientRow = {
-  id: string
+  id: number
   name: string
-  trainer_id: string
+  trainer_id: number
 }
 
 type DBPackageRow = {
-  id: string
-  client_id: string
-  trainer_id: string
+  id: number
+  client_id: number
+  trainer_id: number
   sessions_purchased: number
   start_date: string
   sales_bonus: number | null
 }
 
 type DBSessionRow = {
-  id: string
+  id: number
   date: string
-  trainer_id: string
-  client_id: string
-  package_id: string
+  trainer_id: number
+  client_id: number
+  package_id: number
 }
 
 export async function GET(req: NextRequest) {
-  // Parse trainerId from the URL path: /api/trainer/:id/week
   const url = new URL(req.url)
-  const parts = url.pathname.split('/') // ["", "api", "trainer", "jiaying", "week"]
-  const trainerId = parts[3] // "jiaying"
+
+  // /api/trainer/1/week -> ["", "api", "trainer", "1", "week"]
+  const parts = url.pathname.split('/').filter(Boolean)
+  const trainerIndex = parts.indexOf('trainer')
+  const trainerIdParam = trainerIndex >= 0 ? parts[trainerIndex + 1] : undefined
 
   const searchParams = url.searchParams
-  const date = searchParams.get('date')
+  const date = searchParams.get('date') // YYYY-MM-DD
 
   if (!date) {
     return NextResponse.json(
@@ -47,15 +49,25 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  const trainerId = Number(trainerIdParam)
+
+  if (!trainerIdParam || Number.isNaN(trainerId)) {
+    return NextResponse.json(
+      { error: `Invalid trainer id: ${trainerIdParam}` },
+      { status: 400 },
+    )
+  }
+
   const { start, end } = getWeekRange(date)
 
-  // 1) load trainers, then find the one we need
-  const allTrainers = (await sql`
+  // 1) trainer
+  const trainerRows = (await sql`
     SELECT id, name, tier
     FROM trainers
+    WHERE id = ${trainerId}
   `) as DBTrainerRow[]
 
-  const trainer = allTrainers.find((t) => t.id === trainerId)
+  const trainer = trainerRows[0]
 
   if (!trainer) {
     return NextResponse.json(
@@ -64,7 +76,7 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // 2) clients for this trainer
+  // 2) clients
   const clientRows = (await sql`
     SELECT id, name, trainer_id
     FROM clients
@@ -74,8 +86,8 @@ export async function GET(req: NextRequest) {
 
   const clientIds = clientRows.map((c) => c.id)
 
-  // 3) packages for those clients
-  const packageRows: DBPackageRow[] = clientIds.length
+  // 3) packages
+  const packageRows = clientIds.length
     ? ((await sql`
         SELECT *
         FROM packages
@@ -83,11 +95,12 @@ export async function GET(req: NextRequest) {
       `) as DBPackageRow[])
     : []
 
-  // 4) all sessions for this trainer
+  // 4) sessions in this week
   const sessionRows = (await sql`
     SELECT *
     FROM sessions
     WHERE trainer_id = ${trainerId}
+      AND date BETWEEN ${start} AND ${end}
   `) as DBSessionRow[]
 
   return NextResponse.json({

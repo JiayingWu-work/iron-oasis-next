@@ -1,8 +1,8 @@
 import type { Package, Session } from '@/types'
 
 export function pickPackageForSession(
-  clientId: string,
-  trainerId: string,
+  clientId: number,
+  trainerId: number,
   date: string,
   allPackages: Package[],
   allSessions: Session[],

@@ -10,31 +10,31 @@ import DailyEntry from '@/components/DailyEntry'
 import AddPackageForm from '@/components/AddPackageForm'
 
 type ApiClient = {
-  id: string
+  id: number
   name: string
-  trainer_id: string
+  trainer_id: number
 }
 
 type ApiPackage = {
-  id: string
-  client_id: string
-  trainer_id: string
+  id: number
+  client_id: number
+  trainer_id: number
   sessions_purchased: number
   start_date: string
   sales_bonus: number | null
 }
 
 type ApiSession = {
-  id: string
+  id: number
   date: string
-  trainer_id: string
-  client_id: string
-  package_id: string
+  trainer_id: number
+  client_id: number
+  package_id: number
 }
 
 type TrainerWeekResponse = {
   trainer: {
-    id: string
+    id: number
     name: string
     tier: 1 | 2 | 3
   }
@@ -45,23 +45,19 @@ type TrainerWeekResponse = {
   weekEnd: string
 }
 
-type TrainerRow = {
-  id: string
-  name: string
-  tier: 1 | 2 | 3
+type TrainersResponse = {
+  trainers: Trainer[]
 }
 
-type TrainersResponse = {
-  trainers: TrainerRow[]
-}
 export default function Dashboard() {
+  const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [selectedTrainerId, setSelectedTrainerId] = useState<number>(1)
+
   const [clients, setClients] = useState<Client[]>([])
   const [packages, setPackages] = useState<Package[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
-  const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [noPackageClientIds, setNoPackageClientIds] = useState<number[]>([])
 
-  const [selectedTrainerId, setSelectedTrainerId] = useState<string>('jiaying')
-  const [noPackageClientIds, setNoPackageClientIds] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState<string>(
     formatDateToInput(new Date()),
   )
@@ -69,7 +65,9 @@ export default function Dashboard() {
   const [weekStart, setWeekStart] = useState<string>(initialWeek.start)
   const [weekEnd, setWeekEnd] = useState<string>(initialWeek.end)
 
-  const selectedTrainer = trainers.find((t) => t.id === selectedTrainerId)
+  /* -----------------------------
+     LOAD TRAINERS
+  ----------------------------- */
 
   useEffect(() => {
     async function loadTrainers() {
@@ -78,22 +76,34 @@ export default function Dashboard() {
         console.error('Failed to load trainers')
         return
       }
-
       const data: TrainersResponse = await res.json()
+      setTrainers(data.trainers)
 
-      setTrainers(
-        data.trainers.map((t) => ({
-          id: t.id,
-          name: t.name,
-          tier: t.tier,
-        })),
-      )
+      // pick first trainer as default if none selected
+      if (data.trainers.length > 0 && selectedTrainerId === null) {
+        setSelectedTrainerId(data.trainers[0]?.id)
+      }
     }
 
     loadTrainers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const selectedTrainer = useMemo(
+    () =>
+      selectedTrainerId == null
+        ? null
+        : trainers.find((t) => t.id === selectedTrainerId) ?? null,
+    [trainers, selectedTrainerId],
+  )
+
+  /* -----------------------------
+     LOAD WEEKLY DATA FOR TRAINER
+  ----------------------------- */
+
   useEffect(() => {
+    if (selectedTrainerId == null) return
+
     async function load() {
       const res = await fetch(
         `/api/trainer/${selectedTrainerId}/week?date=${selectedDate}`,
@@ -118,41 +128,27 @@ export default function Dashboard() {
       )
 
       setPackages(
-        data.packages.map((p: ApiPackage) => {
-          const startDate =
-            typeof p.start_date === 'string'
-              ? p.start_date.slice(0, 10) // '2025-12-03T...' -> '2025-12-03'
-              : new Date(p.start_date).toISOString().slice(0, 10)
-
-          return {
-            id: p.id,
-            clientId: p.client_id,
-            trainerId: p.trainer_id,
-            sessionsPurchased: Number(p.sessions_purchased),
-            startDate,
-            salesBonus:
-              p.sales_bonus === null || p.sales_bonus === undefined
-                ? undefined
-                : Number(p.sales_bonus),
-          } as Package
-        }),
+        data.packages.map((p) => ({
+          id: p.id,
+          clientId: p.client_id,
+          trainerId: p.trainer_id,
+          sessionsPurchased: Number(p.sessions_purchased),
+          startDate: p.start_date.slice(0, 10),
+          salesBonus:
+            p.sales_bonus === null || p.sales_bonus === undefined
+              ? undefined
+              : Number(p.sales_bonus),
+        })),
       )
 
       setSessions(
-        data.sessions.map((s: ApiSession) => {
-          const date =
-            typeof s.date === 'string'
-              ? s.date.slice(0, 10)
-              : new Date(s.date).toISOString().slice(0, 10)
-
-          return {
-            id: s.id,
-            date, // now 'YYYY-MM-DD'
-            trainerId: s.trainer_id,
-            clientId: s.client_id,
-            packageId: s.package_id,
-          } as Session
-        }),
+        data.sessions.map((s) => ({
+          id: s.id,
+          date: s.date.slice(0, 10),
+          trainerId: s.trainer_id,
+          clientId: s.client_id,
+          packageId: s.package_id,
+        })),
       )
     }
 
@@ -160,10 +156,14 @@ export default function Dashboard() {
   }, [selectedTrainerId, selectedDate])
 
   const visibleClients = useMemo(() => clients, [clients])
-
   const trainerSessions = useMemo(() => sessions, [sessions])
 
-  const handleAddSessions = async (date: string, clientIds: string[]) => {
+  /* -----------------------------
+     MUTATIONS
+  ----------------------------- */
+
+  const handleAddSessions = async (date: string, clientIds: number[]) => {
+    if (selectedTrainerId == null) return
     setNoPackageClientIds([])
 
     const res = await fetch('/api/sessions', {
@@ -177,7 +177,6 @@ export default function Dashboard() {
     })
 
     if (!res.ok) {
-      // TODO: error UI
       console.error('Failed to add sessions')
       return
     }
@@ -188,40 +187,40 @@ export default function Dashboard() {
   }
 
   const handleAddPackage = async (
-    clientId: string,
+    clientId: number,
     sessionsPurchased: number,
     startDate: string,
   ) => {
+    if (!selectedTrainer) return
+
     const res = await fetch('/api/packages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         clientId,
-        trainerId: selectedTrainer?.id,
+        trainerId: selectedTrainer.id,
         sessionsPurchased,
         startDate,
-        trainerTier: selectedTrainer?.tier,
+        trainerTier: selectedTrainer.tier,
       }),
     })
 
     if (!res.ok) {
-      // TODO: error UI
       console.error('Failed to add package')
       return
     }
 
-    const newPkg = await res.json()
+    const newPkg: Package = await res.json()
     setPackages((prev) => [...prev, newPkg])
   }
 
-  const handleDeleteSession = async (sessionId: string) => {
+  const handleDeleteSession = async (sessionId: number) => {
     await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' })
     setSessions((prev) => prev.filter((s) => s.id !== sessionId))
   }
 
-  const handleDeletePackage = async (id: string) => {
+  const handleDeletePackage = async (id: number) => {
     await fetch(`/api/packages/${id}`, { method: 'DELETE' })
-
     setPackages((prev) => prev.filter((p) => p.id !== id))
     setSessions((prev) => prev.filter((s) => s.packageId !== id))
   }
@@ -234,8 +233,8 @@ export default function Dashboard() {
     setSelectedDate((prev) => shiftDateByDays(prev, 7))
   }
 
-  if (trainers.length === 0 || !selectedTrainer) {
-    return <div>Loading...</div>
+  if (!selectedTrainer || selectedTrainerId == null) {
+    return <div className="app">Loading…</div>
   }
 
   return (
