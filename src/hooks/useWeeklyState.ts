@@ -24,7 +24,7 @@ export type TrainerWeekState = {
   setLateFees: Dispatch<SetStateAction<LateFee[]>>
 }
 
-export function useTrainerWeekState(
+export function useWeeklyState(
   selectedTrainer: Trainer | null,
   selectedDate: string,
 ): TrainerWeekState {

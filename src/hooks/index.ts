@@ -1,5 +1,5 @@
 export * from './useTrainerSelection'
-export * from './useTrainerWeekState'
+export * from './useWeeklyState'
 
 export * from './useSessionActions'
 export * from './usePackageActions'

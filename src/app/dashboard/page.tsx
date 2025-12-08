@@ -10,7 +10,7 @@ import AddPackageForm from '@/components/AddPackageForm'
 import AddLateFeeForm from '@/components/AddLateFeeForm'
 import {
   useTrainerSelection,
-  useTrainerWeekState,
+  useWeeklyState,
   useSessionActions,
   usePackageActions,
   useLateFeeActions,
@@ -28,7 +28,7 @@ export default function Dashboard() {
     formatDateToInput(new Date()),
   )
 
-  const weekState = useTrainerWeekState(selectedTrainer, selectedDate)
+  const weeklyState = useWeeklyState(selectedTrainer, selectedDate)
   const {
     weekStart,
     weekEnd,
@@ -39,7 +39,7 @@ export default function Dashboard() {
     setPackages,
     setSessions,
     setLateFees,
-  } = weekState
+  } = weeklyState
 
   const { addSessions, deleteSession } = useSessionActions(
     selectedTrainer,
