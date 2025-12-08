@@ -1,4 +1,4 @@
-type DashboardHeaderProps = {
+interface DashboardHeaderProps {
   trainerName: string
   weekStart: string
   weekEnd: string

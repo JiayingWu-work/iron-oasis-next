@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-
-type DBDeleteResult = { id: string }
+import { DeleteResponse } from '@/types/api'
 
 export async function DELETE(req: Request) {
   // Parse id from URL: /api/sessions/:id
@@ -21,7 +20,7 @@ export async function DELETE(req: Request) {
       DELETE FROM sessions
       WHERE id = ${sessionId}
       RETURNING id
-    `) as DBDeleteResult[]
+    `) as DeleteResponse[]
 
     if (deleted.length === 0) {
       return NextResponse.json(

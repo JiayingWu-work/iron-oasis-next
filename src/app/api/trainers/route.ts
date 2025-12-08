@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-
-type DbTrainer = {
-  id: number
-  name: string
-  tier: 1 | 2 | 3
-}
+import { Trainer } from '@/types'
 
 export async function GET() {
   try {
@@ -13,7 +8,7 @@ export async function GET() {
       SELECT id, name, tier
       FROM trainers
       ORDER BY id;
-    `) as DbTrainer[]
+    `) as Trainer[]
 
     return NextResponse.json({ trainers: rows })
   } catch (err) {
@@ -42,7 +37,7 @@ export async function POST(req: NextRequest) {
       INSERT INTO trainers (name, tier)
       VALUES (${name}, ${tier})
       RETURNING id, name, tier;
-    `) as DbTrainer[]
+    `) as Trainer[]
 
     return NextResponse.json(rows[0], { status: 201 })
   } catch (err) {

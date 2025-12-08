@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import type { Package, Session } from '@/types'
-
-type DBPackageRow = {
-  id: number
-  client_id: number
-  trainer_id: number
-  sessions_purchased: number
-  start_date: string
-  sales_bonus: number | null
-}
-
-type DBSessionRow = {
-  id: number
-  date: string
-  trainer_id: number
-  client_id: number
-  package_id: number | null
-}
+import { ApiPackage, ApiSession } from '@/types/api'
 
 type AddSessionsBody = {
   date: string
@@ -39,7 +23,7 @@ export async function POST(req: NextRequest) {
       FROM packages
       WHERE trainer_id = ${trainerId}
         AND client_id = ANY(${clientIds})
-    `) as DBPackageRow[]
+    `) as ApiPackage[]
 
     const allPackages: Package[] = packagesRows.map((p) => {
       const startDateStr =
@@ -79,7 +63,7 @@ export async function POST(req: NextRequest) {
         INSERT INTO sessions (date, trainer_id, client_id, package_id)
         VALUES (${date}, ${trainerId}, ${clientId}, ${packageId})
         RETURNING id, date, trainer_id, client_id, package_id
-      `) as DBSessionRow[]
+      `) as ApiSession[]
 
       const normalizedDate =
         typeof inserted.date === 'string'

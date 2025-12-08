@@ -1,24 +1,12 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-
-type DBLateFeeRow = {
-  id: number
-  client_id: number
-  trainer_id: number
-  date: string
-  amount: number
-}
-
-type DBLateFeeWithClientRow = DBLateFeeRow & {
-  client_name: string
-}
+import type { ApiLateFee, ApiLateFeeWithClient } from '@/types/api'
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
     const { clientId, trainerId, date } = body
 
-    // trainerId is required now
     if (!clientId || !date || !trainerId) {
       return NextResponse.json(
         { error: 'clientId, trainerId and date are required' },
@@ -30,7 +18,7 @@ export async function POST(req: Request) {
       INSERT INTO late_fees (client_id, trainer_id, date, amount)
       VALUES (${clientId}, ${trainerId}, ${date}, 45)
       RETURNING id, client_id, trainer_id, date, amount;
-    `) as DBLateFeeRow[]
+    `) as ApiLateFee[]
 
     return NextResponse.json(result[0])
   } catch (err) {
@@ -42,7 +30,6 @@ export async function POST(req: Request) {
   }
 }
 
-// GET late fees for a week – always filtered by trainer
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
@@ -58,20 +45,19 @@ export async function GET(req: Request) {
     }
 
     const rows = (await sql`
-      SELECT
-        lf.id,
-        lf.client_id,
-        lf.trainer_id,
-        lf.date,
-        lf.amount,
-        c.name AS client_name
+      SELECT lf.id,
+             lf.client_id,
+             lf.trainer_id,
+             lf.date,
+             lf.amount,
+             c.name AS client_name
       FROM late_fees lf
       JOIN clients c ON c.id = lf.client_id
       WHERE lf.date >= ${weekStart}::date
         AND lf.date <= ${weekEnd}::date
         AND lf.trainer_id = ${Number(trainerId)}
       ORDER BY lf.date ASC;
-    `) as DBLateFeeWithClientRow[]
+    `) as ApiLateFeeWithClient[]
 
     return NextResponse.json(rows)
   } catch (err) {

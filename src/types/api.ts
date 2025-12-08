@@ -1,5 +1,3 @@
-// src/types/api.ts
-
 export type ApiClient = {
   id: number
   name: string
@@ -31,6 +29,10 @@ export type ApiLateFee = {
   amount: number
 }
 
+export type ApiLateFeeWithClient = ApiLateFee & {
+  client_name: string
+}
+
 export type TrainerWeekResponse = {
   trainer: {
     id: number
@@ -45,8 +47,4 @@ export type TrainerWeekResponse = {
   weekEnd: string
 }
 
-import type { Trainer } from '@/types'
-
-export type TrainersResponse = {
-  trainers: Trainer[]
-}
+export type DeleteResponse = { id: string }

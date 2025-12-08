@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getPricePerClass } from '@/lib/pricing'
-
-type DBPackageRow = {
-  id: number
-  client_id: number
-  trainer_id: number
-  sessions_purchased: number
-  start_date: string
-  sales_bonus: number | null
-}
-
-type DBSessionRow = {
-  id: number
-  date: string
-  trainer_id: number
-  client_id: number
-  package_id: number | null
-}
+import { ApiPackage, ApiSession } from '@/types/api'
 
 /**
  * After a new package is created, rebalance sessions across all packages for this client+trainer:
@@ -37,7 +21,7 @@ async function rebalanceClientPackages(
     FROM packages
     WHERE trainer_id = ${trainerId} AND client_id = ${clientId}
     ORDER BY start_date ASC, id ASC
-  `) as DBPackageRow[]
+  `) as ApiPackage[]
 
   if (pkgRows.length === 0) return
 
@@ -49,7 +33,7 @@ async function rebalanceClientPackages(
       AND client_id = ${clientId}
       AND package_id IS NOT NULL
     ORDER BY date ASC, id ASC
-  `) as DBSessionRow[]
+  `) as ApiSession[]
 
   // ---------- A) Move overflow from older packages to newer ones ----------
   for (let i = 0; i < pkgRows.length - 1; i++) {
@@ -95,7 +79,7 @@ async function rebalanceClientPackages(
       AND client_id = ${clientId}
       AND package_id IS NULL
     ORDER BY date ASC, id ASC
-  `) as DBSessionRow[]
+  `) as ApiSession[]
 
   if (dropIns.length === 0) return
 
@@ -179,7 +163,7 @@ export async function POST(req: NextRequest) {
       INSERT INTO packages (client_id, trainer_id, sessions_purchased, start_date, sales_bonus)
       VALUES (${clientId}, ${trainerId}, ${sessionsPurchased}, ${startDate}, ${salesBonus})
       RETURNING id, client_id, trainer_id, sessions_purchased, start_date, sales_bonus
-    `) as DBPackageRow[]
+    `) as ApiPackage[]
 
     const normalizedStartDate =
       typeof row.start_date === 'string'

@@ -1,48 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getWeekRange } from '@/lib/date'
-
-type DBTrainerRow = {
-  id: number
-  name: string
-  tier: 1 | 2 | 3
-}
-
-type DBClientRow = {
-  id: number
-  name: string
-  trainer_id: number
-}
-
-type DBPackageRow = {
-  id: number
-  client_id: number
-  trainer_id: number
-  sessions_purchased: number
-  start_date: string
-  sales_bonus: number | null
-}
-
-type DBSessionRow = {
-  id: number
-  date: string
-  trainer_id: number
-  client_id: number
-  package_id: number
-}
-
-type DBLateFeeRow = {
-  id: number
-  client_id: number
-  trainer_id: number
-  date: string
-  amount: number
-}
+import type {
+  ApiClient,
+  ApiPackage,
+  ApiSession,
+  ApiLateFee,
+  TrainerWeekResponse,
+} from '@/types/api'
+import { Trainer } from '@/types'
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
 
-  // /api/trainer/1/week -> ["", "api", "trainer", "1", "week"]
+  // /api/trainer/1/week -> ["", "api", "trainer", "1", "week"] -> ["api","trainer","1","week"]
   const parts = url.pathname.split('/').filter(Boolean)
   const trainerIndex = parts.indexOf('trainer')
   const trainerIdParam = trainerIndex >= 0 ? parts[trainerIndex + 1] : undefined
@@ -73,7 +44,7 @@ export async function GET(req: NextRequest) {
     SELECT id, name, tier
     FROM trainers
     WHERE id = ${trainerId}
-  `) as DBTrainerRow[]
+  `) as Trainer[]
 
   const trainer = trainerRows[0]
 
@@ -84,42 +55,55 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // 2) clients
+  // 2) clients for this trainer
   const clientRows = (await sql`
     SELECT id, name, trainer_id
     FROM clients
     WHERE trainer_id = ${trainerId}
     ORDER BY name
-  `) as DBClientRow[]
+  `) as ApiClient[]
 
   const clientIds = clientRows.map((c) => c.id)
 
-  // 3) packages
-  const packageRows = clientIds.length
+  // 3) all packages for those clients
+  const packageRows: ApiPackage[] = clientIds.length
     ? ((await sql`
-        SELECT *
+        SELECT id,
+               client_id,
+               trainer_id,
+               sessions_purchased,
+               start_date,
+               sales_bonus
         FROM packages
         WHERE client_id = ANY(${clientIds})
-      `) as DBPackageRow[])
+      `) as ApiPackage[])
     : []
 
-  // 4) sessions in this week
+  // 4) all sessions for this trainer (not just this week – we need history for remaining calc)
   const sessionRows = (await sql`
-    SELECT id, date, trainer_id, client_id, package_id
+    SELECT id,
+           date,
+           trainer_id,
+           client_id,
+           package_id
     FROM sessions
     WHERE trainer_id = ${trainerId}
     ORDER BY date ASC, id ASC
-  `) as DBSessionRow[]
+  `) as ApiSession[]
 
   // 5) late fees in this week (for this trainer)
   const lateFeeRows = (await sql`
-    SELECT id, client_id, trainer_id, date, amount
+    SELECT id,
+           client_id,
+           trainer_id,
+           date,
+           amount
     FROM late_fees
     WHERE trainer_id = ${trainerId}
       AND date BETWEEN ${start} AND ${end}
-  `) as DBLateFeeRow[]
+  `) as ApiLateFee[]
 
-  return NextResponse.json({
+  const response: TrainerWeekResponse = {
     trainer,
     clients: clientRows,
     packages: packageRows,
@@ -127,5 +111,7 @@ export async function GET(req: NextRequest) {
     lateFees: lateFeeRows,
     weekStart: start,
     weekEnd: end,
-  })
+  }
+
+  return NextResponse.json(response)
 }

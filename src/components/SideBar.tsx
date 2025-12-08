@@ -1,6 +1,6 @@
 import type { Trainer } from '@/types'
 
-type SidebarProps = {
+interface SidebarProps {
   trainers: Trainer[]
   selectedTrainerId: number | null
   onSelectTrainer: (id: number) => void

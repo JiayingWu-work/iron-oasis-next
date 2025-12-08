@@ -1,16 +1,6 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-
-type DBDeleteResult = { id: string }
-
-type DBPackageRow = {
-  id: number
-  client_id: number
-  trainer_id: number
-  sessions_purchased: number
-  start_date: string
-  sales_bonus: number | null
-}
+import { ApiPackage, DeleteResponse } from '@/types/api'
 
 export async function DELETE(req: Request) {
   // Parse id from URL path: /api/packages/:id
@@ -31,7 +21,7 @@ export async function DELETE(req: Request) {
       SELECT id, client_id, trainer_id, sessions_purchased, start_date, sales_bonus
       FROM packages
       WHERE id = ${packageId}
-    `) as DBPackageRow[]
+    `) as ApiPackage[]
 
     if (pkgRows.length === 0) {
       return NextResponse.json(
@@ -50,7 +40,7 @@ export async function DELETE(req: Request) {
         AND client_id = ${pkg.client_id}
         AND id <> ${packageId}
       ORDER BY start_date ASC, id ASC
-    `) as DBPackageRow[]
+    `) as ApiPackage[]
 
     // 2) Decide where the sessions should go:
     //    - If there are other packages, attach them to the *last* one (most recent)
@@ -75,7 +65,7 @@ export async function DELETE(req: Request) {
       DELETE FROM packages
       WHERE id = ${packageId}
       RETURNING id
-    `) as DBDeleteResult[]
+    `) as DeleteResponse[]
 
     if (deleted.length === 0) {
       return NextResponse.json(
