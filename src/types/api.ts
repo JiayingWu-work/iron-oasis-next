@@ -1,0 +1,52 @@
+// src/types/api.ts
+
+export type ApiClient = {
+  id: number
+  name: string
+  trainer_id: number
+}
+
+export type ApiPackage = {
+  id: number
+  client_id: number
+  trainer_id: number
+  sessions_purchased: number
+  start_date: string
+  sales_bonus: number | null
+}
+
+export type ApiSession = {
+  id: number
+  date: string
+  trainer_id: number
+  client_id: number
+  package_id: number | null
+}
+
+export type ApiLateFee = {
+  id: number
+  client_id: number
+  trainer_id: number
+  date: string
+  amount: number
+}
+
+export type TrainerWeekResponse = {
+  trainer: {
+    id: number
+    name: string
+    tier: 1 | 2 | 3
+  }
+  clients: ApiClient[]
+  packages: ApiPackage[]
+  sessions: ApiSession[]
+  lateFees: ApiLateFee[]
+  weekStart: string
+  weekEnd: string
+}
+
+import type { Trainer } from '@/types'
+
+export type TrainersResponse = {
+  trainers: Trainer[]
+}
