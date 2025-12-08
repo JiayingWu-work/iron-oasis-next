@@ -24,7 +24,7 @@ export interface Session {
   date: string // YYYY-MM-DD
   trainerId: number
   clientId: number
-  packageId: number
+  packageId: number | null
 }
 
 export type LateFee = {

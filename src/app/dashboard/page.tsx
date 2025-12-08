@@ -67,7 +67,6 @@ export default function Dashboard() {
   const [packages, setPackages] = useState<Package[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [lateFees, setLateFees] = useState<LateFee[]>([])
-  const [noPackageClientIds, setNoPackageClientIds] = useState<number[]>([])
 
   const [selectedDate, setSelectedDate] = useState<string>(
     formatDateToInput(new Date()),
@@ -185,7 +184,6 @@ export default function Dashboard() {
 
   const handleAddSessions = async (date: string, clientIds: number[]) => {
     if (selectedTrainerId == null) return
-    setNoPackageClientIds([])
 
     const res = await fetch('/api/sessions', {
       method: 'POST',
@@ -202,9 +200,8 @@ export default function Dashboard() {
       return
     }
 
-    const { newSessions, failed } = await res.json()
+    const { newSessions } = await res.json()
     setSessions((prev) => [...prev, ...newSessions])
-    setNoPackageClientIds(failed ?? [])
   }
 
   const handleAddPackage = async (
@@ -231,8 +228,43 @@ export default function Dashboard() {
       return
     }
 
-    const newPkg: Package = await res.json()
-    setPackages((prev) => [...prev, newPkg])
+    await res.json()
+
+    // Reload week data just to get *updated packages & sessions*
+    const weekRes = await fetch(
+      `/api/trainer/${selectedTrainer.id}/week?date=${selectedDate}`,
+    )
+
+    if (!weekRes.ok) {
+      console.error('Failed to reload dashboard data after adding package')
+      return
+    }
+
+    const data: TrainerWeekResponse = await weekRes.json()
+
+    setPackages(
+      data.packages.map((p) => ({
+        id: p.id,
+        clientId: p.client_id,
+        trainerId: p.trainer_id,
+        sessionsPurchased: Number(p.sessions_purchased),
+        startDate: p.start_date.slice(0, 10),
+        salesBonus:
+          p.sales_bonus === null || p.sales_bonus === undefined
+            ? undefined
+            : Number(p.sales_bonus),
+      })),
+    )
+
+    setSessions(
+      data.sessions.map((s) => ({
+        id: s.id,
+        date: s.date.slice(0, 10),
+        trainerId: s.trainer_id,
+        clientId: s.client_id,
+        packageId: s.package_id, // may be null for single-class rate
+      })),
+    )
   }
 
   const handleAddLateFee = async (clientId: number, date: string) => {
@@ -273,9 +305,42 @@ export default function Dashboard() {
   }
 
   const handleDeletePackage = async (id: number) => {
-    await fetch(`/api/packages/${id}`, { method: 'DELETE' })
-    setPackages((prev) => prev.filter((p) => p.id !== id))
-    setSessions((prev) => prev.filter((s) => s.packageId !== id))
+    const res = await fetch(`/api/packages/${id}`, { method: 'DELETE' })
+
+    if (!res.ok) {
+      console.error('Failed to delete package')
+      return
+    }
+
+    const pkgToDelete = packages.find((p) => p.id === id)
+    const remainingPackages = packages.filter((p) => p.id !== id)
+    setPackages(remainingPackages)
+
+    // Mirror backend behavior on sessions:
+    // - if client has other packages, move sessions to the last package
+    // - otherwise set packageId = null
+    if (pkgToDelete) {
+      const sameClientPkgs = remainingPackages
+        .filter((p) => p.clientId === pkgToDelete.clientId)
+        .sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id - b.id)
+
+      const lastPkg = sameClientPkgs[sameClientPkgs.length - 1] ?? null
+
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.packageId === id
+            ? {
+                ...s,
+                packageId: lastPkg ? lastPkg.id : null,
+              }
+            : s,
+        ),
+      )
+    } else {
+      setSessions((prev) =>
+        prev.map((s) => (s.packageId === id ? { ...s, packageId: null } : s)),
+      )
+    }
   }
 
   const handleDeleteLateFee = async (id: number) => {
@@ -334,8 +399,6 @@ export default function Dashboard() {
               onDateChange={setSelectedDate}
               clients={visibleClients}
               onAddSessions={handleAddSessions}
-              noPackageClientIds={noPackageClientIds}
-              setNoPackageClientIds={setNoPackageClientIds}
             />
             <AddPackageForm
               clients={visibleClients}

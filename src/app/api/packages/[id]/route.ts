@@ -3,6 +3,15 @@ import { sql } from '@/lib/db'
 
 type DBDeleteResult = { id: string }
 
+type DBPackageRow = {
+  id: number
+  client_id: number
+  trainer_id: number
+  sessions_purchased: number
+  start_date: string
+  sales_bonus: number | null
+}
+
 export async function DELETE(req: Request) {
   // Parse id from URL path: /api/packages/:id
   const url = new URL(req.url)
@@ -17,13 +26,51 @@ export async function DELETE(req: Request) {
   }
 
   try {
-    // 1) delete sessions that reference this package (to avoid FK issues)
-    await sql`
-      DELETE FROM sessions
-      WHERE package_id = ${packageId}
-    `
+    // 0) Look up the package so we know client + trainer
+    const pkgRows = (await sql`
+      SELECT id, client_id, trainer_id, sessions_purchased, start_date, sales_bonus
+      FROM packages
+      WHERE id = ${packageId}
+    `) as DBPackageRow[]
 
-    // 2) delete the package itself, and see if anything was actually deleted
+    if (pkgRows.length === 0) {
+      return NextResponse.json(
+        { success: false, error: `Package not found: ${packageId}` },
+        { status: 404 },
+      )
+    }
+
+    const pkg = pkgRows[0]
+
+    // 1) Find other packages for this client+trainer (excluding the one we delete)
+    const otherPkgs = (await sql`
+      SELECT id, client_id, trainer_id, sessions_purchased, start_date, sales_bonus
+      FROM packages
+      WHERE trainer_id = ${pkg.trainer_id}
+        AND client_id = ${pkg.client_id}
+        AND id <> ${packageId}
+      ORDER BY start_date ASC, id ASC
+    `) as DBPackageRow[]
+
+    // 2) Decide where the sessions should go:
+    //    - If there are other packages, attach them to the *last* one (most recent)
+    //    - If no other packages, set package_id = NULL (single-class drop-ins)
+    if (otherPkgs.length > 0) {
+      const lastPkg = otherPkgs[otherPkgs.length - 1]
+      await sql`
+        UPDATE sessions
+        SET package_id = ${lastPkg.id}
+        WHERE package_id = ${packageId}
+      `
+    } else {
+      await sql`
+        UPDATE sessions
+        SET package_id = NULL
+        WHERE package_id = ${packageId}
+      `
+    }
+
+    // 3) Delete the package itself
     const deleted = (await sql`
       DELETE FROM packages
       WHERE id = ${packageId}

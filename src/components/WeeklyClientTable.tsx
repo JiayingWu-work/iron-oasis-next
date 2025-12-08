@@ -30,9 +30,7 @@ export default function WeeklyClientTable({ rows }: WeeklyClientTableProps) {
             <td>{row.clientName}</td>
             <td>{row.packageDisplay}</td>
             <td>{row.usedDisplay}</td>
-            <td
-              className={row.totalRemaining === 0 ? 'text-red-remaining' : ''}
-            >
+            <td className={row.totalRemaining <= 0 ? 'text-red-remaining' : ''}>
               {row.remainingDisplay}
             </td>
             <td>{row.weekCount}</td>

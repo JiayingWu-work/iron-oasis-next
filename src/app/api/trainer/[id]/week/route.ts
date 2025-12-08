@@ -105,10 +105,10 @@ export async function GET(req: NextRequest) {
 
   // 4) sessions in this week
   const sessionRows = (await sql`
-    SELECT *
+    SELECT id, date, trainer_id, client_id, package_id
     FROM sessions
     WHERE trainer_id = ${trainerId}
-      AND date BETWEEN ${start} AND ${end}
+    ORDER BY date ASC, id ASC
   `) as DBSessionRow[]
 
   // 5) late fees in this week (for this trainer)

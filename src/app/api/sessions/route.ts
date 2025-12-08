@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import { pickPackageForSession } from '@/lib/package'
 import type { Package, Session } from '@/types'
 
 type DBPackageRow = {
@@ -17,7 +16,7 @@ type DBSessionRow = {
   date: string
   trainer_id: number
   client_id: number
-  package_id: number
+  package_id: number | null
 }
 
 type AddSessionsBody = {
@@ -34,7 +33,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    // 1) Fetch relevant packages for these clients & trainer
+    // 1) Fetch all packages for these clients & trainer (if any)
     const packagesRows = (await sql`
       SELECT id, client_id, trainer_id, sessions_purchased, start_date, sales_bonus
       FROM packages
@@ -42,14 +41,6 @@ export async function POST(req: NextRequest) {
         AND client_id = ANY(${clientIds})
     `) as DBPackageRow[]
 
-    // 2) Fetch all existing sessions for this trainer
-    const sessionsRows = (await sql`
-      SELECT id, date, trainer_id, client_id, package_id
-      FROM sessions
-      WHERE trainer_id = ${trainerId}
-    `) as DBSessionRow[]
-
-    // 3) Convert DB rows → app types so we can reuse pickPackageForSession
     const allPackages: Package[] = packagesRows.map((p) => {
       const startDateStr =
         typeof p.start_date === 'string'
@@ -69,38 +60,24 @@ export async function POST(req: NextRequest) {
       }
     })
 
-    const allSessions: Session[] = sessionsRows.map((s) => ({
-      id: s.id,
-      date:
-        typeof s.date === 'string'
-          ? s.date.slice(0, 10)
-          : new Date(s.date).toISOString().slice(0, 10),
-      trainerId: s.trainer_id,
-      clientId: s.client_id,
-      packageId: s.package_id,
-    }))
-
     const newSessions: Session[] = []
-    const failed: number[] = []
 
-    // 4) Try to create a session for each clientId
+    // 2) Create a session for each clientId
     for (const clientId of clientIds) {
-      const pkg = pickPackageForSession(
-        clientId,
-        trainerId,
-        date,
-        allPackages,
-        [...allSessions, ...newSessions],
-      )
+      // All packages for this client & trainer, sorted by start date
+      const clientPkgs = allPackages
+        .filter((p) => p.clientId === clientId && p.trainerId === trainerId)
+        .sort((a, b) => a.startDate.localeCompare(b.startDate))
 
-      if (!pkg) {
-        failed.push(clientId)
-        continue
-      }
+      // If they have *any* package history, use the most recent package.
+      // This will keep using "the rate they were at before" and allows remaining to go negative when they run out.
+      // If they NEVER bought a package, we set packageId = null and treat it as single-class rate in the income calc.
+      const pkg = clientPkgs[clientPkgs.length - 1] ?? null
+      const packageId = pkg ? pkg.id : null
 
       const [inserted] = (await sql`
         INSERT INTO sessions (date, trainer_id, client_id, package_id)
-        VALUES (${date}, ${trainerId}, ${clientId}, ${pkg.id})
+        VALUES (${date}, ${trainerId}, ${clientId}, ${packageId})
         RETURNING id, date, trainer_id, client_id, package_id
       `) as DBSessionRow[]
 
@@ -114,11 +91,12 @@ export async function POST(req: NextRequest) {
         date: normalizedDate,
         trainerId: inserted.trainer_id,
         clientId: inserted.client_id,
-        packageId: inserted.package_id,
-      })
+        packageId: inserted.package_id, // may be null
+      } as Session)
     }
 
-    return NextResponse.json({ newSessions, failed })
+    // Keep 'failed' in response shape for compatibility, but it's always [] now
+    return NextResponse.json({ newSessions, failed: [] })
   } catch (err) {
     console.error('Error adding sessions', err)
     return NextResponse.json(

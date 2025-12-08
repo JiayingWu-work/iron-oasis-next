@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Client } from '../types'
 
 interface DailyEntryProps {
@@ -6,8 +6,6 @@ interface DailyEntryProps {
   onDateChange: (value: string) => void
   clients: Client[]
   onAddSessions: (date: string, clientIds: number[]) => void
-  noPackageClientIds: number[]
-  setNoPackageClientIds: React.Dispatch<React.SetStateAction<number[]>>
 }
 
 export default function DailyEntry({
@@ -15,21 +13,8 @@ export default function DailyEntry({
   onDateChange,
   clients,
   onAddSessions,
-  noPackageClientIds,
-  setNoPackageClientIds,
 }: DailyEntryProps) {
   const [selectedClientIds, setSelectedClientIds] = useState<number[]>([])
-
-  // TODO: create a reusable <AutoDismissAlert /> component to handle all alerts
-  useEffect(() => {
-    if (noPackageClientIds.length > 0) {
-      const timer = setTimeout(() => {
-        setNoPackageClientIds([])
-      }, 3000)
-
-      return () => clearTimeout(timer)
-    }
-  }, [noPackageClientIds, setNoPackageClientIds])
 
   const handleToggleClient = (id: number) => {
     setSelectedClientIds((prev) =>
@@ -73,7 +58,6 @@ export default function DailyEntry({
           ))}
         </div>
       )}
-
       <button
         className="primary-btn"
         onClick={handleSave}
@@ -81,15 +65,6 @@ export default function DailyEntry({
       >
         Save Classes
       </button>
-
-      {noPackageClientIds.length > 0 && (
-        <p className="warning-text">
-          No package left for:{' '}
-          {noPackageClientIds
-            .map((id) => clients.find((c) => c.id === id)?.name ?? id)
-            .join(', ')}
-        </p>
-      )}
     </div>
   )
 }

@@ -88,7 +88,7 @@ export function useWeeklyDashboardData({
       const pkgStats = clientPackages.map((p) => {
         const usedForPkg = allClientSessions.filter((s) => s.packageId === p.id)
           .length
-        const remainingForPkg = Math.max(p.sessionsPurchased - usedForPkg, 0)
+        const remainingForPkg = p.sessionsPurchased - usedForPkg
 
         return {
           pkg: p,
@@ -97,16 +97,19 @@ export function useWeeklyDashboardData({
         }
       })
 
+      // Packages that still have remaining > 0
       const activePkgs = pkgStats.filter((x) => x.remainingForPkg > 0)
 
-      let toDisplay: typeof pkgStats = []
-      if (activePkgs.length > 0) {
-        toDisplay = activePkgs
-      } else if (pkgStats.length > 0) {
-        toDisplay = pkgStats
-      }
+      // Decide which packages to display in the summary row
+      // - If there are active packages: show up to the last 2 active ones (old + new)
+      // - If no active packages but there is history: show ONLY the latest package
+      let displayPkgs: typeof pkgStats = []
 
-      const displayPkgs = toDisplay.slice(-2)
+      if (activePkgs.length > 0) {
+        displayPkgs = activePkgs.slice(-2)
+      } else if (pkgStats.length > 0) {
+        displayPkgs = [pkgStats[pkgStats.length - 1]]
+      }
 
       let packageDisplay = '0'
       let usedDisplay = '0'
@@ -122,6 +125,16 @@ export function useWeeklyDashboardData({
         usedDisplay = usedNums.join(' + ')
         remainingDisplay = remainingNums.join(' + ')
         totalRemaining = remainingNums.reduce((a, b) => a + b, 0)
+      } else if (clientPackages.length === 0) {
+        // Client has never bought a package, but might have sessions (drop-ins).
+        const lifetimeSessions = allClientSessions.length
+
+        if (lifetimeSessions > 0) {
+          packageDisplay = '0'
+          usedDisplay = String(lifetimeSessions)
+          remainingDisplay = String(-lifetimeSessions)
+          totalRemaining = -lifetimeSessions
+        }
       }
 
       return {
@@ -144,11 +157,13 @@ export function useWeeklyDashboardData({
 
     const grossWeeklyAmount = weeklySessions.reduce((sum, s) => {
       const pkg = packages.find((p) => p.id === s.packageId)
-      if (!pkg) return sum
-      const pricePerClass = getPricePerClass(
-        selectedTrainer.tier,
-        pkg.sessionsPurchased,
-      )
+
+      // If they have package history, use that package rate.
+      // If they never had any package (packageId is null), use single-class rate.
+      const pricePerClass = pkg
+        ? getPricePerClass(selectedTrainer.tier, pkg.sessionsPurchased)
+        : getPricePerClass(selectedTrainer.tier, 1)
+
       return sum + pricePerClass
     }, 0)
 
@@ -209,7 +224,7 @@ export function useWeeklyDashboardData({
       const pkg = packages.find((p) => p.id === s.packageId)
       const price = pkg
         ? getPricePerClass(selectedTrainer.tier, pkg.sessionsPurchased)
-        : 0
+        : getPricePerClass(selectedTrainer.tier, 1)
 
       return {
         id: s.id,
