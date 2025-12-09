@@ -5,7 +5,7 @@ import { formatDateToInput, shiftDateByDays } from '@/lib/date'
 import Sidebar from '@/components/SideBar'
 import DashboardHeader from '@/components/DashboardHeader'
 import WeeklyDashboard from '@/components/WeeklyDashboard'
-import DailyEntry from '@/components/DailyEntry'
+import AddClassesForm from '@/components/AddClassesForm'
 import AddPackageForm from '@/components/AddPackageForm'
 import AddLateFeeForm from '@/components/AddLateFeeForm'
 import {
@@ -78,7 +78,6 @@ export default function Dashboard() {
         selectedTrainerId={selectedTrainerId}
         onSelectTrainer={setSelectedTrainerId}
       />
-
       <div className="main">
         <DashboardHeader
           trainerName={selectedTrainer.name}
@@ -87,7 +86,6 @@ export default function Dashboard() {
           onPrev={handlePrevWeek}
           onNext={handleNextWeek}
         />
-
         <div className="main-grid">
           <section className="card summary-card">
             <WeeklyDashboard
@@ -103,9 +101,8 @@ export default function Dashboard() {
               onDeleteLateFee={deleteLateFee}
             />
           </section>
-
           <section className="card entry-card">
-            <DailyEntry
+            <AddClassesForm
               date={selectedDate}
               onDateChange={setSelectedDate}
               clients={clients}

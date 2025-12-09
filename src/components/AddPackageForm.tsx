@@ -29,7 +29,6 @@ export default function AddPackageForm({
   return (
     <div className="add">
       <h3 className="add-title">Add package</h3>
-
       <form className="add-form" onSubmit={handleSubmit}>
         <div className="field-row">
           <select
@@ -44,7 +43,6 @@ export default function AddPackageForm({
             ))}
           </select>
         </div>
-
         <div className="field-row">
           <input
             type="number"
@@ -61,7 +59,6 @@ export default function AddPackageForm({
             placeholder="Number of sessions (e.g. 14)"
           />
         </div>
-
         <div className="field-row">
           <input
             type="date"
@@ -69,7 +66,6 @@ export default function AddPackageForm({
             onChange={(e) => setStartDate(e.target.value)}
           />
         </div>
-
         <button
           className="primary-btn"
           type="submit"

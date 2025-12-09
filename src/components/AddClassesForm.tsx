@@ -1,19 +1,19 @@
 import { useState } from 'react'
 import type { Client } from '../types'
 
-interface DailyEntryProps {
+interface AddClassesFormProps {
   date: string
   onDateChange: (value: string) => void
   clients: Client[]
   onAddSessions: (date: string, clientIds: number[]) => void
 }
 
-export default function DailyEntry({
+export default function AddClassesForm({
   date,
   onDateChange,
   clients,
   onAddSessions,
-}: DailyEntryProps) {
+}: AddClassesFormProps) {
   const [selectedClientIds, setSelectedClientIds] = useState<number[]>([])
 
   const handleToggleClient = (id: number) => {
@@ -31,17 +31,13 @@ export default function DailyEntry({
   return (
     <div className="add-form">
       <h3 className="add-title">Add classes</h3>
-
       <div className="field-row">
-        {/* <label htmlFor="date">Date:</label> */}
         <input
-          // id="date"
           type="date"
           value={date}
           onChange={(e) => onDateChange(e.target.value)}
         />
       </div>
-
       {clients.length === 0 ? (
         <p className="hint">No clients for this trainer yet.</p>
       ) : (

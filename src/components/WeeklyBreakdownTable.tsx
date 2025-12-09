@@ -66,14 +66,12 @@ export default function WeeklyBreakdownTable({
                   onClick={() => handleDelete('session', row.id as number)}
                 />
               )}
-
               {row.type === 'package' && (
                 <DeleteButton
                   deleting={deleting}
                   onClick={() => handleDelete('package', row.id as number)}
                 />
               )}
-
               {row.type === 'lateFee' && (
                 <DeleteButton
                   deleting={deleting}

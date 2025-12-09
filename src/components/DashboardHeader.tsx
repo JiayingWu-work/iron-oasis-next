@@ -21,7 +21,6 @@ export default function DashboardHeader({
           Trainer: <strong>{trainerName}</strong> · Week {weekStart} → {weekEnd}
         </p>
       </div>
-
       <div className="week-nav">
         <button className="week-btn" onClick={onPrev}>
           ◀ Previous week

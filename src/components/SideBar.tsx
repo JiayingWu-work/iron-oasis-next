@@ -17,7 +17,6 @@ export default function Sidebar({
         <h1>Iron Oasis</h1>
         <p className="sidebar-subtitle">Class Tracker MVP</p>
       </div>
-
       <div className="sidebar-section">
         <h3>Forms</h3>
         <button className="sidebar-btn" disabled>
@@ -28,7 +27,6 @@ export default function Sidebar({
         </button>
         <p className="sidebar-hint">MVP: forms coming later</p>
       </div>
-
       <div className="sidebar-section">
         <h3>Trainers</h3>
         <ul className="trainer-list">
