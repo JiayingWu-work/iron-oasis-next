@@ -1,8 +1,10 @@
 import type { Client, Session, Package, Trainer, LateFee } from '../types'
 import { useWeeklyDashboardData } from '@/hooks/useWeeklyDashboardData'
-import WeeklyClientTable from '@/components/WeeklyClientTable'
-import WeeklyIncomeSummary from '@/components/WeeklyIncomeSummary'
-import WeeklyBreakdownTable from '@/components/WeeklyBreakdownTable'
+import {
+  WeeklyBreakdownTable,
+  WeeklyClientTable,
+  WeeklyIncomeSummary,
+} from '@/components'
 
 interface WeeklyDashboardProps {
   clients: Client[]

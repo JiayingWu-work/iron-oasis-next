@@ -1,16 +1,16 @@
 import type { Trainer } from '@/types'
 
-interface SidebarProps {
+interface SideBarProps {
   trainers: Trainer[]
   selectedTrainerId: number | null
   onSelectTrainer: (id: number) => void
 }
 
-export default function Sidebar({
+export default function SideBar({
   trainers,
   selectedTrainerId,
   onSelectTrainer,
-}: SidebarProps) {
+}: SideBarProps) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">

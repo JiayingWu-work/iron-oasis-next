@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
-import DeleteButton from './ui/DeleteButton'
+import { DeleteButton } from '@/components'
 
 interface WeeklyBreakdownTableProps {
   rows: WeeklyBreakdownRow[]

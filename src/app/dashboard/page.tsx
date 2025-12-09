@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { formatDateToInput, shiftDateByDays } from '@/lib/date'
-import Sidebar from '@/components/SideBar'
-import DashboardHeader from '@/components/DashboardHeader'
-import WeeklyDashboard from '@/components/WeeklyDashboard'
-import AddClassesForm from '@/components/AddClassesForm'
-import AddPackageForm from '@/components/AddPackageForm'
-import AddLateFeeForm from '@/components/AddLateFeeForm'
+import {
+  DashboardHeader,
+  WeeklyDashboard,
+  AddClassesForm,
+  AddPackageForm,
+  AddLateFeeForm,
+  SideBar,
+} from '@/components'
 import {
   useTrainerSelection,
   useWeeklyState,
@@ -73,7 +75,7 @@ export default function Dashboard() {
 
   return (
     <div className="app">
-      <Sidebar
+      <SideBar
         trainers={trainers}
         selectedTrainerId={selectedTrainerId}
         onSelectTrainer={setSelectedTrainerId}
