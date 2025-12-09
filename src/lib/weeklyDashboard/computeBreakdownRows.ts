@@ -1,5 +1,11 @@
-// src/lib/weeklyDashboard/computeBreakdownRows.ts
-import type { Client, Package, Session, LateFee, Trainer } from '@/types'
+import type {
+  Client,
+  Package,
+  Session,
+  LateFee,
+  Trainer,
+  TrainingMode,
+} from '@/types'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
 import { getPricePerClass } from '@/lib/pricing'
 
@@ -16,7 +22,12 @@ export function computeBreakdownRows(
 
   const weeklyPackageRows: WeeklyBreakdownRow[] = weeklyPackages.map((p) => {
     const client = clients.find((c) => c.id === p.clientId)
-    const pricePerClass = getPricePerClass(trainerTier, p.sessionsPurchased)
+    const mode: TrainingMode = p.mode ?? client?.mode ?? '1v1'
+    const pricePerClass = getPricePerClass(
+      trainerTier,
+      p.sessionsPurchased,
+      mode,
+    )
     const totalSale = pricePerClass * p.sessionsPurchased
 
     return {
@@ -49,10 +60,16 @@ export function computeBreakdownRows(
       ? packages.find((p) => p.id === s.packageId)
       : undefined
 
+    let mode: TrainingMode = s.mode ?? directPkg?.mode ?? client?.mode ?? '1v1'
+
     let pricePerClass: number
 
     if (directPkg) {
-      pricePerClass = getPricePerClass(trainerTier, directPkg.sessionsPurchased)
+      pricePerClass = getPricePerClass(
+        trainerTier,
+        directPkg.sessionsPurchased,
+        mode,
+      )
     } else {
       // no packageId: use last package rate if client has any history, else single-class
       const clientPackages = packages
@@ -62,9 +79,15 @@ export function computeBreakdownRows(
       const lastPkg = clientPackages[clientPackages.length - 1]
 
       if (lastPkg) {
-        pricePerClass = getPricePerClass(trainerTier, lastPkg.sessionsPurchased)
+        mode = s.mode ?? lastPkg.mode ?? client?.mode ?? '1v1'
+        pricePerClass = getPricePerClass(
+          trainerTier,
+          lastPkg.sessionsPurchased,
+          mode,
+        )
       } else {
-        pricePerClass = getPricePerClass(trainerTier, 1)
+        mode = s.mode ?? client?.mode ?? '1v1'
+        pricePerClass = getPricePerClass(trainerTier, 1, mode)
       }
     }
 

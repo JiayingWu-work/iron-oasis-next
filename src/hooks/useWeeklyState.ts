@@ -65,6 +65,7 @@ export function useWeeklyState(
           id: c.id,
           name: c.name,
           trainerId: c.trainer_id,
+           mode: c.mode ?? '1v1',
         })),
       )
 
@@ -79,6 +80,7 @@ export function useWeeklyState(
             p.sales_bonus === null || p.sales_bonus === undefined
               ? undefined
               : Number(p.sales_bonus),
+          mode: p.mode ?? '1v1', 
         })),
       )
 
@@ -89,6 +91,7 @@ export function useWeeklyState(
           trainerId: s.trainer_id,
           clientId: s.client_id,
           packageId: s.package_id,
+          mode: s.mode ?? '1v1',
         })),
       )
 

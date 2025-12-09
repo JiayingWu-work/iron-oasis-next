@@ -56,7 +56,6 @@ export default function AddPackageForm({
                 setSessionsPurchased(0)
                 return
               }
-              // Remove leading zeros
               setSessionsPurchased(num)
             }}
             placeholder="Number of sessions (e.g. 14)"

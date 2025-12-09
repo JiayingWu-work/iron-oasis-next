@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
 
   // 2) clients for this trainer
   const clientRows = (await sql`
-    SELECT id, name, trainer_id
+    SELECT id, name, trainer_id, mode
     FROM clients
     WHERE trainer_id = ${trainerId}
     ORDER BY name
@@ -73,7 +73,8 @@ export async function GET(req: NextRequest) {
                trainer_id,
                sessions_purchased,
                start_date,
-               sales_bonus
+               sales_bonus,
+               mode
         FROM packages
         WHERE client_id = ANY(${clientIds})
       `) as ApiPackage[])
@@ -85,7 +86,8 @@ export async function GET(req: NextRequest) {
            date,
            trainer_id,
            client_id,
-           package_id
+           package_id,
+           mode
     FROM sessions
     WHERE trainer_id = ${trainerId}
     ORDER BY date ASC, id ASC

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import type { Package, Session } from '@/types'
+import type { Package, Session, TrainingMode } from '@/types'
 import { ApiPackage, ApiSession } from '@/types/api'
 
 type AddSessionsBody = {
@@ -19,7 +19,13 @@ export async function POST(req: NextRequest) {
 
     // 1) Fetch all packages for these clients & trainer (if any)
     const packagesRows = (await sql`
-      SELECT id, client_id, trainer_id, sessions_purchased, start_date, sales_bonus
+      SELECT id,
+             client_id,
+             trainer_id,
+             sessions_purchased,
+             start_date,
+             sales_bonus,
+             mode
       FROM packages
       WHERE trainer_id = ${trainerId}
         AND client_id = ANY(${clientIds})
@@ -41,8 +47,20 @@ export async function POST(req: NextRequest) {
           p.sales_bonus === null || p.sales_bonus === undefined
             ? undefined
             : Number(p.sales_bonus),
+        mode: p.mode ?? '1v1',
       }
     })
+
+    const clientModeRows = (await sql`
+      SELECT id, mode
+      FROM clients
+      WHERE id = ANY(${clientIds})
+    `) as { id: number; mode: TrainingMode }[]
+
+    const clientModeMap = new Map<number, TrainingMode>()
+    for (const r of clientModeRows) {
+      clientModeMap.set(r.id, r.mode ?? '1v1')
+    }
 
     const newSessions: Session[] = []
 
@@ -58,11 +76,12 @@ export async function POST(req: NextRequest) {
       // If they NEVER bought a package, we set packageId = null and treat it as single-class rate in the income calc.
       const pkg = clientPkgs[clientPkgs.length - 1] ?? null
       const packageId = pkg ? pkg.id : null
+      const clientMode = clientModeMap.get(clientId) ?? '1v1'
 
       const [inserted] = (await sql`
-        INSERT INTO sessions (date, trainer_id, client_id, package_id)
-        VALUES (${date}, ${trainerId}, ${clientId}, ${packageId})
-        RETURNING id, date, trainer_id, client_id, package_id
+        INSERT INTO sessions (date, trainer_id, client_id, package_id, mode)
+        VALUES (${date}, ${trainerId}, ${clientId}, ${packageId}, ${clientMode})
+        RETURNING id, date, trainer_id, client_id, package_id, mode
       `) as ApiSession[]
 
       const normalizedDate =
@@ -76,10 +95,10 @@ export async function POST(req: NextRequest) {
         trainerId: inserted.trainer_id,
         clientId: inserted.client_id,
         packageId: inserted.package_id, // may be null
+        mode: inserted.mode ?? clientMode,
       } as Session)
     }
 
-    // Keep 'failed' in response shape for compatibility, but it's always [] now
     return NextResponse.json({ newSessions, failed: [] })
   } catch (err) {
     console.error('Error adding sessions', err)

@@ -1,8 +1,16 @@
-import type { Package, Session, LateFee, Trainer } from '@/types'
+import type {
+  Package,
+  Session,
+  LateFee,
+  Trainer,
+  TrainingMode,
+  Client,
+} from '@/types'
 import type { WeeklyIncomeSummary } from '@/hooks/useWeeklyDashboardData'
 import { getPricePerClass } from '@/lib/pricing'
 
 export function computeIncomeSummary(
+  clients: Client[],
   packages: Package[],
   weeklySessions: Session[],
   weeklyPackages: Package[],
@@ -18,11 +26,18 @@ export function computeIncomeSummary(
       ? packages.find((p) => p.id === s.packageId)
       : undefined
 
+    const client = clients.find((c) => c.id === s.clientId)
+
+    let mode: TrainingMode = s.mode ?? directPkg?.mode ?? client?.mode ?? '1v1'
     let pricePerClass: number
 
     if (directPkg) {
       // Has a concrete package (including rebalanced ones)
-      pricePerClass = getPricePerClass(trainerTier, directPkg.sessionsPurchased)
+      pricePerClass = getPricePerClass(
+        trainerTier,
+        directPkg.sessionsPurchased,
+        mode,
+      )
     } else {
       // No packageId: either pure drop-in or historical package that got deleted.
       // If client has package history, use the most recent package’s rate.
@@ -33,10 +48,16 @@ export function computeIncomeSummary(
       const lastPkg = clientPackages[clientPackages.length - 1]
 
       if (lastPkg) {
-        pricePerClass = getPricePerClass(trainerTier, lastPkg.sessionsPurchased)
+        mode = s.mode ?? lastPkg.mode ?? client?.mode ?? '1v1'
+        pricePerClass = getPricePerClass(
+          trainerTier,
+          lastPkg.sessionsPurchased,
+          mode,
+        )
       } else {
         // Truly never bought a package → single-class rate
-        pricePerClass = getPricePerClass(trainerTier, 1)
+        mode = s.mode ?? client?.mode ?? '1v1'
+        pricePerClass = getPricePerClass(trainerTier, 1, mode)
       }
     }
 

@@ -80,6 +80,7 @@ export function useWeeklyDashboardData({
 
     // 2) Weekly income numbers
     const incomeSummary = computeIncomeSummary(
+      clients,
       packages,
       weeklySessions,
       weeklyPackages,

@@ -1,7 +1,10 @@
+import { TrainingMode } from '.'
+
 export type ApiClient = {
   id: number
   name: string
   trainer_id: number
+  mode: TrainingMode
 }
 
 export type ApiPackage = {
@@ -11,6 +14,7 @@ export type ApiPackage = {
   sessions_purchased: number
   start_date: string
   sales_bonus: number | null
+  mode: TrainingMode
 }
 
 export type ApiSession = {
@@ -19,6 +23,7 @@ export type ApiSession = {
   trainer_id: number
   client_id: number
   package_id: number | null
+  mode: TrainingMode
 }
 
 export type ApiLateFee = {

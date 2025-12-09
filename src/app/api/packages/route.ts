@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getPricePerClass } from '@/lib/pricing'
-import { ApiPackage, ApiSession } from '@/types/api'
+import type { ApiPackage, ApiSession } from '@/types/api'
+import type { TrainingMode } from '@/types'
 
 /**
  * After a new package is created, rebalance sessions across all packages for this client+trainer:
@@ -17,9 +18,16 @@ async function rebalanceClientPackages(
 ): Promise<void> {
   // All packages for this client+trainer, oldest → newest
   const pkgRows = (await sql`
-    SELECT id, client_id, trainer_id, sessions_purchased, start_date, sales_bonus
+    SELECT id,
+           client_id,
+           trainer_id,
+           sessions_purchased,
+           start_date,
+           sales_bonus,
+           mode
     FROM packages
-    WHERE trainer_id = ${trainerId} AND client_id = ${clientId}
+    WHERE trainer_id = ${trainerId}
+      AND client_id = ${clientId}
     ORDER BY start_date ASC, id ASC
   `) as ApiPackage[]
 
@@ -27,7 +35,12 @@ async function rebalanceClientPackages(
 
   // Sessions currently attached to some package (non-null)
   const sessionRows = (await sql`
-    SELECT id, date, trainer_id, client_id, package_id
+    SELECT id,
+           date,
+           trainer_id,
+           client_id,
+           package_id,
+           mode
     FROM sessions
     WHERE trainer_id = ${trainerId}
       AND client_id = ${clientId}
@@ -73,7 +86,12 @@ async function rebalanceClientPackages(
 
   // Drop-in sessions = no package_id (they should pay single-class until absorbed)
   const dropIns = (await sql`
-    SELECT id, date, trainer_id, client_id, package_id
+    SELECT id,
+           date,
+           trainer_id,
+           client_id,
+           package_id,
+           mode
     FROM sessions
     WHERE trainer_id = ${trainerId}
       AND client_id = ${clientId}
@@ -116,7 +134,6 @@ async function rebalanceClientPackages(
       }
       updatesByPkg.get(assignedPkgId)!.push(drop.id)
     }
-    // if assignedPkgId === null, all packages are fully used; this drop-in stays NULL
   }
 
   // Persist those updates
@@ -149,7 +166,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    const pricePerClass = getPricePerClass(trainerTier, sessionsPurchased)
+    // Look up the client's training mode (1v1 vs 1v2)
+    const [clientRow] = (await sql`
+      SELECT mode
+      FROM clients
+      WHERE id = ${clientId}
+    `) as { mode: TrainingMode }[]
+
+    const clientMode: TrainingMode = clientRow?.mode === '1v2' ? '1v2' : '1v1'
+
+    const pricePerClass = getPricePerClass(
+      trainerTier,
+      sessionsPurchased,
+      clientMode,
+    )
 
     let bonusRate = 0
     if (sessionsPurchased >= 13 && sessionsPurchased <= 20) bonusRate = 0.03
@@ -158,11 +188,31 @@ export async function POST(req: NextRequest) {
     const salesBonus =
       bonusRate > 0 ? pricePerClass * sessionsPurchased * bonusRate : 0
 
-    // Insert the new package
     const [row] = (await sql`
-      INSERT INTO packages (client_id, trainer_id, sessions_purchased, start_date, sales_bonus)
-      VALUES (${clientId}, ${trainerId}, ${sessionsPurchased}, ${startDate}, ${salesBonus})
-      RETURNING id, client_id, trainer_id, sessions_purchased, start_date, sales_bonus
+      INSERT INTO packages (
+        client_id,
+        trainer_id,
+        sessions_purchased,
+        start_date,
+        sales_bonus,
+        mode
+      )
+      VALUES (
+        ${clientId},
+        ${trainerId},
+        ${sessionsPurchased},
+        ${startDate},
+        ${salesBonus},
+        ${clientMode}
+      )
+      RETURNING
+        id,
+        client_id,
+        trainer_id,
+        sessions_purchased,
+        start_date,
+        sales_bonus,
+        mode
     `) as ApiPackage[]
 
     const normalizedStartDate =
@@ -183,6 +233,7 @@ export async function POST(req: NextRequest) {
         row.sales_bonus === null || row.sales_bonus === undefined
           ? undefined
           : Number(row.sales_bonus),
+      mode: row.mode ?? '1v1',
     })
   } catch (err) {
     console.error('Error adding package', err)

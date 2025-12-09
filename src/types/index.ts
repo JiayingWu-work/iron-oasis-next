@@ -1,3 +1,5 @@
+export type TrainingMode = '1v1' | '1v2'
+
 export interface Trainer {
   id: number
   name: string
@@ -8,6 +10,7 @@ export interface Client {
   id: number
   name: string
   trainerId: number
+  mode?: TrainingMode
 }
 
 export interface Package {
@@ -17,6 +20,7 @@ export interface Package {
   sessionsPurchased: number
   startDate: string // YYYY-MM-DD
   salesBonus?: number
+  mode?: TrainingMode
 }
 
 export interface Session {
@@ -25,6 +29,7 @@ export interface Session {
   trainerId: number
   clientId: number
   packageId: number | null
+  mode?: TrainingMode
 }
 
 export type LateFee = {
