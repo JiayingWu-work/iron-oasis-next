@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
+import DeleteButton from './ui/DeleteButton'
 
 interface WeeklyBreakdownTableProps {
   rows: WeeklyBreakdownRow[]
@@ -13,6 +15,20 @@ export default function WeeklyBreakdownTable({
   onDeletePackage,
   onDeleteLateFee,
 }: WeeklyBreakdownTableProps) {
+  const [deleting, setDeleting] = useState<boolean>(false)
+
+  async function handleDelete(type: string, id: number) {
+    if (deleting) return
+    setDeleting(true)
+    try {
+      if (type === 'session') await onDeleteSession(id)
+      if (type === 'package') await onDeletePackage(id)
+      if (type === 'lateFee') await onDeleteLateFee(id)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (rows.length === 0) {
     return <p className="hint">No records this week.</p>
   }
@@ -44,32 +60,25 @@ export default function WeeklyBreakdownTable({
             </td>
             <td>${row.amount.toFixed(1)}</td>
             <td>
-              {row.type === 'session' && onDeleteSession && (
-                <button
-                  type="button"
-                  className="secondary-btn"
-                  onClick={() => onDeleteSession(row.id as number)}
-                >
-                  Delete
-                </button>
+              {row.type === 'session' && (
+                <DeleteButton
+                  deleting={deleting}
+                  onClick={() => handleDelete('session', row.id as number)}
+                />
               )}
-              {row.type === 'package' && onDeletePackage && (
-                <button
-                  type="button"
-                  className="secondary-btn"
-                  onClick={() => onDeletePackage(row.id as number)}
-                >
-                  Delete
-                </button>
+
+              {row.type === 'package' && (
+                <DeleteButton
+                  deleting={deleting}
+                  onClick={() => handleDelete('package', row.id as number)}
+                />
               )}
-              {row.type === 'lateFee' && onDeleteLateFee && (
-                <button
-                  type="button"
-                  className="secondary-btn"
-                  onClick={() => onDeleteLateFee(row.id as number)}
-                >
-                  Delete
-                </button>
+
+              {row.type === 'lateFee' && (
+                <DeleteButton
+                  deleting={deleting}
+                  onClick={() => handleDelete('lateFee', row.id as number)}
+                />
               )}
             </td>
           </tr>
