@@ -8,6 +8,7 @@ import {
   AddClassesForm,
   AddPackageForm,
   AddLateFeeForm,
+  AddClientForm,
   SideBar,
 } from '@/components'
 import {
@@ -30,6 +31,8 @@ export default function Dashboard() {
     formatDateToInput(new Date()),
   )
 
+  const [isAddingClient, setIsAddingClient] = useState(false)
+
   const weeklyState = useWeeklyState(selectedTrainer, selectedDate)
   const {
     weekStart,
@@ -38,6 +41,7 @@ export default function Dashboard() {
     packages,
     sessions,
     lateFees,
+    setClients,
     setPackages,
     setSessions,
     setLateFees,
@@ -73,47 +77,68 @@ export default function Dashboard() {
     return <div className="app">Loading…</div>
   }
 
+  const handleClientCreated = (client: typeof clients[number]) => {
+    setClients((prev) =>
+      [...prev, client].sort((a, b) => a.name.localeCompare(b.name)),
+    )
+    setIsAddingClient(false)
+  }
+
   return (
     <div className="app">
       <SideBar
         trainers={trainers}
         selectedTrainerId={selectedTrainerId}
-        onSelectTrainer={setSelectedTrainerId}
+        onSelectTrainer={(id) => {
+          setSelectedTrainerId(id)
+          setIsAddingClient(false)
+        }}
+        onAddClient={() => setIsAddingClient(true)}
       />
       <div className="main">
-        <DashboardHeader
-          trainerName={selectedTrainer.name}
-          weekStart={weekStart}
-          weekEnd={weekEnd}
-          onPrev={handlePrevWeek}
-          onNext={handleNextWeek}
-        />
-        <div className="main-grid">
-          <section className="card summary-card">
-            <WeeklyDashboard
-              clients={clients}
-              packages={packages}
-              sessions={sessions}
-              lateFees={lateFees}
+        {isAddingClient ? (
+          <AddClientForm
+            trainers={trainers}
+            onCreated={handleClientCreated}
+            onCancel={() => setIsAddingClient(false)}
+          />
+        ) : (
+          <>
+            <DashboardHeader
+              trainerName={selectedTrainer.name}
               weekStart={weekStart}
               weekEnd={weekEnd}
-              selectedTrainer={selectedTrainer}
-              onDeleteSession={deleteSession}
-              onDeletePackage={deletePackage}
-              onDeleteLateFee={deleteLateFee}
+              onPrev={handlePrevWeek}
+              onNext={handleNextWeek}
             />
-          </section>
-          <section className="card entry-card">
-            <AddClassesForm
-              date={selectedDate}
-              onDateChange={setSelectedDate}
-              clients={clients}
-              onAddSessions={addSessions}
-            />
-            <AddPackageForm clients={clients} onAddPackage={addPackage} />
-            <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} />
-          </section>
-        </div>
+            <div className="main-grid">
+              <section className="card summary-card">
+                <WeeklyDashboard
+                  clients={clients}
+                  packages={packages}
+                  sessions={sessions}
+                  lateFees={lateFees}
+                  weekStart={weekStart}
+                  weekEnd={weekEnd}
+                  selectedTrainer={selectedTrainer}
+                  onDeleteSession={deleteSession}
+                  onDeletePackage={deletePackage}
+                  onDeleteLateFee={deleteLateFee}
+                />
+              </section>
+              <section className="card entry-card">
+                <AddClassesForm
+                  date={selectedDate}
+                  onDateChange={setSelectedDate}
+                  clients={clients}
+                  onAddSessions={addSessions}
+                />
+                <AddPackageForm clients={clients} onAddPackage={addPackage} />
+                <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} />
+              </section>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

@@ -4,12 +4,14 @@ interface SideBarProps {
   trainers: Trainer[]
   selectedTrainerId: number | null
   onSelectTrainer: (id: number) => void
+  onAddClient: () => void
 }
 
 export default function SideBar({
   trainers,
   selectedTrainerId,
   onSelectTrainer,
+  onAddClient,
 }: SideBarProps) {
   return (
     <aside className="sidebar">
@@ -18,14 +20,17 @@ export default function SideBar({
         <p className="sidebar-subtitle">Class Tracker MVP</p>
       </div>
       <div className="sidebar-section">
-        <h3>Forms</h3>
-        <button className="sidebar-btn" disabled>
+        <h3>FORMS</h3>
+        <button
+          type="button"
+          className="sidebar-action-btn"
+          onClick={onAddClient}
+        >
           + Add new client
         </button>
-        <button className="sidebar-btn" disabled>
+        <button type="button" className="sidebar-action-btn" disabled>
           + Add new trainer
         </button>
-        <p className="sidebar-hint">MVP: forms coming later</p>
       </div>
       <div className="sidebar-section">
         <h3>Trainers</h3>

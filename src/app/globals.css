@@ -135,8 +135,6 @@ h2 {
   font-size: 0.9rem;
 }
 
-/* Buttons */
-
 .primary-btn {
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
@@ -181,8 +179,6 @@ h2 {
     transform: rotate(360deg);
   }
 }
-
-/* Warning text */
 
 .warning-text {
   margin-top: 0.5rem;
@@ -243,7 +239,8 @@ h2 {
 
 .add-form select,
 .add-form input[type='number'],
-.add-form input[type='date'] {
+.add-form input[type='date'],
+.add-form input[type='text'] {
   width: 100%;
   padding: 0.35rem 0.4rem;
   border-radius: 0.45rem;
@@ -302,6 +299,35 @@ h2 {
   color: #6b7280;
 }
 
+.sidebar-action-btn {
+  width: 100%;
+  background: transparent;
+  color: white;
+  border: dashed;
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.05s ease;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-action-btn:hover {
+  background: #1f2937;
+  transform: translateY(-1px);
+}
+
+.sidebar-action-btn:active {
+  transform: translateY(0);
+}
+
+.sidebar-action-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .trainer-list {
   margin: 0;
   padding: 0;
@@ -338,4 +364,123 @@ h2 {
 .trainer-tier {
   font-size: 0.75rem;
   color: #d1d5db;
+}
+
+/* =========================================
+   Reusable Full-Page Form Layout 
+   ========================================= */
+
+.fullform-page {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.fullform-card {
+  width: 100%;
+  max-width: 800px;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 2rem 2.2rem;
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+  min-height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.fullform-title {
+  text-align: center;
+  margin: 0 0 1.5rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.fullform-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fullform-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fullform-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fullform-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.fullform-input,
+.fullform-select {
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.fullform-input:focus,
+.fullform-select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4);
+}
+
+.fullform-hints {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.fullform-hints li {
+  margin-bottom: 0.15rem;
+}
+
+.fullform-error {
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.fullform-actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.fullform-btn {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+}
+
+.fullform-btn-primary {
+  background: #111827;
+  color: white;
+}
+
+.fullform-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.fullform-btn-secondary {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #111827;
+}
+
+.fullform-btn-secondary:hover:not(:disabled) {
+  background: #f3f4f6;
 }
