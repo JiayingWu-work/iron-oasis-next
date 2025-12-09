@@ -21,9 +21,9 @@ export default function AddLateFeeForm({
   }
 
   return (
-    <div className="add-package">
-      <h3 className="add-package-title">Add $45 late fee </h3>
-      <form className="add-package-form" onSubmit={handleSubmit}>
+    <div className="add">
+      <h3 className="add-title">Add $45 late fee </h3>
+      <form className="add-form" onSubmit={handleSubmit}>
         <div className="field-row">
           <select
             value={clientId}

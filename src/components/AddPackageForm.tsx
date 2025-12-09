@@ -27,10 +27,10 @@ export default function AddPackageForm({
   }
 
   return (
-    <div className="add-package">
-      <h3 className="add-package-title">Add package</h3>
+    <div className="add">
+      <h3 className="add-title">Add package</h3>
 
-      <form className="add-package-form" onSubmit={handleSubmit}>
+      <form className="add-form" onSubmit={handleSubmit}>
         <div className="field-row">
           <select
             value={clientId}

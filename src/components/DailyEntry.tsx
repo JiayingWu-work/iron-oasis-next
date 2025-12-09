@@ -29,13 +29,13 @@ export default function DailyEntry({
   }
 
   return (
-    <div>
-      <h2>Daily Entry</h2>
+    <div className="add-form">
+      <h3 className="add-title">Add classes</h3>
 
       <div className="field-row">
-        <label htmlFor="date">Date:</label>
+        {/* <label htmlFor="date">Date:</label> */}
         <input
-          id="date"
+          // id="date"
           type="date"
           value={date}
           onChange={(e) => onDateChange(e.target.value)}
