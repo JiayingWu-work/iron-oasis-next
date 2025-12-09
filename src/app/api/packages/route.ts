@@ -173,7 +173,12 @@ export async function POST(req: NextRequest) {
       WHERE id = ${clientId}
     `) as { mode: TrainingMode }[]
 
-    const clientMode: TrainingMode = clientRow?.mode === '1v2' ? '1v2' : '1v1'
+    const clientMode: TrainingMode =
+      clientRow?.mode === '1v2'
+        ? '1v2'
+        : clientRow?.mode === '2v2'
+        ? '2v2'
+        : '1v1'
 
     const pricePerClass = getPricePerClass(
       trainerTier,

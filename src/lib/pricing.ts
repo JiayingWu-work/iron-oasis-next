@@ -50,5 +50,6 @@ export function getPricePerClass(
     return base + 20
   }
 
+  // '1v1' and '2v2' use the base rate
   return base
 }

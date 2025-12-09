@@ -57,11 +57,21 @@ export async function GET(req: NextRequest) {
 
   // 2) clients for this trainer
   const clientRows = (await sql`
-    SELECT id, name, trainer_id, mode
+    SELECT id,
+            name,
+            trainer_id,
+            secondary_trainer_id,
+            mode
     FROM clients
     WHERE trainer_id = ${trainerId}
+        OR secondary_trainer_id = ${trainerId}
+        OR id IN (
+            SELECT DISTINCT client_id
+            FROM sessions
+            WHERE trainer_id = ${trainerId}
+        )
     ORDER BY name
-  `) as ApiClient[]
+    `) as ApiClient[]
 
   const clientIds = clientRows.map((c) => c.id)
 
@@ -80,18 +90,18 @@ export async function GET(req: NextRequest) {
       `) as ApiPackage[])
     : []
 
-  // 4) all sessions for this trainer (not just this week – we need history for remaining calc)
+  // 4) all sessions for these clients (any trainer) – global usage
   const sessionRows = (await sql`
     SELECT id,
-           date,
-           trainer_id,
-           client_id,
-           package_id,
-           mode
+            date,
+            trainer_id,
+            client_id,
+            package_id,
+            mode
     FROM sessions
-    WHERE trainer_id = ${trainerId}
+    WHERE client_id = ANY(${clientIds})
     ORDER BY date ASC, id ASC
-  `) as ApiSession[]
+    `) as ApiSession[]
 
   // 5) late fees in this week (for this trainer)
   const lateFeeRows = (await sql`

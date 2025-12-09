@@ -56,8 +56,10 @@ export function useWeeklyDashboardData({
 }: UseWeeklyDashboardArgs) {
   return useMemo(() => {
     // Filter week-specific data once
-    const weeklySessions = sessions.filter((s) =>
-      isWithinRange(s.date, weekStart, weekEnd),
+    const weeklySessions = sessions.filter(
+      (s) =>
+        s.trainerId === selectedTrainer.id &&
+        isWithinRange(s.date, weekStart, weekEnd),
     )
 
     const weeklyPackages = packages.filter(
@@ -86,6 +88,7 @@ export function useWeeklyDashboardData({
       weeklyPackages,
       weeklyLateFees,
       selectedTrainer.tier,
+      selectedTrainer.id,
     )
 
     // 3) Breakdown rows

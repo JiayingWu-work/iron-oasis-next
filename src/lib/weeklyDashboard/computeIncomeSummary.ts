@@ -16,6 +16,7 @@ export function computeIncomeSummary(
   weeklyPackages: Package[],
   weeklyLateFees: LateFee[],
   trainerTier: Trainer['tier'],
+  trainerId: Trainer['id'],
 ): WeeklyIncomeSummary {
   const totalClassesThisWeek = weeklySessions.length
   const rate = totalClassesThisWeek > 12 ? 0.51 : 0.46
@@ -66,21 +67,20 @@ export function computeIncomeSummary(
 
   const classIncome = grossWeeklyAmount * rate
 
-  const bonusIncome = weeklyPackages.reduce(
-    (sum, p) => sum + (p.salesBonus ?? 0),
-    0,
-  )
+  // Only count bonus if this trainer sold the package
+  const bonusIncome = weeklyPackages.reduce((sum, p) => {
+    if (p.trainerId !== trainerId) return sum
+    return sum + (p.salesBonus ?? 0)
+  }, 0)
 
   const lateFeeIncome = weeklyLateFees.reduce((sum, f) => sum + f.amount, 0)
   const finalWeeklyIncome = classIncome + bonusIncome + lateFeeIncome
 
-  const incomeSummary: WeeklyIncomeSummary = {
+  return {
     totalClassesThisWeek,
     rate,
     bonusIncome,
     lateFeeIncome,
     finalWeeklyIncome,
   }
-
-  return incomeSummary
 }

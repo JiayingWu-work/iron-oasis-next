@@ -1,4 +1,4 @@
-export type TrainingMode = '1v1' | '1v2'
+export type TrainingMode = '1v1' | '1v2' | '2v2'
 
 export interface Trainer {
   id: number
@@ -9,7 +9,8 @@ export interface Trainer {
 export interface Client {
   id: number
   name: string
-  trainerId: number
+  trainerId: number // primary: package owner / bonus owner
+  secondaryTrainerId?: number // optional: additional trainer for 2v2
   mode?: TrainingMode
 }
 

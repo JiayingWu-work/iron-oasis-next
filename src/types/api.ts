@@ -4,6 +4,7 @@ export type ApiClient = {
   id: number
   name: string
   trainer_id: number
+  secondary_trainer_id: number | null
   mode: TrainingMode
 }
 

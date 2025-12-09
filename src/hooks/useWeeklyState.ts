@@ -65,7 +65,8 @@ export function useWeeklyState(
           id: c.id,
           name: c.name,
           trainerId: c.trainer_id,
-           mode: c.mode ?? '1v1',
+          secondaryTrainerId: c.secondary_trainer_id ?? undefined,
+          mode: c.mode ?? '1v1',
         })),
       )
 
