@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import type { Client } from '../../types'
+import { useState, type FormEvent } from 'react'
+import type { Client } from '@/types'
 import { formatDateToInput } from '@/lib/date'
+import styles from './EntryBarForms.module.css'
 
 interface AddLateFeeFormProps {
   clients: Client[]
@@ -14,18 +15,19 @@ export default function AddLateFeeForm({
   const [clientId, setClientId] = useState<number>()
   const [date, setDate] = useState(formatDateToInput(new Date()))
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!clientId || !date) return
     onAddLateFee(clientId, date)
   }
 
   return (
-    <div className="add">
-      <h3 className="add-title">Add $45 late fee </h3>
-      <form className="add-form" onSubmit={handleSubmit}>
-        <div className="field-row">
+    <section className={styles.section}>
+      <h3 className={styles.title}>Add $45 late fee</h3>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.fieldRow}>
           <select
+            className={styles.select}
             value={clientId}
             onChange={(e) => setClientId(Number(e.target.value))}
           >
@@ -37,21 +39,22 @@ export default function AddLateFeeForm({
             ))}
           </select>
         </div>
-        <div className="field-row">
+        <div className={styles.fieldRow}>
           <input
             type="date"
+            className={styles.input}
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
         <button
-          className="primary-btn"
+          className={styles.primaryButton}
           type="submit"
           disabled={!clientId || !date}
         >
           Add late fee
         </button>
       </form>
-    </div>
+    </section>
   )
 }

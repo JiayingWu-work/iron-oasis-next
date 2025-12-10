@@ -23,7 +23,6 @@ export default function DashboardHeader({
           Trainer: <strong>{trainerName}</strong> · Week {weekStart} → {weekEnd}
         </p>
       </div>
-
       <div className={styles.weekNav}>
         <button className={styles.weekBtn} onClick={onPrev}>
           <span className={styles.icon}>◀</span>

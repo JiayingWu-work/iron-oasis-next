@@ -32,54 +32,6 @@ h2 {
   font-size: 1.15rem;
 }
 
-.field-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.field-row input[type='date'],
-.field-row select {
-  padding: 0.25rem 0.4rem;
-  font-size: 0.9rem;
-}
-
-.hint {
-  margin-bottom: 0.5rem;
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-
-.client-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.client-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.primary-btn {
-  padding: 0.4rem 0.9rem;
-  border-radius: 999px;
-  border: none;
-  background: #111827;
-  color: #ffffff;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.primary-btn:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
 .secondary-btn {
   padding: 0.3rem 0.7rem;
   border-radius: 999px;
@@ -108,12 +60,6 @@ h2 {
   to {
     transform: rotate(360deg);
   }
-}
-
-.warning-text {
-  margin-top: 0.5rem;
-  color: #b91c1c;
-  font-size: 0.85rem;
 }
 
 /* -----------------------------
@@ -146,36 +92,12 @@ h2 {
   font-weight: 600;
 }
 
-/* -----------------------------
-   Add forms
------------------------------ */
+/* Helper text */
 
-.add {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.add-title {
+.hint {
   margin: 0 0 0.5rem;
-  font-size: 0.95rem;
-}
-
-.add-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.add-form select,
-.add-form input[type='number'],
-.add-form input[type='date'],
-.add-form input[type='text'] {
-  width: 100%;
-  padding: 0.35rem 0.4rem;
-  border-radius: 0.45rem;
-  border: 1px solid #d1d5db;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  color: #6b7280;
 }
 
 /* =========================================

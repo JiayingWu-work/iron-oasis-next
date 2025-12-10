@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import type { Client } from '../../types'
+import { useState, type FormEvent } from 'react'
+import type { Client } from '@/types'
 import { formatDateToInput } from '@/lib/date'
+import styles from './EntryBarForms.module.css'
 
 interface AddPackageFormProps {
   clients: Client[]
@@ -19,7 +20,7 @@ export default function AddPackageForm({
   const [sessionsPurchased, setSessionsPurchased] = useState(0)
   const [startDate, setStartDate] = useState(formatDateToInput(new Date()))
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!clientId || sessionsPurchased <= 0) return
     onAddPackage(clientId, sessionsPurchased, startDate)
@@ -27,11 +28,12 @@ export default function AddPackageForm({
   }
 
   return (
-    <div className="add">
-      <h3 className="add-title">Add package</h3>
-      <form className="add-form" onSubmit={handleSubmit}>
-        <div className="field-row">
+    <section className={styles.section}>
+      <h3 className={styles.title}>Add package</h3>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.fieldRow}>
           <select
+            className={styles.select}
             value={clientId}
             onChange={(e) => setClientId(Number(e.target.value))}
           >
@@ -43,9 +45,10 @@ export default function AddPackageForm({
             ))}
           </select>
         </div>
-        <div className="field-row">
+        <div className={styles.fieldRow}>
           <input
             type="number"
+            className={styles.input}
             value={sessionsPurchased === 0 ? '' : sessionsPurchased}
             onChange={(e) => {
               const raw = e.target.value
@@ -59,21 +62,22 @@ export default function AddPackageForm({
             placeholder="Number of sessions (e.g. 14)"
           />
         </div>
-        <div className="field-row">
+        <div className={styles.fieldRow}>
           <input
             type="date"
+            className={styles.input}
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
         </div>
         <button
-          className="primary-btn"
+          className={styles.primaryButton}
           type="submit"
           disabled={!clientId || sessionsPurchased <= 0}
         >
           Add package
         </button>
       </form>
-    </div>
+    </section>
   )
 }

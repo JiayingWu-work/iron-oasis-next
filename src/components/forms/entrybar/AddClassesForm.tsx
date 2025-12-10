@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import type { Client } from '../../types'
+import type { Client } from '@/types'
+import styles from './EntryBarForms.module.css'
 
 interface AddClassesFormProps {
   date: string
@@ -29,21 +30,22 @@ export default function AddClassesForm({
   }
 
   return (
-    <div className="add-form">
-      <h3 className="add-title">Add classes</h3>
-      <div className="field-row">
+    <section className={`${styles.section} ${styles.sectionFirst}`}>
+      <h3 className={styles.title}>Add classes</h3>
+      <div className={styles.fieldRow}>
         <input
           type="date"
           value={date}
           onChange={(e) => onDateChange(e.target.value)}
+          className={styles.input}
         />
       </div>
       {clients.length === 0 ? (
-        <p className="hint">No clients for this trainer yet.</p>
+        <p className={styles.hint}>No clients for this trainer yet.</p>
       ) : (
-        <div className="client-list">
+        <div className={styles.clientList}>
           {clients.map((client) => (
-            <label key={client.id} className="client-item">
+            <label key={client.id} className={styles.clientItem}>
               <input
                 type="checkbox"
                 checked={selectedClientIds.includes(client.id)}
@@ -55,12 +57,12 @@ export default function AddClassesForm({
         </div>
       )}
       <button
-        className="primary-btn"
+        className={styles.primaryButton}
         onClick={handleSave}
         disabled={selectedClientIds.length === 0}
       >
         Save Classes
       </button>
-    </div>
+    </section>
   )
 }

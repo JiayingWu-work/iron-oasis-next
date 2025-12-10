@@ -1,0 +1,102 @@
+.section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.sectionFirst {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Title */
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Form layout */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Rows & controls */
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.45rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4);
+}
+
+/* Helper text */
+
+.hint {
+  margin: 8 0 4 0rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Client list */
+
+.clientList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  /* TODO: ask which one prefer 
+  max-height: 180px;
+  overflow-y: auto; */
+}
+
+.clientItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Primary button */
+
+.primaryButton {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: none;
+  background: #111827;
+  color: #ffffff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: #020617;
+}
+
+.primaryButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
