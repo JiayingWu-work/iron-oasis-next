@@ -1,4 +1,4 @@
-import styles from './DashboardHeader.module.css'
+import styles from './dashboard-header.module.css'
 
 interface DashboardHeaderProps {
   trainerName: string

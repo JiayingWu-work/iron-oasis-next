@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { Client } from '@/types'
 import { formatDateToInput } from '@/lib/date'
-import styles from './EntryBarForms.module.css'
+import styles from './entry-bar.module.css'
 
 interface AddLateFeeFormProps {
   clients: Client[]

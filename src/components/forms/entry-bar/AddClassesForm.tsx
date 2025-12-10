@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Client } from '@/types'
-import styles from './EntryBarForms.module.css'
+import styles from './entry-bar.module.css'
 
 interface AddClassesFormProps {
   date: string
