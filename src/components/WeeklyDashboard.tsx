@@ -53,6 +53,7 @@ export default function WeeklyDashboard({
         rate={incomeSummary.rate}
         bonusIncome={incomeSummary.bonusIncome}
         lateFees={incomeSummary.lateFeeIncome}
+        backfillAdjustment={incomeSummary.backfillAdjustment}
         finalWeeklyIncome={incomeSummary.finalWeeklyIncome}
       />
       <h3 style={{ marginTop: '1.25rem', fontSize: '1rem' }}>

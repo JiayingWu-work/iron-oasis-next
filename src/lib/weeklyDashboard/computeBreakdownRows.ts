@@ -55,40 +55,27 @@ export function computeBreakdownRows(
   const weeklySessionRows: WeeklyBreakdownRow[] = weeklySessions.map((s) => {
     const client = clients.find((c) => c.id === s.clientId)
 
-    // 1) direct package if present
+    // Try direct package match first (normal case)
     const directPkg = s.packageId
       ? packages.find((p) => p.id === s.packageId)
       : undefined
 
     let mode: TrainingMode = s.mode ?? directPkg?.mode ?? client?.mode ?? '1v1'
-
     let pricePerClass: number
 
-    if (directPkg) {
+    const isPrePackageSession =
+      directPkg !== undefined && s.date < directPkg.startDate
+
+    if (directPkg && !isPrePackageSession) {
       pricePerClass = getPricePerClass(
         trainerTier,
         directPkg.sessionsPurchased,
         mode,
       )
     } else {
-      // no packageId: use last package rate if client has any history, else single-class
-      const clientPackages = packages
-        .filter((p) => p.clientId === s.clientId)
-        .sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id - b.id)
-
-      const lastPkg = clientPackages[clientPackages.length - 1]
-
-      if (lastPkg) {
-        mode = s.mode ?? lastPkg.mode ?? client?.mode ?? '1v1'
-        pricePerClass = getPricePerClass(
-          trainerTier,
-          lastPkg.sessionsPurchased,
-          mode,
-        )
-      } else {
-        mode = s.mode ?? client?.mode ?? '1v1'
-        pricePerClass = getPricePerClass(trainerTier, 1, mode)
-      }
+      // No packageId: always treat as pure drop-in at the single-class rate.
+      mode = s.mode ?? client?.mode ?? '1v1'
+      pricePerClass = getPricePerClass(trainerTier, 1, mode)
     }
 
     return {

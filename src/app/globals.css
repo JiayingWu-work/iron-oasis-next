@@ -484,3 +484,29 @@ h2 {
 .fullform-btn-secondary:hover:not(:disabled) {
   background: #f3f4f6;
 }
+
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-bubble {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  position: absolute;
+  top: -10px;
+  left: 130%;
+  padding: 8px 10px;
+  width: 250px;
+  background: #272525;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  z-index: 999;
+}
+
+.tooltip-container:hover .tooltip-bubble {
+  visibility: visible;
+  opacity: 1;
+}

@@ -24,6 +24,7 @@ export interface WeeklyIncomeSummary {
   rate: number
   bonusIncome: number
   lateFeeIncome: number
+  backfillAdjustment: number
   finalWeeklyIncome: number
 }
 
@@ -89,6 +90,7 @@ export function useWeeklyDashboardData({
       weeklyLateFees,
       selectedTrainer.tier,
       selectedTrainer.id,
+      sessions,
     )
 
     // 3) Breakdown rows
