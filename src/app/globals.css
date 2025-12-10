@@ -17,45 +17,6 @@ body {
 }
 
 /* -----------------------------
-   Dashboard header & week nav
------------------------------ */
-
-.main-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.main-header h2 {
-  margin: 0;
-  font-size: 1.3rem;
-}
-
-.main-subtitle {
-  margin-top: 0.25rem;
-  font-size: 0.9rem;
-  color: #4b5563;
-}
-
-.week-nav {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.week-btn {
-  padding: 0.3rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  background: #f9fafb;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.week-btn:hover {
-  background: #e5e7eb;
-}
-
-/* -----------------------------
    Cards & shared UI elements
 ----------------------------- */
 

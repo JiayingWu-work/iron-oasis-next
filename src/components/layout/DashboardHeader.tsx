@@ -1,3 +1,5 @@
+import styles from './DashboardHeader.module.css'
+
 interface DashboardHeaderProps {
   trainerName: string
   weekStart: string
@@ -14,19 +16,22 @@ export default function DashboardHeader({
   onNext,
 }: DashboardHeaderProps) {
   return (
-    <header className="main-header">
+    <header className={styles.header}>
       <div>
-        <h2>Dashboard</h2>
-        <p className="main-subtitle">
+        <h2 className={styles.title}>Dashboard</h2>
+        <p className={styles.subtitle}>
           Trainer: <strong>{trainerName}</strong> · Week {weekStart} → {weekEnd}
         </p>
       </div>
-      <div className="week-nav">
-        <button className="week-btn" onClick={onPrev}>
-          ◀ Previous week
+
+      <div className={styles.weekNav}>
+        <button className={styles.weekBtn} onClick={onPrev}>
+          <span className={styles.icon}>◀</span>
+          <span className={styles.label}>Previous week</span>
         </button>
-        <button className="week-btn" onClick={onNext}>
-          Next week ▶
+        <button className={styles.weekBtn} onClick={onNext}>
+          <span className={styles.icon}>▶</span>
+          <span className={styles.label}>Next week</span>
         </button>
       </div>
     </header>

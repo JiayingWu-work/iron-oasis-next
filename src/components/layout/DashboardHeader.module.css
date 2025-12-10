@@ -1,0 +1,82 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.weekNav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.weekBtn {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.weekBtn:hover {
+  background: #f3f4f6;
+}
+
+.icon {
+  font-size: 0.95rem;
+}
+
+.label {
+  margin-left: 0.4rem;
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .title {
+    margin: 0;
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+
+  .weekNav {
+    gap: 0.4rem;
+  }
+
+  .weekBtn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+  }
+
+  .icon {
+    font-size: 0.8rem;
+  }
+
+  .label {
+    display: none;
+  }
+}
