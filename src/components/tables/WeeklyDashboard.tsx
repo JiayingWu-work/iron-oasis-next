@@ -1,4 +1,4 @@
-import type { Client, Session, Package, Trainer, LateFee } from '../types'
+import type { Client, Session, Package, Trainer, LateFee } from '../../types'
 import { useWeeklyDashboardData } from '@/hooks/useWeeklyDashboardData'
 import {
   WeeklyBreakdownTable,

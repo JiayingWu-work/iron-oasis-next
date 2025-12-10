@@ -1,7 +1,3 @@
-/* -----------------------------
-   Global base styles
------------------------------ */
-
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
@@ -18,33 +14,6 @@
 
 body {
   margin: 0;
-}
-
-/* -----------------------------
-   Layout
------------------------------ */
-
-.app {
-  height: 100vh;
-  display: flex;
-  margin: 0 auto;
-  background: #e5e7eb;
-}
-
-.main {
-  flex: 1;
-  padding: 1.2rem 1.4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow-y: auto;
-}
-
-.main-grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 2fr 1fr; /* big summary, skinny entry */
-  gap: 1rem;
 }
 
 /* -----------------------------
@@ -90,12 +59,12 @@ body {
    Cards & shared UI elements
 ----------------------------- */
 
-.card {
+/* .card {
   background: #ffffff;
   border-radius: 0.75rem;
   padding: 1rem 1.25rem;
   box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
-}
+} */
 
 h2 {
   margin: 0 0 0.75rem;
@@ -246,124 +215,6 @@ h2 {
   border-radius: 0.45rem;
   border: 1px solid #d1d5db;
   font-size: 0.9rem;
-}
-
-/* -----------------------------
-   Sidebar
------------------------------ */
-
-.sidebar {
-  width: 260px;
-  padding: 1.2rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  background: #111827;
-  color: #f9fafb;
-}
-
-.sidebar-header h1 {
-  margin: 0;
-  font-size: 1.25rem;
-}
-
-.sidebar-subtitle {
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-.sidebar-section h3 {
-  margin: 0 0 0.5rem;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #d1d5db;
-}
-
-.sidebar-btn {
-  width: 100%;
-  padding: 0.35rem 0.5rem;
-  margin-bottom: 0.4rem;
-  border-radius: 0.4rem;
-  border: 1px dashed #4b5563;
-  background: transparent;
-  color: #e5e7eb;
-  font-size: 0.85rem;
-  cursor: not-allowed;
-}
-
-.sidebar-hint {
-  margin: 0;
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.sidebar-action-btn {
-  width: 100%;
-  background: transparent;
-  color: white;
-  border: dashed;
-  border-radius: 0.45rem;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.12s ease, transform 0.05s ease;
-  margin-bottom: 0.5rem;
-}
-
-.sidebar-action-btn:hover {
-  background: #1f2937;
-  transform: translateY(-1px);
-}
-
-.sidebar-action-btn:active {
-  transform: translateY(0);
-}
-
-.sidebar-action-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.trainer-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.trainer-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.35rem 0.45rem;
-  border-radius: 0.4rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background 0.12s ease, transform 0.05s ease;
-}
-
-.trainer-item:hover {
-  background: #1f2937;
-  transform: translateY(-1px);
-}
-
-.trainer-item--active {
-  background: #2563eb;
-}
-
-.trainer-name {
-  font-weight: 500;
-}
-
-.trainer-tier {
-  font-size: 0.75rem;
-  color: #d1d5db;
 }
 
 /* =========================================

@@ -10,6 +10,7 @@ import {
   AddLateFeeForm,
   AddClientForm,
   SideBar,
+  Card,
 } from '@/components'
 import {
   useTrainerSelection,
@@ -18,20 +19,21 @@ import {
   usePackageActions,
   useLateFeeActions,
 } from '@/hooks'
+import styles from './page.module.css'
 
 export default function Dashboard() {
+  const [selectedDate, setSelectedDate] = useState<string>(
+    formatDateToInput(new Date()),
+  )
+  const [isAddingClient, setIsAddingClient] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   const {
     trainers,
     selectedTrainerId,
     setSelectedTrainerId,
     selectedTrainer,
   } = useTrainerSelection()
-
-  const [selectedDate, setSelectedDate] = useState<string>(
-    formatDateToInput(new Date()),
-  )
-
-  const [isAddingClient, setIsAddingClient] = useState(false)
 
   const weeklyState = useWeeklyState(selectedTrainer, selectedDate)
   const {
@@ -74,7 +76,7 @@ export default function Dashboard() {
   }
 
   if (!selectedTrainer || selectedTrainerId == null) {
-    return <div className="app">Loading…</div>
+    return <div className={styles.app}>Loading…</div>
   }
 
   const handleClientCreated = (client: typeof clients[number]) => {
@@ -85,7 +87,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="app">
+    <div className={styles.app}>
       <SideBar
         trainers={trainers}
         selectedTrainerId={selectedTrainerId}
@@ -94,8 +96,10 @@ export default function Dashboard() {
           setIsAddingClient(false)
         }}
         onAddClient={() => setIsAddingClient(true)}
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
       />
-      <div className="main">
+      <div className={styles.main}>
         {isAddingClient ? (
           <AddClientForm
             trainers={trainers}
@@ -104,6 +108,19 @@ export default function Dashboard() {
           />
         ) : (
           <>
+            <button
+              className={styles.mobileMenuButton}
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                <path
+                  d="M3 6h18M3 12h18M3 18h18"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
             <DashboardHeader
               trainerName={selectedTrainer.name}
               weekStart={weekStart}
@@ -111,8 +128,8 @@ export default function Dashboard() {
               onPrev={handlePrevWeek}
               onNext={handleNextWeek}
             />
-            <div className="main-grid">
-              <section className="card summary-card">
+            <div className={styles.mainGrid}>
+              <Card>
                 <WeeklyDashboard
                   clients={clients}
                   packages={packages}
@@ -125,8 +142,8 @@ export default function Dashboard() {
                   onDeletePackage={deletePackage}
                   onDeleteLateFee={deleteLateFee}
                 />
-              </section>
-              <section className="card entry-card">
+              </Card>
+              <Card>
                 <AddClassesForm
                   date={selectedDate}
                   onDateChange={setSelectedDate}
@@ -135,7 +152,7 @@ export default function Dashboard() {
                 />
                 <AddPackageForm clients={clients} onAddPackage={addPackage} />
                 <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} />
-              </section>
+              </Card>
             </div>
           </>
         )}

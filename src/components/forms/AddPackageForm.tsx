@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Client } from '../types'
+import type { Client } from '../../types'
 import { formatDateToInput } from '@/lib/date'
 
 interface AddPackageFormProps {
