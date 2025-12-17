@@ -1,0 +1,99 @@
+/* ===========================================
+   Tables Module Styles
+   =========================================== */
+
+.table {
+  width: 100%;
+  margin-top: 0.5rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+  border: 1px solid #e5e7eb;
+  padding: 0.35rem 0.5rem;
+}
+
+.table thead {
+  background: #f9fafb;
+}
+
+.table th {
+  text-align: left;
+}
+
+.textRedRemaining {
+  color: #e31710;
+  font-weight: 600;
+}
+
+/* Helper text */
+
+.hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Weekly Income Summary */
+
+.incomeSummary {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+
+.incomeSummaryRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.breakdownTitle {
+  margin-top: 1.25rem;
+  font-size: 1rem;
+}
+
+/* Tooltip */
+
+.tooltipContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltipIcon {
+  position: absolute;
+  top: -8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  font-size: 8px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #374151;
+  cursor: pointer;
+}
+
+.tooltipBubble {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  position: absolute;
+  top: -10px;
+  left: 130%;
+  padding: 8px 10px;
+  width: 250px;
+  background: #272525;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  z-index: 999;
+}
+
+.tooltipContainer:hover .tooltipBubble {
+  visibility: visible;
+  opacity: 1;
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
 import { DeleteButton } from '@/components'
+import styles from './tables.module.css'
 
 interface WeeklyBreakdownTableProps {
   rows: WeeklyBreakdownRow[]
@@ -30,11 +31,11 @@ export default function WeeklyBreakdownTable({
   }
 
   if (rows.length === 0) {
-    return <p className="hint">No records this week.</p>
+    return <p className={styles.hint}>No records this week.</p>
   }
 
   return (
-    <table className="table">
+    <table className={styles.table}>
       <thead>
         <tr>
           <th>Date</th>

@@ -1,5 +1,5 @@
 import type { Trainer } from '@/types'
-import styles from './sidebar.module.css'
+import styles from './SideBar.module.css'
 
 interface SideBarProps {
   trainers: Trainer[]

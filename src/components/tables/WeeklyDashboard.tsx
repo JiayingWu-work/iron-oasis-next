@@ -5,6 +5,7 @@ import {
   WeeklyClientTable,
   WeeklyIncomeSummary,
 } from '@/components'
+import styles from './tables.module.css'
 
 interface WeeklyDashboardProps {
   clients: Client[]
@@ -44,7 +45,7 @@ export default function WeeklyDashboard({
   return (
     <div>
       <h2>Weekly Summary</h2>
-      <p className="hint">
+      <p className={styles.hint}>
         Week: {weekStart} → {weekEnd}
       </p>
       <WeeklyClientTable rows={clientRows} />
@@ -56,9 +57,7 @@ export default function WeeklyDashboard({
         backfillAdjustment={incomeSummary.backfillAdjustment}
         finalWeeklyIncome={incomeSummary.finalWeeklyIncome}
       />
-      <h3 style={{ marginTop: '1.25rem', fontSize: '1rem' }}>
-        Breakdown of the week
-      </h3>
+      <h3 className={styles.breakdownTitle}>Breakdown of the week</h3>
       <WeeklyBreakdownTable
         rows={breakdownRows}
         onDeleteSession={onDeleteSession}

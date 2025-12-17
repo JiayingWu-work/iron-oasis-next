@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Client, Trainer, TrainingMode } from '@/types'
+import styles from './fullpage-form.module.css'
 
 interface AddClientFormProps {
   trainers: Trainer[]
@@ -71,20 +72,20 @@ export default function AddClientForm({
   const secondaryOptions = trainers.filter((t) => t.id !== primaryTrainerId)
 
   return (
-    <div className="fullform-page">
-      <div className="fullform-card">
-        <h2 className="fullform-title">Add new client</h2>
-        <form className="fullform-form" onSubmit={handleSubmit}>
-          <div className="fullform-fields">
-            <div className="fullform-field">
-              <label className="fullform-label">Client name</label>
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <h2 className={styles.title}>Add new client</h2>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.fields}>
+            <div className={styles.field}>
+              <label className={styles.label}>Client name</label>
               <input
-                className="fullform-input"
+                className={styles.input}
                 placeholder="e.g. Angela Wang or Angela & Tom"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
-              <ul className="fullform-hints">
+              <ul className={styles.hints}>
                 <li>
                   For shared packages or 1v2 clients, use names like{' '}
                   <strong>Angela &amp; Tom</strong>.
@@ -95,12 +96,12 @@ export default function AddClientForm({
                 </li>
               </ul>
             </div>
-            <div className="fullform-field">
-              <label className="fullform-label">
+            <div className={styles.field}>
+              <label className={styles.label}>
                 Primary trainer (package owner)
               </label>
               <select
-                className="fullform-select"
+                className={styles.select}
                 value={primaryTrainerId}
                 onChange={(e) => {
                   const newId = Number(e.target.value)
@@ -116,10 +117,10 @@ export default function AddClientForm({
                 ))}
               </select>
             </div>
-            <div className="fullform-field">
-              <label className="fullform-label">Training mode</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Training mode</label>
               <select
-                className="fullform-select"
+                className={styles.select}
                 value={mode}
                 onChange={(e) => setMode(e.target.value as TrainingMode)}
               >
@@ -128,10 +129,10 @@ export default function AddClientForm({
                 <option value="2v2">2v2 (shared package)</option>
               </select>
             </div>
-            <div className="fullform-field">
-              <label className="fullform-label">Secondary trainer</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Secondary trainer</label>
               <select
-                className="fullform-select"
+                className={styles.select}
                 value={secondaryTrainerId}
                 onChange={(e) =>
                   setSecondaryTrainerId(
@@ -147,18 +148,18 @@ export default function AddClientForm({
                 ))}
               </select>
             </div>
-            {error && <p className="fullform-error">{error}</p>}
+            {error && <p className={styles.error}>{error}</p>}
           </div>
-          <div className="fullform-actions">
+          <div className={styles.actions}>
             <button
-              className="fullform-btn fullform-btn-primary"
+              className={`${styles.btn} ${styles.btnPrimary}`}
               disabled={saving || !name.trim() || !primaryTrainerId}
             >
               {saving ? 'Saving…' : 'Save client'}
             </button>
             <button
               type="button"
-              className="fullform-btn fullform-btn-secondary"
+              className={`${styles.btn} ${styles.btnSecondary}`}
               disabled={saving}
               onClick={onCancel}
             >
