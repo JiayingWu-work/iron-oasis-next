@@ -1,6 +1,10 @@
-import { useState, type FormEvent } from 'react'
+'use client'
+
+import { useState, type FormEvent, useMemo } from 'react'
 import type { Client } from '@/types'
 import { formatDateToInput } from '@/lib/date'
+import DatePicker from '@/components/ui/DatePicker/DatePicker'
+import Select from '@/components/ui/Select/Select'
 import styles from './entry-bar.module.css'
 
 interface AddLateFeeFormProps {
@@ -15,6 +19,11 @@ export default function AddLateFeeForm({
   const [clientId, setClientId] = useState<number>()
   const [date, setDate] = useState(formatDateToInput(new Date()))
 
+  const clientOptions = useMemo(
+    () => clients.map((c) => ({ value: c.id, label: c.name })),
+    [clients],
+  )
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!clientId || !date) return
@@ -26,26 +35,15 @@ export default function AddLateFeeForm({
       <h3 className={styles.title}>Add $45 late fee</h3>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.fieldRow}>
-          <select
-            className={styles.select}
+          <Select
             value={clientId}
-            onChange={(e) => setClientId(Number(e.target.value))}
-          >
-            <option value="">Select client…</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setClientId(Number(val))}
+            options={clientOptions}
+            placeholder="Select client..."
+          />
         </div>
         <div className={styles.fieldRow}>
-          <input
-            type="date"
-            className={styles.input}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <DatePicker value={date} onChange={setDate} />
         </div>
         <button
           className={styles.primaryButton}

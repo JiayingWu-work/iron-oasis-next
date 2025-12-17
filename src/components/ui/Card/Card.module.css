@@ -1,6 +1,16 @@
+/* ===========================================
+   Card - Modern Elevated Container
+   =========================================== */
+
 .card {
-  background: #ffffff;
-  border-radius: 0.75rem;
-  padding: 1rem 1.25rem;
-  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-light);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
 }

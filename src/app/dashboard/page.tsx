@@ -108,26 +108,29 @@ export default function Dashboard() {
           />
         ) : (
           <>
-            <button
-              className={styles.mobileMenuButton}
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
-                <path
-                  d="M3 6h18M3 12h18M3 18h18"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-            <DashboardHeader
-              trainerName={selectedTrainer.name}
-              weekStart={weekStart}
-              weekEnd={weekEnd}
-              onPrev={handlePrevWeek}
-              onNext={handleNextWeek}
-            />
+            <div className={styles.mobileHeaderRow}>
+              <button
+                className={styles.mobileMenuButton}
+                onClick={() => setIsMobileMenuOpen(true)}
+                aria-label="Open menu"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M3 6h18M3 12h18M3 18h18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+              <DashboardHeader
+                trainerName={selectedTrainer.name}
+                weekStart={weekStart}
+                weekEnd={weekEnd}
+                onPrev={handlePrevWeek}
+                onNext={handleNextWeek}
+              />
+            </div>
             <div className={styles.mainGrid}>
               <Card>
                 <WeeklyDashboard

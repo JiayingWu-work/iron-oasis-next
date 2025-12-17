@@ -12,4 +12,6 @@ export { default as DashboardHeader } from './layout/dashboard-header/DashboardH
 export { default as SideBar } from './layout/SideBar/SideBar'
 
 export { default as DeleteButton } from './ui/DeleteButton/DeleteButton'
+export { default as DatePicker } from './ui/DatePicker/DatePicker'
+export { default as Select } from './ui/Select/Select'
 export * from './ui/Card/Card'

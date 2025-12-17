@@ -41,7 +41,24 @@ export default function SideBar({
       <div className={overlayClass} onClick={onClose} />
       <aside className={sidebarClass}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Iron Oasis</h1>
+          <div className={styles.headerTop}>
+            <h1 className={styles.title}>Iron Oasis</h1>
+            <button
+              type="button"
+              className={styles.closeButton}
+              onClick={onClose}
+              aria-label="Close menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M6 6l12 12M6 18L18 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </div>
           <p className={styles.subtitle}>Class Tracker MVP</p>
         </div>
         <div>

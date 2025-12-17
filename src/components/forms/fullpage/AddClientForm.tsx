@@ -1,5 +1,8 @@
-import { useState } from 'react'
+'use client'
+
+import { useState, useMemo } from 'react'
 import type { Client, Trainer, TrainingMode } from '@/types'
+import Select from '@/components/ui/Select/Select'
 import styles from './fullpage-form.module.css'
 
 interface AddClientFormProps {
@@ -69,7 +72,36 @@ export default function AddClientForm({
     }
   }
 
-  const secondaryOptions = trainers.filter((t) => t.id !== primaryTrainerId)
+  const primaryTrainerOptions = useMemo(
+    () =>
+      trainers.map((t) => ({
+        value: t.id,
+        label: `${t.name} (Tier ${t.tier})`,
+      })),
+    [trainers],
+  )
+
+  const secondaryTrainerOptions = useMemo(
+    () => [
+      { value: '', label: 'None' },
+      ...trainers
+        .filter((t) => t.id !== primaryTrainerId)
+        .map((t) => ({
+          value: t.id,
+          label: `${t.name} (Tier ${t.tier})`,
+        })),
+    ],
+    [trainers, primaryTrainerId],
+  )
+
+  const modeOptions = useMemo(
+    () => [
+      { value: '1v1', label: '1v1 (private)' },
+      { value: '1v2', label: '1v2 (semi-private)' },
+      { value: '2v2', label: '2v2 (shared package)' },
+    ],
+    [],
+  )
 
   return (
     <div className={styles.page}>
@@ -100,60 +132,46 @@ export default function AddClientForm({
               <label className={styles.label}>
                 Primary trainer (package owner)
               </label>
-              <select
-                className={styles.select}
+              <Select
                 value={primaryTrainerId}
-                onChange={(e) => {
-                  const newId = Number(e.target.value)
+                onChange={(val) => {
+                  const newId = Number(val)
                   setPrimaryTrainerId(newId)
                   if (secondaryTrainerId === newId) setSecondaryTrainerId('')
                 }}
-              >
-                <option value="">Select trainer...</option>
-                {trainers.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} (Tier {t.tier})
-                  </option>
-                ))}
-              </select>
+                options={primaryTrainerOptions}
+                placeholder="Select trainer..."
+              />
             </div>
             <div className={styles.field}>
               <label className={styles.label}>Training mode</label>
-              <select
-                className={styles.select}
+              <Select
                 value={mode}
-                onChange={(e) => setMode(e.target.value as TrainingMode)}
-              >
-                <option value="1v1">1v1 (private)</option>
-                <option value="1v2">1v2 (semi-private)</option>
-                <option value="2v2">2v2 (shared package)</option>
-              </select>
+                onChange={(val) => setMode(val as TrainingMode)}
+                options={modeOptions}
+              />
             </div>
             <div className={styles.field}>
               <label className={styles.label}>Secondary trainer</label>
-              <select
-                className={styles.select}
+              <Select
                 value={secondaryTrainerId}
-                onChange={(e) =>
-                  setSecondaryTrainerId(
-                    e.target.value === '' ? '' : Number(e.target.value),
-                  )
+                onChange={(val) =>
+                  setSecondaryTrainerId(val === '' ? '' : Number(val))
                 }
-              >
-                <option value="">None</option>
-                {secondaryOptions.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} (Tier {t.tier})
-                  </option>
-                ))}
-              </select>
+                options={secondaryTrainerOptions}
+              />
             </div>
             {error && <p className={styles.error}>{error}</p>}
           </div>
           <div className={styles.actions}>
             <button
               className={`${styles.btn} ${styles.btnPrimary}`}
-              disabled={saving || !name.trim() || !primaryTrainerId}
+              disabled={
+                saving ||
+                !name.trim() ||
+                !primaryTrainerId ||
+                (mode === '2v2' && secondaryTrainerId === '')
+              }
             >
               {saving ? 'Saving…' : 'Save client'}
             </button>

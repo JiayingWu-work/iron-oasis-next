@@ -14,6 +14,12 @@ interface WeeklyClientTableProps {
   rows: WeeklyClientRow[]
 }
 
+function getRemainingClassName(remaining: number): string {
+  if (remaining <= 0) return styles.textRedRemaining
+  if (remaining <= 2) return styles.textYellowWarning
+  return ''
+}
+
 export default function WeeklyClientTable({ rows }: WeeklyClientTableProps) {
   return (
     <table className={styles.table}>
@@ -27,17 +33,20 @@ export default function WeeklyClientTable({ rows }: WeeklyClientTableProps) {
         </tr>
       </thead>
       <tbody>
-        {rows.map((row) => (
-          <tr key={row.clientId}>
-            <td>{row.clientName}</td>
-            <td>{row.packageDisplay}</td>
-            <td>{row.usedDisplay}</td>
-            <td className={row.totalRemaining <= 0 ? styles.textRedRemaining : ''}>
-              {row.remainingDisplay}
-            </td>
-            <td>{row.weekCount}</td>
-          </tr>
-        ))}
+        {rows.map((row) => {
+          const remainingClass = getRemainingClassName(row.totalRemaining)
+          return (
+            <tr key={row.clientId}>
+              <td className={remainingClass || undefined}>{row.clientName}</td>
+              <td>{row.packageDisplay}</td>
+              <td>{row.usedDisplay}</td>
+              <td className={remainingClass || undefined}>
+                {row.remainingDisplay}
+              </td>
+              <td>{row.weekCount}</td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   )
