@@ -44,70 +44,85 @@ export function useWeeklyState(
 
     // capture non-null id so TS is happy inside async fn
     const trainerId = selectedTrainer.id
+    const abortController = new AbortController()
 
     async function load() {
-      const res = await fetch(
-        `/api/trainer/${trainerId}/week?date=${selectedDate}`,
-      )
+      try {
+        const res = await fetch(
+          `/api/trainer/${trainerId}/week?date=${selectedDate}`,
+          { signal: abortController.signal },
+        )
 
-      if (!res.ok) {
-        console.error('Failed to load dashboard data')
-        return
+        if (!res.ok) {
+          console.error('Failed to load dashboard data')
+          return
+        }
+
+        const data: TrainerWeekResponse = await res.json()
+
+        // Check if this request is still relevant (trainer hasn't changed)
+        if (abortController.signal.aborted) return
+
+        setWeekStart(data.weekStart)
+        setWeekEnd(data.weekEnd)
+
+        setClients(
+          (data.clients as ApiClient[]).map((c) => ({
+            id: c.id,
+            name: c.name,
+            trainerId: c.trainer_id,
+            secondaryTrainerId: c.secondary_trainer_id ?? undefined,
+            mode: c.mode ?? '1v1',
+          })),
+        )
+
+        setPackages(
+          (data.packages as ApiPackage[]).map((p) => ({
+            id: p.id,
+            clientId: p.client_id,
+            trainerId: p.trainer_id,
+            sessionsPurchased: Number(p.sessions_purchased),
+            startDate: p.start_date.slice(0, 10),
+            salesBonus:
+              p.sales_bonus === null || p.sales_bonus === undefined
+                ? undefined
+                : Number(p.sales_bonus),
+            mode: p.mode ?? '1v1',
+          })),
+        )
+
+        setSessions(
+          (data.sessions as ApiSession[]).map((s) => ({
+            id: s.id,
+            date: s.date.slice(0, 10),
+            trainerId: s.trainer_id,
+            clientId: s.client_id,
+            packageId: s.package_id,
+            mode: s.mode ?? '1v1',
+          })),
+        )
+
+        setLateFees(
+          (data.lateFees ?? ([] as ApiLateFee[])).map((f) => ({
+            id: f.id,
+            clientId: f.client_id,
+            trainerId: f.trainer_id,
+            date: f.date.slice(0, 10),
+            amount: Number(f.amount),
+          })),
+        )
+      } catch (error) {
+        // Ignore abort errors - they're expected when trainer changes
+        if (error instanceof Error && error.name === 'AbortError') return
+        console.error('Failed to load dashboard data:', error)
       }
-
-      const data: TrainerWeekResponse = await res.json()
-
-      setWeekStart(data.weekStart)
-      setWeekEnd(data.weekEnd)
-
-      setClients(
-        (data.clients as ApiClient[]).map((c) => ({
-          id: c.id,
-          name: c.name,
-          trainerId: c.trainer_id,
-          secondaryTrainerId: c.secondary_trainer_id ?? undefined,
-          mode: c.mode ?? '1v1',
-        })),
-      )
-
-      setPackages(
-        (data.packages as ApiPackage[]).map((p) => ({
-          id: p.id,
-          clientId: p.client_id,
-          trainerId: p.trainer_id,
-          sessionsPurchased: Number(p.sessions_purchased),
-          startDate: p.start_date.slice(0, 10),
-          salesBonus:
-            p.sales_bonus === null || p.sales_bonus === undefined
-              ? undefined
-              : Number(p.sales_bonus),
-          mode: p.mode ?? '1v1', 
-        })),
-      )
-
-      setSessions(
-        (data.sessions as ApiSession[]).map((s) => ({
-          id: s.id,
-          date: s.date.slice(0, 10),
-          trainerId: s.trainer_id,
-          clientId: s.client_id,
-          packageId: s.package_id,
-          mode: s.mode ?? '1v1',
-        })),
-      )
-
-      setLateFees(
-        (data.lateFees ?? ([] as ApiLateFee[])).map((f) => ({
-          id: f.id,
-          clientId: f.client_id,
-          trainerId: f.trainer_id,
-          date: f.date.slice(0, 10),
-          amount: Number(f.amount),
-        })),
-      )
     }
 
     load()
+
+    return () => {
+      abortController.abort()
+    }
   }, [selectedTrainer, selectedDate])
 
   return {

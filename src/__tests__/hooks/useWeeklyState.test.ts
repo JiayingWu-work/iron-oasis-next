@@ -77,7 +77,10 @@ describe('useWeeklyState', () => {
     renderHook(() => useWeeklyState(mockTrainer, '2025-01-08'))
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/trainer/1/week?date=2025-01-08')
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/trainer/1/week?date=2025-01-08',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
     })
   })
 
@@ -287,13 +290,19 @@ describe('useWeeklyState', () => {
     )
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/trainer/1/week?date=2025-01-08')
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/trainer/1/week?date=2025-01-08',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
     })
 
     rerender({ trainer: trainer2, date: '2025-01-08' })
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/trainer/2/week?date=2025-01-08')
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/trainer/2/week?date=2025-01-08',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
     })
   })
 
@@ -309,13 +318,19 @@ describe('useWeeklyState', () => {
     )
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/trainer/1/week?date=2025-01-08')
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/trainer/1/week?date=2025-01-08',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
     })
 
     rerender({ trainer: mockTrainer, date: '2025-01-15' })
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/trainer/1/week?date=2025-01-15')
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/trainer/1/week?date=2025-01-15',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
     })
   })
 })

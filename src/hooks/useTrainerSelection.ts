@@ -5,10 +5,10 @@ type TrainersResponse = {
   trainers: Trainer[]
 }
 
-export function useTrainerSelection() {
+export function useTrainerSelection(initialTrainerId?: number) {
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [selectedTrainerId, setSelectedTrainerId] = useState<number | null>(
-    null,
+    initialTrainerId ?? null,
   )
 
   useEffect(() => {
@@ -21,8 +21,8 @@ export function useTrainerSelection() {
       const data: TrainersResponse = await res.json()
       setTrainers(data.trainers)
 
-      // pick first trainer as default if none selected
-      if (data.trainers.length > 0 && selectedTrainerId == null) {
+      // pick first trainer as default if none selected and no initial ID provided
+      if (data.trainers.length > 0 && selectedTrainerId == null && initialTrainerId == null) {
         setSelectedTrainerId(data.trainers[0].id)
       }
     }
