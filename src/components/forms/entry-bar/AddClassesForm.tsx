@@ -1,5 +1,8 @@
+'use client'
+
 import { useState } from 'react'
 import type { Client } from '@/types'
+import DatePicker from '@/components/ui/DatePicker/DatePicker'
 import styles from './entry-bar.module.css'
 
 interface AddClassesFormProps {
@@ -33,12 +36,7 @@ export default function AddClassesForm({
     <section className={`${styles.section} ${styles.sectionFirst}`}>
       <h3 className={styles.title}>Add classes</h3>
       <div className={styles.fieldRow}>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => onDateChange(e.target.value)}
-          className={styles.input}
-        />
+        <DatePicker value={date} onChange={onDateChange} />
       </div>
       {clients.length === 0 ? (
         <p className={styles.hint}>No clients for this trainer yet.</p>

@@ -1,7 +1,11 @@
+/* ===========================================
+   Entry Bar Forms - Sleek Input Styling
+   =========================================== */
+
 .section {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .sectionFirst {
@@ -13,9 +17,11 @@
 /* Title */
 
 .title {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
 }
 
 /* Form layout */
@@ -23,7 +29,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 /* Rows & controls */
@@ -31,31 +37,43 @@
 .fieldRow {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .input,
 .select {
   width: 100%;
-  padding: 0.35rem 0.45rem;
-  border-radius: 0.45rem;
-  border: 1px solid #d1d5db;
-  font-size: 0.9rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input:hover,
+.select:hover {
+  border-color: var(--color-text-muted);
 }
 
 .input:focus,
 .select:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
 
 /* Helper text */
 
 .hint {
-  margin: 8 0 4 0rem;
-  font-size: 0.85rem;
-  color: #6b7280;
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }
 
 /* Client list */
@@ -63,40 +81,60 @@
 .clientList {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
-  /* TODO: ask which one prefer 
-  max-height: 180px;
-  overflow-y: auto; */
+  gap: 0.125rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .clientItem {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  padding: 0.125rem 0;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.clientItem:hover {
+  color: var(--color-accent);
+}
+
+.clientItem input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
 }
 
 /* Primary button */
 
 .primaryButton {
   width: 100%;
-  margin-top: 0.25rem;
-  padding: 0.4rem 0.9rem;
-  border-radius: 999px;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-full);
   border: none;
-  background: #111827;
-  color: #ffffff;
-  font-size: 0.9rem;
+  background: linear-gradient(135deg, var(--color-bg-dark) 0%, #1e293b 100%);
+  color: var(--color-text-light);
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: all var(--transition-base);
 }
 
 .primaryButton:hover:not(:disabled) {
-  background: #020617;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--color-accent) 0%, #818cf8 100%);
+}
+
+.primaryButton:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .primaryButton:disabled {
-  opacity: 0.45;
-  cursor: default;
+  opacity: 0.5;
+  cursor: not-allowed;
 }

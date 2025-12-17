@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
 import { DeleteButton } from '@/components'
@@ -16,17 +18,18 @@ export default function WeeklyBreakdownTable({
   onDeletePackage,
   onDeleteLateFee,
 }: WeeklyBreakdownTableProps) {
-  const [deleting, setDeleting] = useState<boolean>(false)
+  const [deletingKey, setDeletingKey] = useState<string | null>(null)
 
   async function handleDelete(type: string, id: number) {
-    if (deleting) return
-    setDeleting(true)
+    const key = `${type}-${id}`
+    if (deletingKey) return
+    setDeletingKey(key)
     try {
       if (type === 'session') await onDeleteSession(id)
       if (type === 'package') await onDeletePackage(id)
       if (type === 'lateFee') await onDeleteLateFee(id)
     } finally {
-      setDeleting(false)
+      setDeletingKey(null)
     }
   }
 
@@ -63,19 +66,19 @@ export default function WeeklyBreakdownTable({
             <td>
               {row.type === 'session' && (
                 <DeleteButton
-                  deleting={deleting}
+                  deleting={deletingKey === `session-${row.id}`}
                   onClick={() => handleDelete('session', row.id as number)}
                 />
               )}
               {row.type === 'package' && (
                 <DeleteButton
-                  deleting={deleting}
+                  deleting={deletingKey === `package-${row.id}`}
                   onClick={() => handleDelete('package', row.id as number)}
                 />
               )}
               {row.type === 'lateFee' && (
                 <DeleteButton
-                  deleting={deleting}
+                  deleting={deletingKey === `lateFee-${row.id}`}
                   onClick={() => handleDelete('lateFee', row.id as number)}
                 />
               )}

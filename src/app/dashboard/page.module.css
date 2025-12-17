@@ -1,16 +1,21 @@
+/* ===========================================
+   Dashboard Page Layout
+   =========================================== */
+
 .app {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   margin: 0 auto;
-  background: #e5e7eb;
+  background: var(--color-bg-secondary);
 }
 
 .main {
   flex: 1;
-  padding: 1.2rem 1.4rem;
+  padding: 1.5rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   overflow-y: auto;
 }
 
@@ -18,26 +23,40 @@
   flex: 1;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.mobileHeaderRow {
+  display: contents;
 }
 
 .mobileMenuButton {
   display: none;
 }
 
+/* Mobile Responsive */
+
 @media (max-width: 768px) {
   .app {
     flex-direction: column;
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .main {
-    padding: 0.75rem;
+    padding: 1rem;
   }
 
   .mainGrid {
-    grid-template-columns: 1fr; /* stack vertically */
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .mobileHeaderRow {
+    display: flex;
+    align-items: flex-start;
     gap: 0.75rem;
   }
 
@@ -45,14 +64,37 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #111827;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-size: 18px;
-    margin-right: 0.75rem;
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    flex-shrink: 0;
     cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-top: 2px;
+  }
+
+  .mobileMenuButton:hover {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-text-muted);
+  }
+
+  .mobileMenuButton:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Tablet breakpoint */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .main {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .mainGrid {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 1rem;
   }
 }
