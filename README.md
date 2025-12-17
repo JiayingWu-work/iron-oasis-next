@@ -2,21 +2,13 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, install dependencies:
+Install dependencies (this automatically creates `.env.local` with the required environment variables):
 
 ```bash
 npm install
 ```
 
-Then, set up your environment and start the development server:
-
-```bash
-npm run setup
-```
-
-This will create the `.env.local` file with the required environment variables and start the dev server.
-
-Alternatively, if you already have `.env.local` configured, you can run:
+Then start the development server:
 
 ```bash
 npm run dev
