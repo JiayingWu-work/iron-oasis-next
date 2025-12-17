@@ -8,6 +8,25 @@ import type {
 } from '@/types'
 import type { WeeklyIncomeSummary } from '@/hooks/useWeeklyDashboardData'
 import { getPricePerClass } from '@/lib/pricing'
+import { getWeekRange } from '@/lib/date'
+
+/**
+ * Get the trainer's rate for the week containing the given date.
+ * Rate is 51% if >12 classes that week, otherwise 46%.
+ */
+function getRateForSessionDate(
+  sessionDate: string,
+  trainerId: number,
+  allSessions: Session[],
+): number {
+  const { start, end } = getWeekRange(sessionDate)
+
+  const sessionsInWeek = allSessions.filter(
+    (s) => s.trainerId === trainerId && s.date >= start && s.date <= end,
+  )
+
+  return sessionsInWeek.length > 12 ? 0.51 : 0.46
+}
 
 export function computeIncomeSummary(
   clients: Client[],
@@ -66,6 +85,10 @@ export function computeIncomeSummary(
   const lateFeeIncome = weeklyLateFees.reduce((sum, f) => sum + f.amount, 0)
 
   // ----- 4) Backfill adjustment: deduct overpaid amount for old sessions -----
+  // When a package is purchased with a start date in the past, sessions that occurred
+  // before that date get retroactively assigned to the package. We need to deduct
+  // the difference between the single-class rate (originally paid) and the package rate.
+  // Each session's adjustment uses the rate from the week when that session occurred.
   const backfillAdjustment = weeklyPackages.reduce((sum, pkg) => {
     const client = clients.find((c) => c.id === pkg.clientId)
     if (!client) return sum
@@ -78,8 +101,6 @@ export function computeIncomeSummary(
       pkgMode,
     )
 
-    console.log("i'm backfillAdjustment")
-
     // Sessions that are now attached to this package,
     // but happened BEFORE the package start date → "backfilled"
     const backfilledSessions = allSessions.filter(
@@ -89,8 +110,6 @@ export function computeIncomeSummary(
         s.packageId === pkg.id &&
         s.date < pkg.startDate,
     )
-
-    console.log('backfilledSessions: ', backfilledSessions)
 
     if (backfilledSessions.length === 0) return sum
 
@@ -105,13 +124,12 @@ export function computeIncomeSummary(
 
       const diffPerClass = singleClassPrice - pkgPricePerClass
 
-      console.log('diffPerClass: ', diffPerClass)
-
-      // If for some reason diff is negative or 0, don't *add* money back 🙂
+      // If for some reason diff is negative or 0, don't *add* money back
       if (diffPerClass <= 0) continue
 
-      // Deduct trainer share at THIS week’s rate (0.46 or 0.51)
-      pkgAdjustment += diffPerClass * rate
+      // Deduct trainer share at the ORIGINAL week's rate (when session occurred)
+      const originalRate = getRateForSessionDate(s.date, trainerId, allSessions)
+      pkgAdjustment += diffPerClass * originalRate
     }
 
     return sum + pkgAdjustment
@@ -120,8 +138,6 @@ export function computeIncomeSummary(
   // ----- 5) Final income -----
   const finalWeeklyIncome =
     classIncome + bonusIncome + lateFeeIncome - backfillAdjustment
-
-  console.log('backfillAdjustment: ', backfillAdjustment)
 
   return {
     totalClassesThisWeek,
