@@ -229,9 +229,9 @@
 }
 
 .signOutButton:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: var(--color-error);
-  color: var(--color-error);
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--color-accent);
+  color: var(--color-text-light);
 }
 
 /* Overlay */
