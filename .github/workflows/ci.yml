@@ -34,4 +34,4 @@ jobs:
         run: npm run build
         env:
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-          NEON_AUTH_BASE_URL: https://ci.auth.neon.tech
+          NEON_AUTH_BASE_URL: https://ep-icy-star-aho1g0q6.neonauth.c-3.us-east-1.aws.neon.tech/neondb/auth

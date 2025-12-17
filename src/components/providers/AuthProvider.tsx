@@ -13,7 +13,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       navigate={(path) => router.push(path)}
       replace={(path) => router.replace(path)}
       redirectTo="/"
-      social={{ providers: ['google'] }}
+      social={{ providers: [] }}
       credentials={{ forgotPassword: true }}
     >
       {children}

@@ -1,4 +1,6 @@
+import Image from 'next/image';
 import { AuthView } from '@neondatabase/neon-js/auth/react/ui';
+import styles from './page.module.css';
 
 export const dynamicParams = false;
 
@@ -13,7 +15,16 @@ export default async function AuthPage({
 }) {
   const { path } = await params;
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <main className={styles.authPage}>
+      <div className={styles.logoContainer}>
+        <Image
+          src="/logo.png"
+          alt="Iron Oasis"
+          width={180}
+          height={180}
+          priority
+        />
+      </div>
       <AuthView path={path} />
     </main>
   );

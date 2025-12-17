@@ -24,7 +24,7 @@ export default function SideBar({
   readOnly = false,
 }: SideBarProps) {
   const { data: session } = authClient.useSession()
-  const userName = session?.user?.name?.split(' ')[0] || 'User'
+  const userName = session?.user?.name || 'User'
 
   const handleSelectTrainer = (id: number) => {
     onSelectTrainer(id)

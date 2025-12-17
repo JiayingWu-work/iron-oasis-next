@@ -1,0 +1,177 @@
+.authPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle gradient orbs for depth */
+.authPage::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.authPage::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.logoContainer {
+  margin-bottom: 2.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.logoContainer img {
+  filter: drop-shadow(0 0 40px rgba(99, 102, 241, 0.3));
+}
+
+/* Auth form container styling */
+.authPage :global([data-neon-auth]) {
+  position: relative;
+  z-index: 1;
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  border-radius: 1rem !important;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  max-width: 420px;
+  width: 100%;
+}
+
+/* Override card background */
+.authPage :global(.bg-card) {
+  background: transparent !important;
+}
+
+/* Style headings */
+.authPage :global(h1),
+.authPage :global(h2) {
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+/* Style description text */
+.authPage :global(p) {
+  color: #94a3b8 !important;
+}
+
+/* Style labels */
+.authPage :global(label) {
+  color: #cbd5e1 !important;
+  font-weight: 500;
+}
+
+/* Style inputs */
+.authPage :global(input[type="email"]),
+.authPage :global(input[type="password"]),
+.authPage :global(input[type="text"]) {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  color: #f8fafc !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.authPage :global(input[type="email"]:focus),
+.authPage :global(input[type="password"]:focus),
+.authPage :global(input[type="text"]:focus) {
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+  outline: none !important;
+}
+
+.authPage :global(input::placeholder) {
+  color: #64748b !important;
+}
+
+/* Primary button styling (Login / Create account) */
+.authPage :global(button[type="submit"]),
+.authPage :global(.bg-primary) {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+  cursor: pointer !important;
+}
+
+.authPage :global(button[type="submit"]:hover),
+.authPage :global(.bg-primary:hover) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6) !important;
+  cursor: pointer !important;
+}
+
+/* Social buttons - only target Google button with svg */
+.authPage :global(button[data-slot="button"]:not([type="submit"]):has(svg[viewBox="0 0 256 262"])) {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  color: #f8fafc !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.authPage :global(button[data-slot="button"]:not([type="submit"]):has(svg[viewBox="0 0 256 262"]):hover) {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+/* Password toggle button - keep transparent */
+.authPage :global(.relative button) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Link buttons (Sign Up / Sign In) */
+.authPage :global(a button) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.authPage :global(a button:hover) {
+  color: #a5b4fc !important;
+  text-shadow: 0 0 8px rgba(165, 180, 252, 0.4) !important;
+}
+
+/* Links */
+.authPage :global(a) {
+  color: #818cf8 !important;
+  transition: color 0.2s ease !important;
+}
+
+.authPage :global(a:hover) {
+  color: #a5b4fc !important;
+}
+
+/* Divider text */
+.authPage :global(.text-muted-foreground) {
+  color: #64748b !important;
+}
