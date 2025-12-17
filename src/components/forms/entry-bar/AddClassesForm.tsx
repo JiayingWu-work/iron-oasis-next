@@ -10,6 +10,7 @@ interface AddClassesFormProps {
   onDateChange: (value: string) => void
   clients: Client[]
   onAddSessions: (date: string, clientIds: number[]) => void
+  disabled?: boolean
 }
 
 export default function AddClassesForm({
@@ -17,6 +18,7 @@ export default function AddClassesForm({
   onDateChange,
   clients,
   onAddSessions,
+  disabled = false,
 }: AddClassesFormProps) {
   const [selectedClientIds, setSelectedClientIds] = useState<number[]>([])
 
@@ -33,10 +35,10 @@ export default function AddClassesForm({
   }
 
   return (
-    <section className={`${styles.section} ${styles.sectionFirst}`}>
+    <section className={`${styles.section} ${styles.sectionFirst} ${disabled ? styles.sectionDisabled : ''}`}>
       <h3 className={styles.title}>Add classes</h3>
       <div className={styles.fieldRow}>
-        <DatePicker value={date} onChange={onDateChange} />
+        <DatePicker value={date} onChange={onDateChange} disabled={disabled} />
       </div>
       {clients.length === 0 ? (
         <p className={styles.hint}>No clients for this trainer yet.</p>
@@ -48,6 +50,7 @@ export default function AddClassesForm({
                 type="checkbox"
                 checked={selectedClientIds.includes(client.id)}
                 onChange={() => handleToggleClient(client.id)}
+                disabled={disabled}
               />
               <span>{client.name}</span>
             </label>
@@ -57,7 +60,7 @@ export default function AddClassesForm({
       <button
         className={styles.primaryButton}
         onClick={handleSave}
-        disabled={selectedClientIds.length === 0}
+        disabled={disabled || selectedClientIds.length === 0}
       >
         Save Classes
       </button>

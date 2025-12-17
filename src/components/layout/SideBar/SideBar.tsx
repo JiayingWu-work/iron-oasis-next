@@ -1,4 +1,5 @@
 import type { Trainer } from '@/types'
+import { authClient } from '@/lib/auth/client'
 import styles from './SideBar.module.css'
 
 interface SideBarProps {
@@ -9,6 +10,7 @@ interface SideBarProps {
   onAddTrainer: () => void
   isOpen?: boolean // used for mobile drawer
   onClose?: () => void
+  readOnly?: boolean
 }
 
 export default function SideBar({
@@ -19,7 +21,11 @@ export default function SideBar({
   onAddTrainer,
   isOpen = true,
   onClose,
+  readOnly = false,
 }: SideBarProps) {
+  const { data: session } = authClient.useSession()
+  const userName = session?.user?.name?.split(' ')[0] || 'User'
+
   const handleSelectTrainer = (id: number) => {
     onSelectTrainer(id)
     onClose?.()
@@ -33,6 +39,11 @@ export default function SideBar({
   const handleAddTrainer = () => {
     onAddTrainer()
     onClose?.()
+  }
+
+  const handleSignOut = async () => {
+    await authClient.signOut()
+    window.location.href = '/auth/sign-in'
   }
 
   const overlayClass = isOpen
@@ -66,25 +77,28 @@ export default function SideBar({
               </svg>
             </button>
           </div>
+          <p className={styles.subtitle}>Welcome, {userName}</p>
         </div>
-        <div>
-          <h3 className={styles.sectionTitle}>Forms</h3>
-          <button
-            type="button"
-            className={styles.actionButton}
-            onClick={handleAddClient}
-          >
-            + Add new client
-          </button>
-          <button
-            type="button"
-            className={styles.actionButton}
-            onClick={handleAddTrainer}
-          >
-            + Add new trainer
-          </button>
-        </div>
-        <div>
+        {!readOnly && (
+          <div>
+            <h3 className={styles.sectionTitle}>Forms</h3>
+            <button
+              type="button"
+              className={styles.actionButton}
+              onClick={handleAddClient}
+            >
+              + Add new client
+            </button>
+            <button
+              type="button"
+              className={styles.actionButton}
+              onClick={handleAddTrainer}
+            >
+              + Add new trainer
+            </button>
+          </div>
+        )}
+        <div className={styles.trainersSection}>
           <h3 className={styles.sectionTitle}>Trainers</h3>
           <ul className={styles.trainerList}>
             {trainers.map((t) => (
@@ -92,14 +106,24 @@ export default function SideBar({
                 key={t.id}
                 className={`${styles.trainerItem} ${
                   t.id === selectedTrainerId ? styles.trainerItemActive : ''
-                }`}
-                onClick={() => handleSelectTrainer(t.id)}
+                } ${readOnly ? styles.trainerItemDisabled : ''}`}
+                onClick={readOnly ? undefined : () => handleSelectTrainer(t.id)}
+                style={readOnly ? { cursor: 'default' } : undefined}
               >
                 <span className={styles.trainerName}>{t.name}</span>
                 <span className={styles.trainerTier}>Tier {t.tier}</span>
               </li>
             ))}
           </ul>
+        </div>
+        <div className={styles.footer}>
+          <button
+            type="button"
+            className={styles.signOutButton}
+            onClick={handleSignOut}
+          >
+            Sign out
+          </button>
         </div>
       </aside>
     </>

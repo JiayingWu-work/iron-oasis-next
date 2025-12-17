@@ -7,9 +7,10 @@ import styles from './tables.module.css'
 
 interface WeeklyBreakdownTableProps {
   rows: WeeklyBreakdownRow[]
-  onDeleteSession: (id: number) => void
-  onDeletePackage: (id: number) => void
-  onDeleteLateFee: (id: number) => void
+  onDeleteSession?: (id: number) => void
+  onDeletePackage?: (id: number) => void
+  onDeleteLateFee?: (id: number) => void
+  readOnly?: boolean
 }
 
 export default function WeeklyBreakdownTable({
@@ -17,17 +18,18 @@ export default function WeeklyBreakdownTable({
   onDeleteSession,
   onDeletePackage,
   onDeleteLateFee,
+  readOnly = false,
 }: WeeklyBreakdownTableProps) {
   const [deletingKey, setDeletingKey] = useState<string | null>(null)
 
   async function handleDelete(type: string, id: number) {
     const key = `${type}-${id}`
-    if (deletingKey) return
+    if (deletingKey || readOnly) return
     setDeletingKey(key)
     try {
-      if (type === 'session') await onDeleteSession(id)
-      if (type === 'package') await onDeletePackage(id)
-      if (type === 'lateFee') await onDeleteLateFee(id)
+      if (type === 'session' && onDeleteSession) await onDeleteSession(id)
+      if (type === 'package' && onDeletePackage) await onDeletePackage(id)
+      if (type === 'lateFee' && onDeleteLateFee) await onDeleteLateFee(id)
     } finally {
       setDeletingKey(null)
     }
@@ -45,7 +47,7 @@ export default function WeeklyBreakdownTable({
           <th>Client</th>
           <th>Type</th>
           <th>Amount</th>
-          <th></th>
+          {!readOnly && <th></th>}
         </tr>
       </thead>
       <tbody>
@@ -63,26 +65,28 @@ export default function WeeklyBreakdownTable({
                 : 'Class'}
             </td>
             <td>${row.amount.toFixed(1)}</td>
-            <td>
-              {row.type === 'session' && (
-                <DeleteButton
-                  deleting={deletingKey === `session-${row.id}`}
-                  onClick={() => handleDelete('session', row.id as number)}
-                />
-              )}
-              {row.type === 'package' && (
-                <DeleteButton
-                  deleting={deletingKey === `package-${row.id}`}
-                  onClick={() => handleDelete('package', row.id as number)}
-                />
-              )}
-              {row.type === 'lateFee' && (
-                <DeleteButton
-                  deleting={deletingKey === `lateFee-${row.id}`}
-                  onClick={() => handleDelete('lateFee', row.id as number)}
-                />
-              )}
-            </td>
+            {!readOnly && (
+              <td>
+                {row.type === 'session' && onDeleteSession && (
+                  <DeleteButton
+                    deleting={deletingKey === `session-${row.id}`}
+                    onClick={() => handleDelete('session', row.id as number)}
+                  />
+                )}
+                {row.type === 'package' && onDeletePackage && (
+                  <DeleteButton
+                    deleting={deletingKey === `package-${row.id}`}
+                    onClick={() => handleDelete('package', row.id as number)}
+                  />
+                )}
+                {row.type === 'lateFee' && onDeleteLateFee && (
+                  <DeleteButton
+                    deleting={deletingKey === `lateFee-${row.id}`}
+                    onClick={() => handleDelete('lateFee', row.id as number)}
+                  />
+                )}
+              </td>
+            )}
           </tr>
         ))}
       </tbody>

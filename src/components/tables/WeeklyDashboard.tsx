@@ -7,7 +7,7 @@ import {
 } from '@/components'
 import styles from './tables.module.css'
 
-interface WeeklyDashboardProps {
+export interface WeeklyDashboardProps {
   clients: Client[]
   packages: Package[]
   sessions: Session[]
@@ -15,9 +15,10 @@ interface WeeklyDashboardProps {
   weekStart: string
   weekEnd: string
   selectedTrainer: Trainer
-  onDeleteSession: (id: number) => void
-  onDeletePackage: (id: number) => void
-  onDeleteLateFee: (id: number) => void
+  onDeleteSession?: (id: number) => void
+  onDeletePackage?: (id: number) => void
+  onDeleteLateFee?: (id: number) => void
+  readOnly?: boolean
 }
 
 export default function WeeklyDashboard({
@@ -31,6 +32,7 @@ export default function WeeklyDashboard({
   onDeleteSession,
   onDeletePackage,
   onDeleteLateFee,
+  readOnly = false,
 }: WeeklyDashboardProps) {
   const { clientRows, incomeSummary, breakdownRows } = useWeeklyDashboardData({
     clients,
@@ -63,6 +65,7 @@ export default function WeeklyDashboard({
         onDeleteSession={onDeleteSession}
         onDeletePackage={onDeletePackage}
         onDeleteLateFee={onDeleteLateFee}
+        readOnly={readOnly}
       />
     </div>
   )
