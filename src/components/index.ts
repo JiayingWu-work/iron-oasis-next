@@ -9,7 +9,7 @@ export { default as AddLateFeeForm } from './forms/entry-bar/AddLateFeeForm'
 export { default as AddClientForm } from './forms/fullpage/AddClientForm'
 
 export { default as DashboardHeader } from './layout/dashboard-header/DashboardHeader'
-export { default as SideBar } from './layout/sidebar/SideBar'
+export { default as SideBar } from './layout/SideBar/SideBar'
 
-export { default as DeleteButton } from './ui/DeleteButton'
-export * from './ui/Card'
+export { default as DeleteButton } from './ui/DeleteButton/DeleteButton'
+export * from './ui/Card/Card'

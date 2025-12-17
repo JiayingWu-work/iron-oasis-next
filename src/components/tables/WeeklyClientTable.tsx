@@ -1,3 +1,5 @@
+import styles from './tables.module.css'
+
 interface WeeklyClientRow {
   clientId: number
   clientName: string
@@ -14,7 +16,7 @@ interface WeeklyClientTableProps {
 
 export default function WeeklyClientTable({ rows }: WeeklyClientTableProps) {
   return (
-    <table className="table">
+    <table className={styles.table}>
       <thead>
         <tr>
           <th>Client</th>
@@ -30,7 +32,7 @@ export default function WeeklyClientTable({ rows }: WeeklyClientTableProps) {
             <td>{row.clientName}</td>
             <td>{row.packageDisplay}</td>
             <td>{row.usedDisplay}</td>
-            <td className={row.totalRemaining <= 0 ? 'text-red-remaining' : ''}>
+            <td className={row.totalRemaining <= 0 ? styles.textRedRemaining : ''}>
               {row.remainingDisplay}
             </td>
             <td>{row.weekCount}</td>
