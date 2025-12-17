@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@neondatabase/neon-js": "^0.1.0-beta.15",
     "@neondatabase/serverless": "^1.0.2",
     "next": "16.0.6",
     "react": "19.2.0",

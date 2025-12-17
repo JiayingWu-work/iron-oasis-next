@@ -138,3 +138,10 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Disabled section */
+
+.sectionDisabled {
+  opacity: 0.6;
+  pointer-events: none;
+}

@@ -33,9 +33,9 @@ describe('WeeklyDashboard', () => {
   ]
 
   const mockSessions: Session[] = [
-    { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13' },
-    { id: 2, clientId: 1, trainerId: 1, date: '2025-01-14' },
-    { id: 3, clientId: 2, trainerId: 1, date: '2025-01-15' },
+    { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13', packageId: null },
+    { id: 2, clientId: 1, trainerId: 1, date: '2025-01-14', packageId: null },
+    { id: 3, clientId: 2, trainerId: 1, date: '2025-01-15', packageId: null },
   ]
 
   const mockLateFees: LateFee[] = []
@@ -270,11 +270,36 @@ describe('WeeklyDashboard', () => {
     })
   })
 
+  describe('readOnly mode', () => {
+    it('hides delete buttons when readOnly is true', () => {
+      const { container } = render(
+        <WeeklyDashboard {...defaultProps} readOnly />,
+      )
+
+      // Look for delete buttons (X buttons in breakdown table)
+      // In readOnly mode, delete buttons should not exist
+      const deleteButtons = container.querySelectorAll(
+        'button[aria-label*="delete"], button[aria-label*="Delete"]',
+      )
+      expect(deleteButtons.length).toBe(0)
+    })
+
+    it('still renders all data when readOnly is true', () => {
+      render(<WeeklyDashboard {...defaultProps} readOnly />)
+
+      // Should still show all the data
+      expect(screen.getByText('Weekly Summary')).toBeInTheDocument()
+      expect(screen.getByText(/Classes this week: 3/)).toBeInTheDocument()
+      expect(screen.getAllByText('Alice').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Bob').length).toBeGreaterThan(0)
+    })
+  })
+
   describe('data filtering', () => {
     it('only shows sessions for selected trainer', () => {
       const mixedSessions: Session[] = [
-        { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13' },
-        { id: 2, clientId: 1, trainerId: 2, date: '2025-01-14' }, // Different trainer
+        { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13', packageId: null },
+        { id: 2, clientId: 1, trainerId: 2, date: '2025-01-14', packageId: null }, // Different trainer
       ]
 
       const props = {

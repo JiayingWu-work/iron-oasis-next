@@ -14,6 +14,7 @@ interface SelectProps {
   options: SelectOption[]
   placeholder?: string
   className?: string
+  disabled?: boolean
 }
 
 export default function Select({
@@ -22,6 +23,7 @@ export default function Select({
   options,
   placeholder = 'Select...',
   className,
+  disabled = false,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -56,8 +58,9 @@ export default function Select({
     >
       <button
         type="button"
-        className={styles.trigger}
-        onClick={() => setIsOpen(!isOpen)}
+        className={`${styles.trigger} ${disabled ? styles.triggerDisabled : ''}`}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
       >
         <span
           className={`${styles.triggerText} ${!selectedOption ? styles.placeholder : ''}`}

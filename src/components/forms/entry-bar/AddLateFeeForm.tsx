@@ -10,11 +10,13 @@ import styles from './entry-bar.module.css'
 interface AddLateFeeFormProps {
   clients: Client[]
   onAddLateFee: (clientId: number, date: string) => void
+  disabled?: boolean
 }
 
 export default function AddLateFeeForm({
   clients,
   onAddLateFee,
+  disabled = false,
 }: AddLateFeeFormProps) {
   const [clientId, setClientId] = useState<number>()
   const [date, setDate] = useState(formatDateToInput(new Date()))
@@ -31,7 +33,7 @@ export default function AddLateFeeForm({
   }
 
   return (
-    <section className={styles.section}>
+    <section className={`${styles.section} ${disabled ? styles.sectionDisabled : ''}`}>
       <h3 className={styles.title}>Add $45 late fee</h3>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.fieldRow}>
@@ -40,15 +42,16 @@ export default function AddLateFeeForm({
             onChange={(val) => setClientId(Number(val))}
             options={clientOptions}
             placeholder="Select client..."
+            disabled={disabled}
           />
         </div>
         <div className={styles.fieldRow}>
-          <DatePicker value={date} onChange={setDate} />
+          <DatePicker value={date} onChange={setDate} disabled={disabled} />
         </div>
         <button
           className={styles.primaryButton}
           type="submit"
-          disabled={!clientId || !date}
+          disabled={disabled || !clientId || !date}
         >
           Add late fee
         </button>

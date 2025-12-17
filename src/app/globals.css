@@ -1,3 +1,6 @@
+/* Neon Auth CSS - scoped to auth pages only via :where() for lower specificity */
+@import '@neondatabase/neon-js/ui/css' layer(neon-auth);
+
 /* ===========================================
    Global Design Tokens & Base Styles
    High-End Sleek Theme
@@ -5,7 +8,8 @@
 
 :root {
   /* Typography */
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
   line-height: 1.5;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -97,4 +101,49 @@ html {
 ::selection {
   background: var(--color-accent-subtle);
   color: var(--color-accent);
+}
+
+/* ===========================================
+   Override Neon Auth styles for dashboard
+   =========================================== */
+
+/* Restore h2 styling (Weekly Summary, etc.) */
+h2 {
+  color: var(--color-text-primary) !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+}
+
+/* Restore checkbox styling - override Neon Auth dark checkboxes */
+input[type='checkbox'] {
+  -webkit-appearance: checkbox !important;
+  -moz-appearance: checkbox !important;
+  appearance: checkbox !important;
+  color-scheme: light !important;
+  accent-color: var(--color-accent) !important;
+  width: 1rem !important;
+  height: 1rem !important;
+  cursor: pointer !important;
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+}
+
+/* Restore number input styling */
+input[type='number'] {
+  color-scheme: light !important;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  opacity: 1 !important;
+}
+
+/* Ensure form labels use our colors */
+label {
+  color: var(--color-text-primary);
+}
+
+/* Restore button styling in dashboard */
+.dashboard button:not([class*='neon']) {
+  color: inherit;
 }

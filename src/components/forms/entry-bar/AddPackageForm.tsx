@@ -14,11 +14,13 @@ interface AddPackageFormProps {
     sessionsPurchased: number,
     startDate: string,
   ) => void
+  disabled?: boolean
 }
 
 export default function AddPackageForm({
   clients,
   onAddPackage,
+  disabled = false,
 }: AddPackageFormProps) {
   const [clientId, setClientId] = useState<number>()
   const [sessionsPurchased, setSessionsPurchased] = useState(0)
@@ -37,7 +39,7 @@ export default function AddPackageForm({
   }
 
   return (
-    <section className={styles.section}>
+    <section className={`${styles.section} ${disabled ? styles.sectionDisabled : ''}`}>
       <h3 className={styles.title}>Add package</h3>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.fieldRow}>
@@ -46,6 +48,7 @@ export default function AddPackageForm({
             onChange={(val) => setClientId(Number(val))}
             options={clientOptions}
             placeholder="Select client..."
+            disabled={disabled}
           />
         </div>
         <div className={styles.fieldRow}>
@@ -63,15 +66,16 @@ export default function AddPackageForm({
               setSessionsPurchased(num)
             }}
             placeholder="Number of sessions (e.g. 14)"
+            disabled={disabled}
           />
         </div>
         <div className={styles.fieldRow}>
-          <DatePicker value={startDate} onChange={setStartDate} />
+          <DatePicker value={startDate} onChange={setStartDate} disabled={disabled} />
         </div>
         <button
           className={styles.primaryButton}
           type="submit"
-          disabled={!clientId || sessionsPurchased <= 0}
+          disabled={disabled || !clientId || sessionsPurchased <= 0}
         >
           Add package
         </button>

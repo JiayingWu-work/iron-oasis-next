@@ -212,6 +212,55 @@ describe('AddClassesForm', () => {
     })
   })
 
+  describe('disabled state', () => {
+    it('disables all checkboxes when disabled prop is true', () => {
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={() => {}}
+          disabled
+        />,
+      )
+
+      const checkboxes = screen.getAllByRole('checkbox')
+      checkboxes.forEach((checkbox) => {
+        expect(checkbox).toBeDisabled()
+      })
+    })
+
+    it('disables save button when disabled prop is true', () => {
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={() => {}}
+          disabled
+        />,
+      )
+
+      expect(screen.getByRole('button', { name: 'Save Classes' })).toBeDisabled()
+    })
+
+    it('disables date picker when disabled prop is true', () => {
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={() => {}}
+          disabled
+        />,
+      )
+
+      // The date picker trigger button should be disabled
+      const dateButton = screen.getByText('January 15, 2025').closest('button')
+      expect(dateButton).toBeDisabled()
+    })
+  })
+
   describe('form submission', () => {
     it('calls onAddSessions with date and selected client IDs', () => {
       const handleAddSessions = vi.fn()

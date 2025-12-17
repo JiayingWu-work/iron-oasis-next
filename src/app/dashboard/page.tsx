@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { formatDateToInput, shiftDateByDays } from '@/lib/date'
+import { authClient } from '@/lib/auth/client'
 import {
   DashboardHeader,
   WeeklyDashboard,
@@ -29,6 +30,30 @@ export default function Dashboard() {
   const [isAddingClient, setIsAddingClient] = useState(false)
   const [isAddingTrainer, setIsAddingTrainer] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
+  const [trainerIdForUser, setTrainerIdForUser] = useState<number | null>(null)
+
+  const { data: session, isPending } = authClient.useSession()
+
+  // Check user role
+  useEffect(() => {
+    if (isPending || userRole) return
+    if (!session?.user?.id) return
+
+    fetch(`/api/user-profile?authUserId=${session.user.id}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((profile) => {
+        if (profile?.role === 'trainer') {
+          setUserRole('trainer')
+          setTrainerIdForUser(profile.trainer_id)
+        } else {
+          setUserRole('owner')
+        }
+      })
+      .catch(() => setUserRole('owner'))
+  }, [session, isPending, userRole])
+
+  const isReadOnly = userRole === 'trainer'
 
   const {
     trainers,
@@ -37,6 +62,13 @@ export default function Dashboard() {
     setSelectedTrainerId,
     selectedTrainer,
   } = useTrainerSelection()
+
+  // Lock trainer selection for trainer role
+  useEffect(() => {
+    if (isReadOnly && trainerIdForUser && selectedTrainerId !== trainerIdForUser) {
+      setSelectedTrainerId(trainerIdForUser)
+    }
+  }, [isReadOnly, trainerIdForUser, selectedTrainerId, setSelectedTrainerId])
 
   const weeklyState = useWeeklyState(selectedTrainer, selectedDate)
   const {
@@ -78,7 +110,12 @@ export default function Dashboard() {
     setSelectedDate((prev) => shiftDateByDays(prev, 7))
   }
 
-  if (!selectedTrainer || selectedTrainerId == null) {
+  // Wait for role check to complete before showing content
+  // For trainers, also wait until we've locked to the correct trainer
+  const isRoleCheckPending = userRole === null
+  const isTrainerLockPending = isReadOnly && trainerIdForUser && selectedTrainerId !== trainerIdForUser
+
+  if (!selectedTrainer || selectedTrainerId == null || isRoleCheckPending || isTrainerLockPending) {
     return <div className={styles.app}>Loading…</div>
   }
 
@@ -114,6 +151,7 @@ export default function Dashboard() {
         }}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
+        readOnly={isReadOnly}
       />
       <div className={styles.main}>
         {isAddingClient ? (
@@ -162,9 +200,10 @@ export default function Dashboard() {
                   weekStart={weekStart}
                   weekEnd={weekEnd}
                   selectedTrainer={selectedTrainer}
-                  onDeleteSession={deleteSession}
-                  onDeletePackage={deletePackage}
-                  onDeleteLateFee={deleteLateFee}
+                  onDeleteSession={isReadOnly ? undefined : deleteSession}
+                  onDeletePackage={isReadOnly ? undefined : deletePackage}
+                  onDeleteLateFee={isReadOnly ? undefined : deleteLateFee}
+                  readOnly={isReadOnly}
                 />
               </Card>
               <Card>
@@ -173,9 +212,10 @@ export default function Dashboard() {
                   onDateChange={setSelectedDate}
                   clients={clients}
                   onAddSessions={addSessions}
+                  disabled={isReadOnly}
                 />
-                <AddPackageForm clients={clients} onAddPackage={addPackage} />
-                <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} />
+                <AddPackageForm clients={clients} onAddPackage={addPackage} disabled={isReadOnly} />
+                <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} disabled={isReadOnly} />
               </Card>
             </div>
           </>

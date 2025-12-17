@@ -7,6 +7,7 @@ interface DatePickerProps {
   value: string // YYYY-MM-DD format
   onChange: (value: string) => void
   className?: string
+  disabled?: boolean
 }
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -58,6 +59,7 @@ export default function DatePicker({
   value,
   onChange,
   className,
+  disabled = false,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -82,6 +84,7 @@ export default function DatePicker({
 
   // Reset offset when dropdown closes
   const handleToggle = () => {
+    if (disabled) return
     if (isOpen) {
       setMonthOffset(0)
     }
@@ -150,8 +153,9 @@ export default function DatePicker({
     >
       <button
         type="button"
-        className={styles.trigger}
+        className={`${styles.trigger} ${disabled ? styles.triggerDisabled : ''}`}
         onClick={handleToggle}
+        disabled={disabled}
       >
         <span className={styles.triggerText}>
           {value ? formatDateDisplay(value) : 'Select date...'}
