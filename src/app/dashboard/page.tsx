@@ -1,226 +1,76 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { formatDateToInput, shiftDateByDays } from '@/lib/date'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
-import {
-  DashboardHeader,
-  WeeklyDashboard,
-  AddClassesForm,
-  AddPackageForm,
-  AddLateFeeForm,
-  AddClientForm,
-  AddTrainerForm,
-  SideBar,
-  Card,
-} from '@/components'
-import {
-  useTrainerSelection,
-  useWeeklyState,
-  useSessionActions,
-  usePackageActions,
-  useLateFeeActions,
-} from '@/hooks'
 import styles from './page.module.css'
 
-export default function Dashboard() {
-  const [selectedDate, setSelectedDate] = useState<string>(
-    formatDateToInput(new Date()),
-  )
-  const [isAddingClient, setIsAddingClient] = useState(false)
-  const [isAddingTrainer, setIsAddingTrainer] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
-  const [trainerIdForUser, setTrainerIdForUser] = useState<number | null>(null)
+/** Convert trainer name and ID to URL-safe slug (e.g., "jiaying-1") */
+function toSlug(name: string, id: number): string {
+  return `${name.toLowerCase().replace(/\s+/g, '-')}-${id}`
+}
+
+/**
+ * Dashboard router page.
+ * - For trainers: redirects to /dashboard/[theirTrainerName]
+ * - For owners: redirects to /dashboard/[firstTrainerName] (first trainer in the list)
+ *
+ * This ensures the URL always reflects the current trainer, avoiding race conditions
+ * between role checking and data fetching.
+ */
+export default function DashboardRouter() {
+  const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
 
   const { data: session, isPending } = authClient.useSession()
 
-  // Check user role
   useEffect(() => {
-    if (isPending || userRole) return
+    if (isPending) return
     if (!session?.user?.id) return
 
-    fetch(`/api/user-profile?authUserId=${session.user.id}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((profile) => {
-        if (profile?.role === 'trainer') {
-          setUserRole('trainer')
-          setTrainerIdForUser(profile.trainer_id)
-        } else {
-          setUserRole('owner')
+    async function determineRedirect() {
+      try {
+        // Load trainers first (we need names for URLs)
+        const trainersRes = await fetch('/api/trainers')
+        if (!trainersRes.ok) {
+          setError('Failed to load trainers')
+          return
         }
-      })
-      .catch(() => setUserRole('owner'))
-  }, [session, isPending, userRole])
 
-  const isReadOnly = userRole === 'trainer'
+        const { trainers } = await trainersRes.json()
+        if (trainers.length === 0) {
+          setError('No trainers found')
+          return
+        }
 
-  const {
-    trainers,
-    setTrainers,
-    selectedTrainerId,
-    setSelectedTrainerId,
-    selectedTrainer,
-  } = useTrainerSelection()
+        // Check user role
+        const profileRes = await fetch(`/api/user-profile?authUserId=${session!.user.id}`)
 
-  // Lock trainer selection for trainer role
-  useEffect(() => {
-    if (isReadOnly && trainerIdForUser && selectedTrainerId !== trainerIdForUser) {
-      setSelectedTrainerId(trainerIdForUser)
+        if (profileRes.ok) {
+          const profile = await profileRes.json()
+          if (profile?.role === 'trainer' && profile.trainer_id) {
+            // Trainer: redirect to their specific dashboard
+            const userTrainer = trainers.find((t: { id: number }) => t.id === profile.trainer_id)
+            if (userTrainer) {
+              router.replace(`/dashboard/${toSlug(userTrainer.name, userTrainer.id)}`)
+              return
+            }
+          }
+        }
+
+        // Owner or no profile: redirect to first trainer
+        router.replace(`/dashboard/${toSlug(trainers[0].name, trainers[0].id)}`)
+      } catch {
+        setError('Failed to load dashboard')
+      }
     }
-  }, [isReadOnly, trainerIdForUser, selectedTrainerId, setSelectedTrainerId])
 
-  const weeklyState = useWeeklyState(selectedTrainer, selectedDate)
-  const {
-    weekStart,
-    weekEnd,
-    clients,
-    packages,
-    sessions,
-    lateFees,
-    setClients,
-    setPackages,
-    setSessions,
-    setLateFees,
-  } = weeklyState
+    determineRedirect()
+  }, [session, isPending, router])
 
-  const { addSessions, deleteSession } = useSessionActions(
-    selectedTrainer,
-    setSessions,
-  )
-
-  const { addPackage, deletePackage } = usePackageActions(
-    selectedTrainer,
-    selectedDate,
-    packages,
-    setPackages,
-    setSessions,
-  )
-
-  const { addLateFee, deleteLateFee } = useLateFeeActions(
-    selectedTrainer,
-    setLateFees,
-  )
-
-  const handlePrevWeek = () => {
-    setSelectedDate((prev) => shiftDateByDays(prev, -7))
+  if (error) {
+    return <div className={styles.app}>{error}</div>
   }
 
-  const handleNextWeek = () => {
-    setSelectedDate((prev) => shiftDateByDays(prev, 7))
-  }
-
-  // Wait for role check to complete before showing content
-  // For trainers, also wait until we've locked to the correct trainer
-  const isRoleCheckPending = userRole === null
-  const isTrainerLockPending = isReadOnly && trainerIdForUser && selectedTrainerId !== trainerIdForUser
-
-  if (!selectedTrainer || selectedTrainerId == null || isRoleCheckPending || isTrainerLockPending) {
-    return <div className={styles.app}>Loading…</div>
-  }
-
-  const handleClientCreated = (client: typeof clients[number]) => {
-    setClients((prev) =>
-      [...prev, client].sort((a, b) => a.name.localeCompare(b.name)),
-    )
-    setIsAddingClient(false)
-  }
-
-  const handleTrainerCreated = (trainer: typeof trainers[number]) => {
-    setTrainers((prev) => [...prev, trainer].sort((a, b) => a.id - b.id))
-    setIsAddingTrainer(false)
-  }
-
-  return (
-    <div className={styles.app}>
-      <SideBar
-        trainers={trainers}
-        selectedTrainerId={selectedTrainerId}
-        onSelectTrainer={(id) => {
-          setSelectedTrainerId(id)
-          setIsAddingClient(false)
-          setIsAddingTrainer(false)
-        }}
-        onAddClient={() => {
-          setIsAddingClient(true)
-          setIsAddingTrainer(false)
-        }}
-        onAddTrainer={() => {
-          setIsAddingTrainer(true)
-          setIsAddingClient(false)
-        }}
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        readOnly={isReadOnly}
-      />
-      <div className={styles.main}>
-        {isAddingClient ? (
-          <AddClientForm
-            trainers={trainers}
-            onCreated={handleClientCreated}
-            onCancel={() => setIsAddingClient(false)}
-          />
-        ) : isAddingTrainer ? (
-          <AddTrainerForm
-            onCreated={handleTrainerCreated}
-            onCancel={() => setIsAddingTrainer(false)}
-          />
-        ) : (
-          <>
-            <div className={styles.mobileHeaderRow}>
-              <button
-                className={styles.mobileMenuButton}
-                onClick={() => setIsMobileMenuOpen(true)}
-                aria-label="Open menu"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M3 6h18M3 12h18M3 18h18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-              <DashboardHeader
-                trainerName={selectedTrainer.name}
-                weekStart={weekStart}
-                weekEnd={weekEnd}
-                onPrev={handlePrevWeek}
-                onNext={handleNextWeek}
-              />
-            </div>
-            <div className={styles.mainGrid}>
-              <Card>
-                <WeeklyDashboard
-                  clients={clients}
-                  packages={packages}
-                  sessions={sessions}
-                  lateFees={lateFees}
-                  weekStart={weekStart}
-                  weekEnd={weekEnd}
-                  selectedTrainer={selectedTrainer}
-                  onDeleteSession={isReadOnly ? undefined : deleteSession}
-                  onDeletePackage={isReadOnly ? undefined : deletePackage}
-                  onDeleteLateFee={isReadOnly ? undefined : deleteLateFee}
-                  readOnly={isReadOnly}
-                />
-              </Card>
-              <Card>
-                <AddClassesForm
-                  date={selectedDate}
-                  onDateChange={setSelectedDate}
-                  clients={clients}
-                  onAddSessions={addSessions}
-                  disabled={isReadOnly}
-                />
-                <AddPackageForm clients={clients} onAddPackage={addPackage} disabled={isReadOnly} />
-                <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} disabled={isReadOnly} />
-              </Card>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
+  return <div className={styles.app}>Loading…</div>
 }
