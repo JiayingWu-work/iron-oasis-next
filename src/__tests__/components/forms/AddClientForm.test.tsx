@@ -464,6 +464,23 @@ describe('AddClientForm', () => {
     })
   })
 
+  describe('close button', () => {
+    it('calls onCancel when close button is clicked', () => {
+      const handleCancel = vi.fn()
+      render(
+        <AddClientForm
+          trainers={mockTrainers}
+          onCreated={() => {}}
+          onCancel={handleCancel}
+        />,
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+      expect(handleCancel).toHaveBeenCalled()
+    })
+  })
+
   describe('cancel button', () => {
     it('calls onCancel when clicked', () => {
       const handleCancel = vi.fn()

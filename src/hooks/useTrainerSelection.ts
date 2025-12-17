@@ -41,6 +41,7 @@ export function useTrainerSelection() {
 
   return {
     trainers,
+    setTrainers,
     selectedTrainerId,
     setSelectedTrainerId,
     selectedTrainer,

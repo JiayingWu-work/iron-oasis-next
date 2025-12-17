@@ -6,6 +6,7 @@ interface SideBarProps {
   selectedTrainerId: number | null
   onSelectTrainer: (id: number) => void
   onAddClient: () => void
+  onAddTrainer: () => void
   isOpen?: boolean // used for mobile drawer
   onClose?: () => void
 }
@@ -15,6 +16,7 @@ export default function SideBar({
   selectedTrainerId,
   onSelectTrainer,
   onAddClient,
+  onAddTrainer,
   isOpen = true,
   onClose,
 }: SideBarProps) {
@@ -25,6 +27,11 @@ export default function SideBar({
 
   const handleAddClient = () => {
     onAddClient()
+    onClose?.()
+  }
+
+  const handleAddTrainer = () => {
+    onAddTrainer()
     onClose?.()
   }
 
@@ -59,7 +66,6 @@ export default function SideBar({
               </svg>
             </button>
           </div>
-          <p className={styles.subtitle}>Class Tracker MVP</p>
         </div>
         <div>
           <h3 className={styles.sectionTitle}>Forms</h3>
@@ -70,7 +76,11 @@ export default function SideBar({
           >
             + Add new client
           </button>
-          <button type="button" className={styles.actionButton} disabled>
+          <button
+            type="button"
+            className={styles.actionButton}
+            onClick={handleAddTrainer}
+          >
             + Add new trainer
           </button>
         </div>

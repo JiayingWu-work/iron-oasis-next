@@ -3,7 +3,10 @@
 import { useState, useMemo } from 'react'
 import type { Client, Trainer, TrainingMode } from '@/types'
 import Select from '@/components/ui/Select/Select'
-import styles from './fullpage-form.module.css'
+import FormField from '@/components/ui/FormField/FormField'
+import FullPageForm, {
+  fullPageFormStyles as styles,
+} from '@/components/ui/FullPageForm/FullPageForm'
 
 interface AddClientFormProps {
   trainers: Trainer[]
@@ -103,89 +106,66 @@ export default function AddClientForm({
     [],
   )
 
+  const submitDisabled =
+    !name.trim() ||
+    !primaryTrainerId ||
+    (mode === '2v2' && secondaryTrainerId === '')
+
   return (
-    <div className={styles.page}>
-      <div className={styles.card}>
-        <h2 className={styles.title}>Add new client</h2>
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.fields}>
-            <div className={styles.field}>
-              <label className={styles.label}>Client name</label>
-              <input
-                className={styles.input}
-                placeholder="e.g. Angela Wang or Angela & Tom"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <ul className={styles.hints}>
-                <li>
-                  For shared packages or 1v2 clients, use names like{' '}
-                  <strong>Angela &amp; Tom</strong>.
-                </li>
-                <li>
-                  For regular 1v1 or 1v2 clients, leave{' '}
-                  <em>Secondary trainer</em> unselected.
-                </li>
-              </ul>
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>
-                Primary trainer (package owner)
-              </label>
-              <Select
-                value={primaryTrainerId}
-                onChange={(val) => {
-                  const newId = Number(val)
-                  setPrimaryTrainerId(newId)
-                  if (secondaryTrainerId === newId) setSecondaryTrainerId('')
-                }}
-                options={primaryTrainerOptions}
-                placeholder="Select trainer..."
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Training mode</label>
-              <Select
-                value={mode}
-                onChange={(val) => setMode(val as TrainingMode)}
-                options={modeOptions}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Secondary trainer</label>
-              <Select
-                value={secondaryTrainerId}
-                onChange={(val) =>
-                  setSecondaryTrainerId(val === '' ? '' : Number(val))
-                }
-                options={secondaryTrainerOptions}
-              />
-            </div>
-            {error && <p className={styles.error}>{error}</p>}
-          </div>
-          <div className={styles.actions}>
-            <button
-              className={`${styles.btn} ${styles.btnPrimary}`}
-              disabled={
-                saving ||
-                !name.trim() ||
-                !primaryTrainerId ||
-                (mode === '2v2' && secondaryTrainerId === '')
-              }
-            >
-              {saving ? 'Saving…' : 'Save client'}
-            </button>
-            <button
-              type="button"
-              className={`${styles.btn} ${styles.btnSecondary}`}
-              disabled={saving}
-              onClick={onCancel}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <FullPageForm
+      title="Add new client"
+      onCancel={onCancel}
+      onSubmit={handleSubmit}
+      submitLabel="Save client"
+      submitDisabled={submitDisabled}
+      saving={saving}
+      error={error}
+    >
+      <FormField
+        label="Client name"
+        hints={[
+          'For shared packages or 1v2 clients, use names like <strong>Angela &amp; Tom</strong>.',
+          'For regular 1v1 or 1v2 clients, leave <em>Secondary trainer</em> unselected.',
+        ]}
+      >
+        <input
+          className={styles.input}
+          placeholder="e.g. Angela Wang or Angela & Tom"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </FormField>
+
+      <FormField label="Primary trainer (package owner)">
+        <Select
+          value={primaryTrainerId}
+          onChange={(val) => {
+            const newId = Number(val)
+            setPrimaryTrainerId(newId)
+            if (secondaryTrainerId === newId) setSecondaryTrainerId('')
+          }}
+          options={primaryTrainerOptions}
+          placeholder="Select trainer..."
+        />
+      </FormField>
+
+      <FormField label="Training mode">
+        <Select
+          value={mode}
+          onChange={(val) => setMode(val as TrainingMode)}
+          options={modeOptions}
+        />
+      </FormField>
+
+      <FormField label="Secondary trainer">
+        <Select
+          value={secondaryTrainerId}
+          onChange={(val) =>
+            setSecondaryTrainerId(val === '' ? '' : Number(val))
+          }
+          options={secondaryTrainerOptions}
+        />
+      </FormField>
+    </FullPageForm>
   )
 }

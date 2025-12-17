@@ -9,6 +9,7 @@ import {
   AddPackageForm,
   AddLateFeeForm,
   AddClientForm,
+  AddTrainerForm,
   SideBar,
   Card,
 } from '@/components'
@@ -26,10 +27,12 @@ export default function Dashboard() {
     formatDateToInput(new Date()),
   )
   const [isAddingClient, setIsAddingClient] = useState(false)
+  const [isAddingTrainer, setIsAddingTrainer] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const {
     trainers,
+    setTrainers,
     selectedTrainerId,
     setSelectedTrainerId,
     selectedTrainer,
@@ -86,6 +89,11 @@ export default function Dashboard() {
     setIsAddingClient(false)
   }
 
+  const handleTrainerCreated = (trainer: typeof trainers[number]) => {
+    setTrainers((prev) => [...prev, trainer].sort((a, b) => a.id - b.id))
+    setIsAddingTrainer(false)
+  }
+
   return (
     <div className={styles.app}>
       <SideBar
@@ -94,8 +102,16 @@ export default function Dashboard() {
         onSelectTrainer={(id) => {
           setSelectedTrainerId(id)
           setIsAddingClient(false)
+          setIsAddingTrainer(false)
         }}
-        onAddClient={() => setIsAddingClient(true)}
+        onAddClient={() => {
+          setIsAddingClient(true)
+          setIsAddingTrainer(false)
+        }}
+        onAddTrainer={() => {
+          setIsAddingTrainer(true)
+          setIsAddingClient(false)
+        }}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
@@ -105,6 +121,11 @@ export default function Dashboard() {
             trainers={trainers}
             onCreated={handleClientCreated}
             onCancel={() => setIsAddingClient(false)}
+          />
+        ) : isAddingTrainer ? (
+          <AddTrainerForm
+            onCreated={handleTrainerCreated}
+            onCancel={() => setIsAddingTrainer(false)}
           />
         ) : (
           <>
