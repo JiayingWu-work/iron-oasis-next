@@ -76,6 +76,16 @@ describe('DatePicker', () => {
   })
 
   describe('month navigation', () => {
+    // Helper to get nav buttons (prev is first, next is second button with SVG inside header)
+    const getNavButtons = () => {
+      const header = document.querySelector('[class*="header"]')!
+      const buttons = header.querySelectorAll('button')
+      return {
+        prevButton: buttons[0],
+        nextButton: buttons[1],
+      }
+    }
+
     it('navigates to previous month when clicking prev button', () => {
       render(<DatePicker value="2025-01-15" onChange={() => {}} />)
 
@@ -83,11 +93,8 @@ describe('DatePicker', () => {
       fireEvent.click(screen.getByRole('button', { name: /january 15/i }))
       expect(screen.getByText('January 2025')).toBeInTheDocument()
 
-      // Click prev month (first nav button)
-      const navButtons = screen.getAllByRole('button')
-      const prevButton = navButtons.find((btn) =>
-        btn.querySelector('svg path[d="M15 18l-6-6 6-6"]'),
-      )!
+      // Click prev month
+      const { prevButton } = getNavButtons()
       fireEvent.click(prevButton)
 
       expect(screen.getByText('December 2024')).toBeInTheDocument()
@@ -99,11 +106,8 @@ describe('DatePicker', () => {
       // Open calendar
       fireEvent.click(screen.getByRole('button', { name: /january 15/i }))
 
-      // Click next month (second nav button)
-      const navButtons = screen.getAllByRole('button')
-      const nextButton = navButtons.find((btn) =>
-        btn.querySelector('svg path[d="M9 18l6-6-6-6"]'),
-      )!
+      // Click next month
+      const { nextButton } = getNavButtons()
       fireEvent.click(nextButton)
 
       expect(screen.getByText('February 2025')).toBeInTheDocument()
@@ -116,10 +120,7 @@ describe('DatePicker', () => {
       fireEvent.click(screen.getByRole('button', { name: /january 15/i }))
 
       // Navigate forward 3 months
-      const navButtons = screen.getAllByRole('button')
-      const nextButton = navButtons.find((btn) =>
-        btn.querySelector('svg path[d="M9 18l6-6-6-6"]'),
-      )!
+      const { nextButton } = getNavButtons()
 
       fireEvent.click(nextButton)
       fireEvent.click(nextButton)
@@ -165,10 +166,8 @@ describe('DatePicker', () => {
       fireEvent.click(screen.getByRole('button', { name: /january 15/i }))
 
       // Navigate to February
-      const navButtons = screen.getAllByRole('button')
-      const nextButton = navButtons.find((btn) =>
-        btn.querySelector('svg path[d="M9 18l6-6-6-6"]'),
-      )!
+      const header = document.querySelector('[class*="header"]')!
+      const nextButton = header.querySelectorAll('button')[1]
       fireEvent.click(nextButton)
 
       // Select Feb 10
@@ -275,10 +274,8 @@ describe('DatePicker', () => {
 
       // Open and navigate to March
       fireEvent.click(trigger)
-      const navButtons = screen.getAllByRole('button')
-      const nextButton = navButtons.find((btn) =>
-        btn.querySelector('svg path[d="M9 18l6-6-6-6"]'),
-      )!
+      const header = document.querySelector('[class*="header"]')!
+      const nextButton = header.querySelectorAll('button')[1]
       fireEvent.click(nextButton)
       fireEvent.click(nextButton)
       expect(screen.getByText('March 2025')).toBeInTheDocument()

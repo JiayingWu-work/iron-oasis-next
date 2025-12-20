@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { ChevronDown, Check } from 'lucide-react'
 import styles from './Select.module.css'
 
 interface SelectOption {
@@ -67,21 +68,10 @@ export default function Select({
         >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <svg
+        <ChevronDown
           className={`${styles.triggerIcon} ${isOpen ? styles.triggerIconOpen : ''}`}
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <path
-            d="M6 9l6 6 6-6"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+          size={16}
+        />
       </button>
 
       {isOpen && (
@@ -99,21 +89,7 @@ export default function Select({
                   >
                     {option.label}
                     {option.value === value && (
-                      <svg
-                        className={styles.checkIcon}
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <path
-                          d="M5 13l4 4L19 7"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                      <Check className={styles.checkIcon} size={16} />
                     )}
                   </button>
                 </li>
