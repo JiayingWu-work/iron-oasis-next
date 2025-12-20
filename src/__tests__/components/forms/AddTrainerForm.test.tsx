@@ -24,6 +24,13 @@ describe('AddTrainerForm', () => {
       ).toBeInTheDocument()
     })
 
+    it('renders email input', () => {
+      render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
+      expect(
+        screen.getByPlaceholderText('e.g. john@example.com'),
+      ).toBeInTheDocument()
+    })
+
     it('renders tier selection dropdown with default Tier 1', () => {
       render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
       expect(screen.getByText('Tier 1')).toBeInTheDocument()
@@ -31,6 +38,19 @@ describe('AddTrainerForm', () => {
 
     it('save button is disabled without name', () => {
       render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
+      expect(
+        screen.getByRole('button', { name: 'Save trainer' }),
+      ).toBeDisabled()
+    })
+
+    it('save button is disabled without email', () => {
+      render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
+
+      // Fill name but not email
+      fireEvent.change(screen.getByPlaceholderText('e.g. John Smith'), {
+        target: { value: 'Alice' },
+      })
+
       expect(
         screen.getByRole('button', { name: 'Save trainer' }),
       ).toBeDisabled()
