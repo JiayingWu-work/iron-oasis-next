@@ -5,7 +5,13 @@ import styles from './page.module.css';
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return [{ path: 'sign-in' }, { path: 'sign-up' }, { path: 'sign-out' }];
+  return [
+    { path: 'sign-in' },
+    { path: 'sign-up' },
+    { path: 'sign-out' },
+    { path: 'forgot-password' },
+    { path: 'reset-password' },
+  ];
 }
 
 export default async function AuthPage({
