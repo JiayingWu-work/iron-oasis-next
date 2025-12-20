@@ -221,6 +221,31 @@
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid var(--color-border-dark);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settingsButton {
+  width: 100%;
+  background: transparent;
+  color: var(--color-text-light);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settingsButton:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--color-accent);
 }
 
 .signOutButton {
@@ -235,6 +260,9 @@
   text-align: left;
   cursor: pointer;
   transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .signOutButton:hover {

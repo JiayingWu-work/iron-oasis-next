@@ -22,6 +22,7 @@ import {
   usePackageActions,
   useLateFeeActions,
 } from '@/hooks'
+import { Menu } from 'lucide-react'
 import styles from '../page.module.css'
 
 /** Convert trainer name and ID to URL-safe slug (e.g., "jiaying-1") */
@@ -211,14 +212,7 @@ export default function TrainerDashboard() {
                 onClick={() => setIsMobileMenuOpen(true)}
                 aria-label="Open menu"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M3 6h18M3 12h18M3 18h18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                <Menu size={20} />
               </button>
               <DashboardHeader
                 trainerName={selectedTrainer.name}

@@ -3,6 +3,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import SideBar from '@/components/layout/SideBar/SideBar'
 import type { Trainer } from '@/types'
 
+// Mock next/navigation
+const mockPush = vi.fn()
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: vi.fn(),
+  }),
+}))
+
 // Mock the auth client
 const mockSignOut = vi.fn().mockResolvedValue(undefined)
 vi.mock('@/lib/auth/client', () => ({
@@ -31,6 +40,7 @@ describe('SideBar', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockPush.mockClear()
     // Mock window.location
     Object.defineProperty(window, 'location', {
       value: { href: '' },
@@ -127,6 +137,37 @@ describe('SideBar', () => {
       fireEvent.click(screen.getByText('+ Add new trainer'))
 
       expect(defaultProps.onAddTrainer).toHaveBeenCalled()
+    })
+  })
+
+  describe('settings button', () => {
+    it('renders the settings button when not readOnly', () => {
+      render(<SideBar {...defaultProps} />)
+
+      expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument()
+    })
+
+    it('hides the settings button when readOnly is true', () => {
+      render(<SideBar {...defaultProps} readOnly />)
+
+      expect(screen.queryByRole('button', { name: /settings/i })).not.toBeInTheDocument()
+    })
+
+    it('navigates to /settings when clicked', () => {
+      render(<SideBar {...defaultProps} />)
+
+      fireEvent.click(screen.getByRole('button', { name: /settings/i }))
+
+      expect(mockPush).toHaveBeenCalledWith('/settings')
+    })
+
+    it('calls onClose when settings is clicked and onClose is provided', () => {
+      const onClose = vi.fn()
+      render(<SideBar {...defaultProps} onClose={onClose} />)
+
+      fireEvent.click(screen.getByRole('button', { name: /settings/i }))
+
+      expect(onClose).toHaveBeenCalled()
     })
   })
 })

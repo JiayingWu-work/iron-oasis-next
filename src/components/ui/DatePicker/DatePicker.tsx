@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './DatePicker.module.css'
 
 interface DatePickerProps {
@@ -160,25 +161,7 @@ export default function DatePicker({
         <span className={styles.triggerText}>
           {value ? formatDateDisplay(value) : 'Select date...'}
         </span>
-        <svg
-          className={styles.triggerIcon}
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <rect
-            x="3"
-            y="4"
-            width="18"
-            height="18"
-            rx="2"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <path d="M3 10h18" stroke="currentColor" strokeWidth="2" />
-          <path d="M8 2v4M16 2v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
+        <Calendar className={styles.triggerIcon} size={16} />
       </button>
 
       {isOpen && (
@@ -189,15 +172,7 @@ export default function DatePicker({
               className={styles.navButton}
               onClick={handlePrevMonth}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <ChevronLeft size={16} />
             </button>
             <span className={styles.monthYear}>
               {MONTHS[viewMonth]} {viewYear}
@@ -207,15 +182,7 @@ export default function DatePicker({
               className={styles.navButton}
               onClick={handleNextMonth}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M9 18l6-6-6-6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <ChevronRight size={16} />
             </button>
           </div>
 

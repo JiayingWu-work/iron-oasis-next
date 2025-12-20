@@ -92,10 +92,8 @@ describe('AddLateFeeForm', () => {
       fireEvent.click(screen.getByText('January 15, 2025'))
 
       // Navigate to previous month
-      const navButtons = screen.getAllByRole('button')
-      const prevButton = navButtons.find((btn) =>
-        btn.querySelector('svg path[d="M15 18l-6-6 6-6"]'),
-      )!
+      const header = document.querySelector('[class*="header"]')!
+      const prevButton = header.querySelectorAll('button')[0]
       fireEvent.click(prevButton)
 
       // Select Dec 20
