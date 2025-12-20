@@ -14,3 +14,13 @@
 .card:hover {
   box-shadow: var(--shadow-lg);
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .card {
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
