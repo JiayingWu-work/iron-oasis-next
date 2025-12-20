@@ -24,6 +24,13 @@ describe('AddTrainerForm', () => {
       ).toBeInTheDocument()
     })
 
+    it('renders email input', () => {
+      render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
+      expect(
+        screen.getByPlaceholderText('e.g. john@example.com'),
+      ).toBeInTheDocument()
+    })
+
     it('renders tier selection dropdown with default Tier 1', () => {
       render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
       expect(screen.getByText('Tier 1')).toBeInTheDocument()
@@ -31,6 +38,19 @@ describe('AddTrainerForm', () => {
 
     it('save button is disabled without name', () => {
       render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
+      expect(
+        screen.getByRole('button', { name: 'Save trainer' }),
+      ).toBeDisabled()
+    })
+
+    it('save button is disabled without email', () => {
+      render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
+
+      // Fill name but not email
+      fireEvent.change(screen.getByPlaceholderText('e.g. John Smith'), {
+        target: { value: 'Alice' },
+      })
+
       expect(
         screen.getByRole('button', { name: 'Save trainer' }),
       ).toBeDisabled()
@@ -47,11 +67,13 @@ describe('AddTrainerForm', () => {
       expect(input).toHaveValue('Alice Smith')
     })
 
-    it('enables submit button with valid name', () => {
+    it('enables submit button with valid name and email', () => {
       render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
 
-      const input = screen.getByPlaceholderText('e.g. John Smith')
-      fireEvent.change(input, { target: { value: 'Alice' } })
+      const nameInput = screen.getByPlaceholderText('e.g. John Smith')
+      const emailInput = screen.getByPlaceholderText('e.g. john@example.com')
+      fireEvent.change(nameInput, { target: { value: 'Alice' } })
+      fireEvent.change(emailInput, { target: { value: 'alice@test.com' } })
 
       expect(
         screen.getByRole('button', { name: 'Save trainer' }),
@@ -102,6 +124,7 @@ describe('AddTrainerForm', () => {
             id: 123,
             name: 'Alice',
             tier: 2,
+            email: 'alice@test.com',
           }),
       } as Response)
 
@@ -110,6 +133,9 @@ describe('AddTrainerForm', () => {
       // Fill form
       fireEvent.change(screen.getByPlaceholderText('e.g. John Smith'), {
         target: { value: 'Alice' },
+      })
+      fireEvent.change(screen.getByPlaceholderText('e.g. john@example.com'), {
+        target: { value: 'alice@test.com' },
       })
       fireEvent.click(screen.getByText('Tier 1'))
       fireEvent.click(screen.getByText('Tier 2'))
@@ -123,6 +149,7 @@ describe('AddTrainerForm', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: 'Alice',
+            email: 'alice@test.com',
             tier: 2,
           }),
         })
@@ -133,6 +160,7 @@ describe('AddTrainerForm', () => {
           id: 123,
           name: 'Alice',
           tier: 2,
+          email: 'alice@test.com',
         })
       })
     })
@@ -152,6 +180,9 @@ describe('AddTrainerForm', () => {
       fireEvent.change(screen.getByPlaceholderText('e.g. John Smith'), {
         target: { value: 'Alice' },
       })
+      fireEvent.change(screen.getByPlaceholderText('e.g. john@example.com'), {
+        target: { value: 'alice@test.com' },
+      })
       fireEvent.click(screen.getByRole('button', { name: 'Save trainer' }))
 
       // Should show saving state
@@ -160,7 +191,7 @@ describe('AddTrainerForm', () => {
       // Resolve to clean up
       resolvePromise!({
         ok: true,
-        json: () => Promise.resolve({ id: 1, name: 'Alice', tier: 1 }),
+        json: () => Promise.resolve({ id: 1, name: 'Alice', tier: 1, email: 'alice@test.com' }),
       } as Response)
 
       await waitFor(() => {
@@ -180,6 +211,9 @@ describe('AddTrainerForm', () => {
       fireEvent.change(screen.getByPlaceholderText('e.g. John Smith'), {
         target: { value: 'Alice' },
       })
+      fireEvent.change(screen.getByPlaceholderText('e.g. john@example.com'), {
+        target: { value: 'alice@test.com' },
+      })
       fireEvent.click(screen.getByRole('button', { name: 'Save trainer' }))
 
       await waitFor(() => {
@@ -190,7 +224,7 @@ describe('AddTrainerForm', () => {
     it('trims name before submission', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ id: 1, name: 'Alice', tier: 1 }),
+        json: () => Promise.resolve({ id: 1, name: 'Alice', tier: 1, email: 'alice@test.com' }),
       } as Response)
 
       render(<AddTrainerForm onCreated={() => {}} onCancel={() => {}} />)
@@ -198,6 +232,9 @@ describe('AddTrainerForm', () => {
       // Enter name with whitespace
       fireEvent.change(screen.getByPlaceholderText('e.g. John Smith'), {
         target: { value: '  Alice  ' },
+      })
+      fireEvent.change(screen.getByPlaceholderText('e.g. john@example.com'), {
+        target: { value: 'alice@test.com' },
       })
       fireEvent.click(screen.getByRole('button', { name: 'Save trainer' }))
 
@@ -207,6 +244,7 @@ describe('AddTrainerForm', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: 'Alice', // trimmed
+            email: 'alice@test.com',
             tier: 1,
           }),
         })
@@ -250,6 +288,9 @@ describe('AddTrainerForm', () => {
       fireEvent.change(screen.getByPlaceholderText('e.g. John Smith'), {
         target: { value: 'Alice' },
       })
+      fireEvent.change(screen.getByPlaceholderText('e.g. john@example.com'), {
+        target: { value: 'alice@test.com' },
+      })
       fireEvent.click(screen.getByRole('button', { name: 'Save trainer' }))
 
       expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
@@ -257,7 +298,7 @@ describe('AddTrainerForm', () => {
       // Resolve to clean up
       resolvePromise!({
         ok: true,
-        json: () => Promise.resolve({ id: 1, name: 'Alice', tier: 1 }),
+        json: () => Promise.resolve({ id: 1, name: 'Alice', tier: 1, email: 'alice@test.com' }),
       } as Response)
 
       await waitFor(() => {

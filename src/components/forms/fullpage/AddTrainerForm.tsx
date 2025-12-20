@@ -13,11 +13,16 @@ interface AddTrainerFormProps {
   onCancel: () => void
 }
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
 export default function AddTrainerForm({
   onCreated,
   onCancel,
 }: AddTrainerFormProps) {
   const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [tier, setTier] = useState<1 | 2 | 3>(1)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,6 +31,14 @@ export default function AddTrainerForm({
     e.preventDefault()
     if (!name.trim()) {
       setError('Please enter a trainer name')
+      return
+    }
+    if (!email.trim()) {
+      setError('Please enter an email address')
+      return
+    }
+    if (!isValidEmail(email.trim())) {
+      setError('Please enter a valid email address')
       return
     }
 
@@ -38,6 +51,7 @@ export default function AddTrainerForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
+          email: email.trim().toLowerCase(),
           tier,
         }),
       })
@@ -53,6 +67,7 @@ export default function AddTrainerForm({
         id: created.id,
         name: created.name,
         tier: created.tier,
+        email: created.email,
       }
 
       onCreated(trainer)
@@ -75,13 +90,15 @@ export default function AddTrainerForm({
     [],
   )
 
+  const isFormValid = name.trim() && email.trim() && isValidEmail(email.trim())
+
   return (
     <FullPageForm
       title="Add new trainer"
       onCancel={onCancel}
       onSubmit={handleSubmit}
       submitLabel="Save trainer"
-      submitDisabled={!name.trim()}
+      submitDisabled={!isFormValid}
       saving={saving}
       error={error}
     >
@@ -91,6 +108,19 @@ export default function AddTrainerForm({
           placeholder="e.g. John Smith"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+      </FormField>
+
+      <FormField
+        label="Email"
+        hints={['The trainer will use this email to sign up for the app.']}
+      >
+        <input
+          className={styles.input}
+          type="email"
+          placeholder="e.g. john@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </FormField>
 

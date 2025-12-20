@@ -14,9 +14,15 @@ export async function POST() {
       )
     `;
 
+    // Add email column to trainers table if it doesn't exist
+    await sql`
+      ALTER TABLE trainers
+      ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE
+    `;
+
     return NextResponse.json({
       success: true,
-      message: 'user_profiles table created successfully'
+      message: 'Database setup completed successfully'
     });
   } catch (error) {
     console.error('Setup error:', error);

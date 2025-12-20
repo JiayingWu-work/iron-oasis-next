@@ -43,18 +43,50 @@ export default function DashboardRouter() {
           return
         }
 
-        // Check user role
+        // Check if user profile exists
         const profileRes = await fetch(`/api/user-profile?authUserId=${session!.user.id}`)
 
+        let profile = null
+
         if (profileRes.ok) {
-          const profile = await profileRes.json()
-          if (profile?.role === 'trainer' && profile.trainer_id) {
-            // Trainer: redirect to their specific dashboard
-            const userTrainer = trainers.find((t: { id: number }) => t.id === profile.trainer_id)
-            if (userTrainer) {
-              router.replace(`/dashboard/${toSlug(userTrainer.name, userTrainer.id)}`)
-              return
-            }
+          profile = await profileRes.json()
+        } else if (profileRes.status === 404) {
+          // Profile doesn't exist - create one based on email
+          const userEmail = session!.user.email
+          if (!userEmail) {
+            setError('Unable to determine your email. Please try logging in again.')
+            return
+          }
+
+          const createRes = await fetch('/api/user-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              authUserId: session!.user.id,
+              email: userEmail,
+            }),
+          })
+
+          if (createRes.status === 403) {
+            const data = await createRes.json()
+            setError(data.error || "Your email isn't registered. Contact the gym owner.")
+            return
+          }
+
+          if (!createRes.ok) {
+            setError('Failed to create profile. Please try again.')
+            return
+          }
+
+          profile = await createRes.json()
+        }
+
+        if (profile?.role === 'trainer' && profile.trainer_id) {
+          // Trainer: redirect to their specific dashboard
+          const userTrainer = trainers.find((t: { id: number }) => t.id === profile.trainer_id)
+          if (userTrainer) {
+            router.replace(`/dashboard/${toSlug(userTrainer.name, userTrainer.id)}`)
+            return
           }
         }
 
@@ -69,7 +101,22 @@ export default function DashboardRouter() {
   }, [session, isPending, router])
 
   if (error) {
-    return <div className={styles.app}>{error}</div>
+    return (
+      <div className={styles.app}>
+        <div className={styles.errorContainer}>
+          <p className={styles.errorMessage}>{error}</p>
+          <button
+            className={styles.goBackButton}
+            onClick={async () => {
+              await authClient.signOut()
+              window.location.href = '/auth/sign-in'
+            }}
+          >
+            Go back
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return <div className={styles.app}>Loading…</div>

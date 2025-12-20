@@ -4,6 +4,7 @@ export interface Trainer {
   id: number
   name: string
   tier: 1 | 2 | 3
+  email: string
 }
 
 export interface Client {
