@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
+import { SettingsCard } from '@/components'
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -12,25 +13,6 @@ import {
   Clock,
 } from 'lucide-react'
 import styles from './page.module.css'
-
-interface SettingsCardProps {
-  title: string
-  description: string
-  icon: React.ReactNode
-}
-
-function SettingsCard({ title, description, icon }: SettingsCardProps) {
-  return (
-    <div className={styles.card}>
-      <div className={styles.cardIcon}>{icon}</div>
-      <div className={styles.cardInfo}>
-        <h3 className={styles.cardTitle}>{title}</h3>
-        <p className={styles.cardDescription}>{description}</p>
-      </div>
-      <span className={styles.comingSoon}>Coming Soon</span>
-    </div>
-  )
-}
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -101,16 +83,19 @@ export default function SettingsPage() {
                 title="Transfer Client"
                 description="Reassign a client to a different trainer"
                 icon={<ArrowLeftRight size={20} />}
+                badge="Coming Soon"
               />
               <SettingsCard
                 title="Edit Client"
                 description="Update client name or training mode"
                 icon={<UserPen size={20} />}
+                badge="Coming Soon"
               />
               <SettingsCard
                 title="Archive Client"
                 description="Deactivate a client who no longer trains here"
                 icon={<Archive size={20} />}
+                badge="Coming Soon"
               />
             </div>
           </div>
@@ -122,11 +107,13 @@ export default function SettingsPage() {
                 title="Edit Trainer"
                 description="Update trainer name, email, or tier"
                 icon={<UserPen size={20} />}
+                badge="Coming Soon"
               />
               <SettingsCard
                 title="Archive Trainer"
                 description="Deactivate a trainer who no longer works here"
                 icon={<Archive size={20} />}
+                badge="Coming Soon"
               />
             </div>
           </div>
@@ -138,11 +125,13 @@ export default function SettingsPage() {
                 title="Update Pricing"
                 description="Adjust session rates for each tier"
                 icon={<DollarSign size={20} />}
+                badge="Coming Soon"
               />
               <SettingsCard
                 title="Update Late Fee"
                 description="Adjust the late cancellation fee amount"
                 icon={<Clock size={20} />}
+                badge="Coming Soon"
               />
             </div>
           </div>

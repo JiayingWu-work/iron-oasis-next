@@ -120,64 +120,6 @@
   gap: 0.5rem;
 }
 
-/* Settings Card */
-.card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.card:hover {
-  border-color: var(--color-border);
-  box-shadow: var(--shadow-sm);
-}
-
-.cardIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--color-accent-subtle);
-  color: var(--color-accent);
-  flex-shrink: 0;
-}
-
-.cardInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.cardTitle {
-  margin: 0 0 0.125rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.cardDescription {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-}
-
-/* Coming Soon Badge */
-.comingSoon {
-  flex-shrink: 0;
-  padding: 0.25rem 0.625rem;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--color-text-muted);
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-full);
-}
-
 /* Responsive */
 @media (max-width: 640px) {
   .page {
@@ -202,19 +144,5 @@
 
   .title {
     font-size: 1.5rem;
-  }
-
-  .card {
-    padding: 0.875rem 1rem;
-  }
-
-  .cardIcon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .cardIcon svg {
-    width: 18px;
-    height: 18px;
   }
 }
