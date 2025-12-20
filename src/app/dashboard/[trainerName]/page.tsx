@@ -228,7 +228,7 @@ export default function TrainerDashboard() {
                 onNext={handleNextWeek}
               />
             </div>
-            <div className={styles.mainGrid}>
+            <div className={`${styles.mainGrid} ${isReadOnly ? styles.mainGridFullWidth : ''}`}>
               <Card>
                 <WeeklyDashboard
                   clients={clients}
@@ -244,17 +244,19 @@ export default function TrainerDashboard() {
                   readOnly={isReadOnly}
                 />
               </Card>
-              <Card>
-                <AddClassesForm
-                  date={selectedDate}
-                  onDateChange={setSelectedDate}
-                  clients={clients}
-                  onAddSessions={addSessions}
-                  disabled={isReadOnly}
-                />
-                <AddPackageForm clients={clients} onAddPackage={addPackage} disabled={isReadOnly} />
-                <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} disabled={isReadOnly} />
-              </Card>
+              {!isReadOnly && (
+                <Card>
+                  <AddClassesForm
+                    date={selectedDate}
+                    onDateChange={setSelectedDate}
+                    clients={clients}
+                    onAddSessions={addSessions}
+                    disabled={isReadOnly}
+                  />
+                  <AddPackageForm clients={clients} onAddPackage={addPackage} disabled={isReadOnly} />
+                  <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} disabled={isReadOnly} />
+                </Card>
+              )}
             </div>
           </>
         )}

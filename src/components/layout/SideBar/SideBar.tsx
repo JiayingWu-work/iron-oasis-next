@@ -99,9 +99,9 @@ export default function SideBar({
           </div>
         )}
         <div className={styles.trainersSection}>
-          <h3 className={styles.sectionTitle}>Trainers</h3>
+          <h3 className={styles.sectionTitle}>{readOnly ? 'Trainer' : 'Trainers'}</h3>
           <ul className={styles.trainerList}>
-            {trainers.map((t) => (
+            {(readOnly ? trainers.filter((t) => t.id === selectedTrainerId) : trainers).map((t) => (
               <li
                 key={t.id}
                 className={`${styles.trainerItem} ${
