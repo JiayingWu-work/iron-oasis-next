@@ -4,7 +4,7 @@ import { useWeeklyState } from '@/hooks/useWeeklyState'
 import type { Trainer } from '@/types'
 
 describe('useWeeklyState', () => {
-  const mockTrainer: Trainer = { id: 1, name: 'John', tier: 1 }
+  const mockTrainer: Trainer = { id: 1, name: 'John', tier: 1, email: 'john@test.com' }
 
   const mockApiResponse = {
     weekStart: '2025-01-06',

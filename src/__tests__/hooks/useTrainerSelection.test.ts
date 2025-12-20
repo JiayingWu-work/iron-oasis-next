@@ -5,9 +5,9 @@ import type { Trainer } from '@/types'
 
 describe('useTrainerSelection', () => {
   const mockTrainers: Trainer[] = [
-    { id: 1, name: 'John', tier: 1 },
-    { id: 2, name: 'Jane', tier: 2 },
-    { id: 3, name: 'Bob', tier: 3 },
+    { id: 1, name: 'John', tier: 1, email: 'john@test.com' },
+    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com' },
+    { id: 3, name: 'Bob', tier: 3, email: 'bob@test.com' },
   ]
 
   beforeEach(() => {

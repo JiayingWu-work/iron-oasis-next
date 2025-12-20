@@ -8,6 +8,7 @@ describe('WeeklyDashboard', () => {
     id: 1,
     name: 'John Trainer',
     tier: 2,
+    email: 'john.trainer@test.com',
   }
 
   const mockClients: Client[] = [
