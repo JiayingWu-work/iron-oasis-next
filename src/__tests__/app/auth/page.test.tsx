@@ -24,19 +24,53 @@ describe('Auth page static params', () => {
     })
   })
 
-  it('should include forgot-password path for password reset flow', async () => {
-    const { generateStaticParams } = await import('@/app/auth/[path]/page')
-    const params = generateStaticParams()
-    const paths = params.map((p) => p.path)
+  describe('sign-in page', () => {
+    it('should include sign-in path for user authentication', async () => {
+      const { generateStaticParams } = await import('@/app/auth/[path]/page')
+      const params = generateStaticParams()
+      const paths = params.map((p) => p.path)
 
-    expect(paths).toContain('forgot-password')
+      expect(paths).toContain('sign-in')
+    })
   })
 
-  it('should include reset-password path for password reset completion', async () => {
-    const { generateStaticParams } = await import('@/app/auth/[path]/page')
-    const params = generateStaticParams()
-    const paths = params.map((p) => p.path)
+  describe('sign-up page', () => {
+    it('should include sign-up path for user registration', async () => {
+      const { generateStaticParams } = await import('@/app/auth/[path]/page')
+      const params = generateStaticParams()
+      const paths = params.map((p) => p.path)
 
-    expect(paths).toContain('reset-password')
+      expect(paths).toContain('sign-up')
+    })
+  })
+
+  describe('sign-out page', () => {
+    it('should include sign-out path for user logout', async () => {
+      const { generateStaticParams } = await import('@/app/auth/[path]/page')
+      const params = generateStaticParams()
+      const paths = params.map((p) => p.path)
+
+      expect(paths).toContain('sign-out')
+    })
+  })
+
+  describe('forgot-password page', () => {
+    it('should include forgot-password path for password reset flow', async () => {
+      const { generateStaticParams } = await import('@/app/auth/[path]/page')
+      const params = generateStaticParams()
+      const paths = params.map((p) => p.path)
+
+      expect(paths).toContain('forgot-password')
+    })
+  })
+
+  describe('reset-password page', () => {
+    it('should include reset-password path for password reset completion', async () => {
+      const { generateStaticParams } = await import('@/app/auth/[path]/page')
+      const params = generateStaticParams()
+      const paths = params.map((p) => p.path)
+
+      expect(paths).toContain('reset-password')
+    })
   })
 })
