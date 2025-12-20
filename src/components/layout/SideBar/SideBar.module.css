@@ -260,6 +260,9 @@
   text-align: left;
   cursor: pointer;
   transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .signOutButton:hover {

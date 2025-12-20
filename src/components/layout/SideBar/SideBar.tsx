@@ -1,7 +1,7 @@
 import { useRouter } from 'next/navigation'
 import type { Trainer } from '@/types'
 import { authClient } from '@/lib/auth/client'
-import { Settings, X } from 'lucide-react'
+import { LogOut, Settings, X } from 'lucide-react'
 import styles from './SideBar.module.css'
 
 interface SideBarProps {
@@ -133,6 +133,7 @@ export default function SideBar({
             className={styles.signOutButton}
             onClick={handleSignOut}
           >
+            <LogOut size={16} />
             Sign out
           </button>
         </div>
