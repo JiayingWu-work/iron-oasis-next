@@ -6,6 +6,7 @@ import { authClient } from '@/lib/auth/client'
 import {
   SettingsCard,
   EditClientForm,
+  TransferClientForm,
   ToastContainer,
   useToast,
 } from '@/components'
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const { data: session, isPending } = authClient.useSession()
   const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
   const [isEditClientOpen, setIsEditClientOpen] = useState(false)
+  const [isTransferClientOpen, setIsTransferClientOpen] = useState(false)
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   // Check user role
@@ -90,7 +92,7 @@ export default function SettingsPage() {
                 title="Transfer Client"
                 description="Reassign a client to a different trainer"
                 icon={<ArrowLeftRight size={20} />}
-                badge="Coming Soon"
+                onClick={() => setIsTransferClientOpen(true)}
               />
               <SettingsCard
                 title="Edit Client"
@@ -150,6 +152,17 @@ export default function SettingsPage() {
         onClose={() => setIsEditClientOpen(false)}
         onSuccess={(clientName) => {
           showSuccess(`${clientName} updated successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <TransferClientForm
+        isOpen={isTransferClientOpen}
+        onClose={() => setIsTransferClientOpen(false)}
+        onSuccess={(clientName, newTrainerName) => {
+          showSuccess(`${clientName} transferred to ${newTrainerName}`)
         }}
         onError={(message) => {
           showError(message)
