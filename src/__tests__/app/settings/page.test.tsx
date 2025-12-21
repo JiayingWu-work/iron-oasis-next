@@ -97,8 +97,8 @@ describe('SettingsPage', () => {
 
       await waitFor(() => {
         const badges = screen.getAllByText('Coming Soon')
-        // 6 cards have Coming Soon (all except Edit Client which is now active)
-        expect(badges).toHaveLength(6)
+        // 5 cards have Coming Soon (all except Edit Client and Transfer Client which are now active)
+        expect(badges).toHaveLength(5)
       })
     })
 
