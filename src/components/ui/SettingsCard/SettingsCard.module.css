@@ -16,6 +16,21 @@
   box-shadow: var(--shadow-sm);
 }
 
+.card.clickable {
+  cursor: pointer;
+}
+
+.card.clickable:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.card.clickable:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
+}
+
 .cardIcon {
   display: flex;
   align-items: center;
