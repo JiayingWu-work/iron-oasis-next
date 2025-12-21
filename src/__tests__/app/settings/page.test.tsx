@@ -92,12 +92,13 @@ describe('SettingsPage', () => {
       })
     })
 
-    it('renders Coming Soon badges on all cards', async () => {
+    it('renders Coming Soon badges on inactive cards', async () => {
       render(<SettingsPage />)
 
       await waitFor(() => {
         const badges = screen.getAllByText('Coming Soon')
-        expect(badges).toHaveLength(7)
+        // 6 cards have Coming Soon (all except Edit Client which is now active)
+        expect(badges).toHaveLength(6)
       })
     })
 

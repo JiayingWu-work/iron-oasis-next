@@ -3,7 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
-import { SettingsCard } from '@/components'
+import {
+  SettingsCard,
+  EditClientForm,
+  ToastContainer,
+  useToast,
+} from '@/components'
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -18,6 +23,8 @@ export default function SettingsPage() {
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
   const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
+  const [isEditClientOpen, setIsEditClientOpen] = useState(false)
+  const { toasts, removeToast, showSuccess, showError } = useToast()
 
   // Check user role
   useEffect(() => {
@@ -89,7 +96,7 @@ export default function SettingsPage() {
                 title="Edit Client"
                 description="Update client name or training mode"
                 icon={<UserPen size={20} />}
-                badge="Coming Soon"
+                onClick={() => setIsEditClientOpen(true)}
               />
               <SettingsCard
                 title="Archive Client"
@@ -137,6 +144,19 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <EditClientForm
+        isOpen={isEditClientOpen}
+        onClose={() => setIsEditClientOpen(false)}
+        onSuccess={(clientName) => {
+          showSuccess(`${clientName} updated successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   )
 }

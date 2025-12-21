@@ -2,6 +2,38 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import type { TrainingMode } from '@/types'
 
+export async function GET() {
+  try {
+    const rows = (await sql`
+      SELECT id, name, trainer_id, secondary_trainer_id, mode
+      FROM clients
+      ORDER BY name ASC
+    `) as {
+      id: number
+      name: string
+      trainer_id: number
+      secondary_trainer_id: number | null
+      mode: TrainingMode | null
+    }[]
+
+    const clients = rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      trainerId: row.trainer_id,
+      secondaryTrainerId: row.secondary_trainer_id,
+      mode: row.mode ?? '1v1',
+    }))
+
+    return NextResponse.json(clients)
+  } catch (err) {
+    console.error('Error fetching clients', err)
+    return NextResponse.json(
+      { error: 'Failed to fetch clients' },
+      { status: 500 },
+    )
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { name, trainerId, secondaryTrainerId, mode } = await req.json()

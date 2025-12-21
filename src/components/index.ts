@@ -13,6 +13,9 @@ export { default as AddLateFeeForm } from './forms/entry-bar/AddLateFeeForm'
 export { default as AddClientForm } from './forms/fullpage/AddClientForm'
 export { default as AddTrainerForm } from './forms/fullpage/AddTrainerForm'
 
+// Forms - Settings
+export { default as EditClientForm } from './forms/settings/EditClientForm/EditClientForm'
+
 // Layout
 export { default as DashboardHeader } from './layout/dashboard-header/DashboardHeader'
 export { default as SideBar } from './layout/SideBar/SideBar'
@@ -25,3 +28,10 @@ export { default as FormField } from './ui/FormField/FormField'
 export { default as FullPageForm, fullPageFormStyles } from './ui/FullPageForm/FullPageForm'
 export { default as Select } from './ui/Select/Select'
 export { default as SettingsCard } from './ui/SettingsCard/SettingsCard'
+export { default as Modal } from './ui/Modal/Modal'
+export {
+  default as Toast,
+  ToastContainer,
+  useToast,
+} from './ui/Toast/Toast'
+export type { ToastType, ToastItem } from './ui/Toast/Toast'
