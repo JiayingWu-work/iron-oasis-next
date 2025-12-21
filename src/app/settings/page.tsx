@@ -6,6 +6,7 @@ import { authClient } from '@/lib/auth/client'
 import {
   SettingsCard,
   EditClientForm,
+  EditTrainerForm,
   ToastContainer,
   useToast,
 } from '@/components'
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const { data: session, isPending } = authClient.useSession()
   const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
   const [isEditClientOpen, setIsEditClientOpen] = useState(false)
+  const [isEditTrainerOpen, setIsEditTrainerOpen] = useState(false)
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   // Check user role
@@ -114,7 +116,7 @@ export default function SettingsPage() {
                 title="Edit Trainer"
                 description="Update trainer name, email, or tier"
                 icon={<UserPen size={20} />}
-                badge="Coming Soon"
+                onClick={() => setIsEditTrainerOpen(true)}
               />
               <SettingsCard
                 title="Archive Trainer"
@@ -150,6 +152,17 @@ export default function SettingsPage() {
         onClose={() => setIsEditClientOpen(false)}
         onSuccess={(clientName) => {
           showSuccess(`${clientName} updated successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <EditTrainerForm
+        isOpen={isEditTrainerOpen}
+        onClose={() => setIsEditTrainerOpen(false)}
+        onSuccess={(trainerName) => {
+          showSuccess(`${trainerName} updated successfully`)
         }}
         onError={(message) => {
           showError(message)
