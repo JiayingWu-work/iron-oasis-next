@@ -189,9 +189,16 @@ export default function TransferClientForm({
           ) : (
             <FormField
               label="New trainer"
-              hints={[
-                'Client packages and existing sessions will remain unchanged',
-              ]}
+              hints={
+                newTrainer && currentTrainer && newTrainer.tier !== currentTrainer.tier
+                  ? [
+                      'Client packages and existing sessions will remain unchanged.',
+                      newTrainer.tier > currentTrainer.tier
+                        ? `<strong>Pricing change:</strong> The new trainer (Tier ${newTrainer.tier}) has a higher rate than the current trainer (Tier ${currentTrainer.tier}). Please collect the price difference from the client.`
+                        : `<strong>Pricing change:</strong> The new trainer (Tier ${newTrainer.tier}) has a lower rate than the current trainer (Tier ${currentTrainer.tier}). The client may request a refund for the price difference.`,
+                    ]
+                  : undefined
+              }
             >
               <Select
                 value={newTrainerId}

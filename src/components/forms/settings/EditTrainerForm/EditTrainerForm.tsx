@@ -54,6 +54,13 @@ export default function EditTrainerForm({
     }
   }, [isOpen])
 
+  // Get the original tier of the selected trainer
+  const originalTier = useMemo(() => {
+    if (selectedTrainerId === '') return null
+    const trainer = trainers.find((t) => t.id === selectedTrainerId)
+    return trainer?.tier ?? null
+  }, [selectedTrainerId, trainers])
+
   // Update form fields when trainer is selected
   useEffect(() => {
     if (selectedTrainerId === '') {
@@ -192,7 +199,19 @@ export default function EditTrainerForm({
             />
           </FormField>
 
-          <FormField label="Tier">
+          <FormField
+            label="Tier"
+            hints={
+              originalTier !== null && tier !== originalTier
+                ? [
+                    '<strong>Existing clients:</strong> Existing clients will keep their original pricing, even for future packages.',
+                    tier > originalTier
+                      ? '<strong>New clients:</strong> New clients will be charged the higher Tier ' + tier + ' rate.'
+                      : '<strong>New clients:</strong> New clients will be charged the lower Tier ' + tier + ' rate.',
+                  ]
+                : undefined
+            }
+          >
             <Select
               value={tier}
               onChange={(val) => setTier(Number(val) as 1 | 2 | 3)}
