@@ -3,15 +3,30 @@ import { computeIncomeSummary } from '@/lib/weeklyDashboard/computeIncomeSummary
 import type { Client, Package, Session, LateFee } from '@/types'
 
 describe('computeIncomeSummary', () => {
+  // Helper to create client with pricing fields based on tier
   const createClient = (
     id: number,
     name: string,
     trainerId: number,
-  ): Client => ({
-    id,
-    name,
-    trainerId,
-  })
+    tierAtSignup: 1 | 2 | 3 = 1,
+  ): Client => {
+    // Default pricing based on tier (matches DEFAULT_PRICING in pricing.ts)
+    const pricing = {
+      1: { price1_12: 150, price13_20: 140, price21Plus: 130 },
+      2: { price1_12: 165, price13_20: 155, price21Plus: 145 },
+      3: { price1_12: 180, price13_20: 170, price21Plus: 160 },
+    }[tierAtSignup]
+
+    return {
+      id,
+      name,
+      trainerId,
+      tierAtSignup,
+      price1_12: pricing.price1_12,
+      price13_20: pricing.price13_20,
+      price21Plus: pricing.price21Plus,
+    }
+  }
 
   const createPackage = (
     id: number,
@@ -72,7 +87,6 @@ describe('computeIncomeSummary', () => {
         [],
         [],
         1,
-        1,
         sessions,
       )
 
@@ -94,7 +108,6 @@ describe('computeIncomeSummary', () => {
         [],
         [],
         1,
-        1,
         sessions,
       )
 
@@ -115,7 +128,6 @@ describe('computeIncomeSummary', () => {
         sessions,
         [],
         [],
-        1,
         1,
         sessions,
       )
@@ -140,7 +152,6 @@ describe('computeIncomeSummary', () => {
         weeklyPackages,
         [],
         1,
-        1,
         [],
       )
 
@@ -160,7 +171,6 @@ describe('computeIncomeSummary', () => {
         [],
         weeklyPackages,
         [],
-        1,
         1, // Trainer 1
         [],
       )
@@ -180,7 +190,6 @@ describe('computeIncomeSummary', () => {
         [],
         weeklyPackages,
         [],
-        1,
         1,
         [],
       )
@@ -204,7 +213,6 @@ describe('computeIncomeSummary', () => {
         [],
         lateFees,
         1,
-        1,
         [],
       )
 
@@ -212,14 +220,14 @@ describe('computeIncomeSummary', () => {
     })
 
     it('returns 0 when no late fees exist', () => {
-      const result = computeIncomeSummary([], [], [], [], [], 1, 1, [])
+      const result = computeIncomeSummary([], [], [], [], [], 1, [])
       expect(result.lateFeeIncome).toBe(0)
     })
   })
 
   describe('class income calculation', () => {
     it('calculates income based on package price and rate', () => {
-      const clients = [createClient(1, 'Alice', 1)]
+      const clients = [createClient(1, 'Alice', 1)] // Tier 1 pricing
       const packages = [createPackage(1, 1, 1, 10, '2025-01-01')]
       const sessions = [createSession(1, 1, 1, 1, '2025-01-06')]
 
@@ -229,18 +237,17 @@ describe('computeIncomeSummary', () => {
         sessions,
         [],
         [],
-        1, // Tier 1
         1,
         sessions,
       )
 
-      // Tier 1, 10 sessions = $150/class
+      // Client has tier 1 pricing: 10 sessions = $150/class
       // 1 class * $150 * 0.46 rate = $69
       expect(result.finalWeeklyIncome).toBe(69)
     })
 
     it('uses drop-in rate for sessions without package', () => {
-      const clients = [createClient(1, 'Alice', 1)]
+      const clients = [createClient(1, 'Alice', 1)] // Tier 1 pricing
       const sessions = [createSession(1, 1, 1, null, '2025-01-06')]
 
       const result = computeIncomeSummary(
@@ -249,12 +256,11 @@ describe('computeIncomeSummary', () => {
         sessions,
         [],
         [],
-        1, // Tier 1
         1,
         sessions,
       )
 
-      // Tier 1, 1 session (drop-in) = $150/class (highest rate)
+      // Client has tier 1 pricing: drop-in = 1 session = $150/class
       // 1 class * $150 * 0.46 rate = $69
       expect(result.finalWeeklyIncome).toBe(69)
     })
@@ -274,7 +280,6 @@ describe('computeIncomeSummary', () => {
         [packages[0]], // Weekly package with bonus
         lateFees,
         1,
-        1,
         sessions,
       )
 
@@ -288,7 +293,7 @@ describe('computeIncomeSummary', () => {
     })
 
     it('returns 0 when no activity this week', () => {
-      const result = computeIncomeSummary([], [], [], [], [], 1, 1, [])
+      const result = computeIncomeSummary([], [], [], [], [], 1, [])
 
       expect(result.totalClassesThisWeek).toBe(0)
       expect(result.bonusIncome).toBe(0)
@@ -313,12 +318,11 @@ describe('computeIncomeSummary', () => {
         [], // No sessions this week
         [pkg], // Package purchased this week
         [],
-        1, // Tier 1
         1,
         [backfilledSession], // All sessions including backfilled one
       )
 
-      // Tier 1, 14 sessions = $140/class
+      // Tier 1 client, 14 sessions = $140/class
       // Single-class rate = $150
       // Diff = $10 * 0.46 (original week had 1 class, so 46% rate) = $4.60
       expect(result.backfillAdjustment).toBeCloseTo(4.6, 2)
@@ -340,7 +344,6 @@ describe('computeIncomeSummary', () => {
         [],
         [pkg],
         [],
-        1,
         1,
         backfilledSessions,
       )
@@ -383,7 +386,6 @@ describe('computeIncomeSummary', () => {
         [pkg], // Package purchased this week
         [],
         1,
-        1,
         backfilledSessions,
       )
 
@@ -417,7 +419,6 @@ describe('computeIncomeSummary', () => {
         [],
         [pkg],
         [],
-        1,
         1,
         backfilledSessions,
       )
@@ -469,7 +470,6 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [],
         1,
-        1,
         allBackfilledSessions,
       )
 
@@ -492,7 +492,6 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [],
         1,
-        1,
         [session],
       )
 
@@ -511,7 +510,6 @@ describe('computeIncomeSummary', () => {
         [],
         [], // Package NOT in weeklyPackages (was purchased before this week)
         [],
-        1,
         1,
         [backfilledSession],
       )
@@ -532,7 +530,6 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [],
         1,
-        1,
         [backfilledSession],
       )
 
@@ -552,7 +549,6 @@ describe('computeIncomeSummary', () => {
         [currentSession],
         [pkg],
         [],
-        1,
         1,
         [currentSession, backfilledSession],
       )

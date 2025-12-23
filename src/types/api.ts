@@ -6,6 +6,12 @@ export type ApiClient = {
   trainer_id: number
   secondary_trainer_id: number | null
   mode: TrainingMode
+  tier_at_signup: number
+  price_1_12: number
+  price_13_20: number
+  price_21_plus: number
+  mode_premium: number
+  created_at: string
 }
 
 export type ApiPackage = {

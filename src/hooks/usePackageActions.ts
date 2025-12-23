@@ -58,6 +58,7 @@ export function usePackageActions(
           p.sales_bonus === null || p.sales_bonus === undefined
             ? undefined
             : Number(p.sales_bonus),
+        mode: p.mode,
       })),
     )
 
@@ -68,6 +69,7 @@ export function usePackageActions(
         trainerId: s.trainer_id,
         clientId: s.client_id,
         packageId: s.package_id,
+        mode: s.mode,
       })),
     )
   }

@@ -12,7 +12,13 @@ export interface Client {
   name: string
   trainerId: number // primary: package owner / bonus owner
   secondaryTrainerId?: number // optional: additional trainer for 2v2
-  mode?: TrainingMode
+  mode: TrainingMode
+  tierAtSignup: 1 | 2 | 3 // Pricing locked at signup (based on trainer's tier at that time)
+  price1_12: number
+  price13_20: number
+  price21Plus: number
+  modePremium: number // 1v2 premium locked at signup
+  createdAt?: string
 }
 
 export interface Package {
@@ -22,7 +28,7 @@ export interface Package {
   sessionsPurchased: number
   startDate: string // YYYY-MM-DD
   salesBonus?: number
-  mode?: TrainingMode
+  mode: TrainingMode
 }
 
 export interface Session {
@@ -31,7 +37,7 @@ export interface Session {
   trainerId: number
   clientId: number
   packageId: number | null
-  mode?: TrainingMode
+  mode: TrainingMode
 }
 
 export type LateFee = {

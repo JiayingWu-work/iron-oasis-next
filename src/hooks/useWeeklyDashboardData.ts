@@ -81,26 +81,24 @@ export function useWeeklyDashboardData({
       weeklySessions,
     )
 
-    // 2) Weekly income numbers
+    // 2) Weekly income numbers (now uses client-level pricing)
     const incomeSummary = computeIncomeSummary(
       clients,
       packages,
       weeklySessions,
       weeklyPackages,
       weeklyLateFees,
-      selectedTrainer.tier,
       selectedTrainer.id,
       sessions,
     )
 
-    // 3) Breakdown rows
+    // 3) Breakdown rows (now uses client-level pricing)
     const breakdownRows = computeBreakdownRows(
       clients,
       packages,
       weeklySessions,
       weeklyPackages,
       weeklyLateFees,
-      selectedTrainer.tier,
     )
 
     return {
@@ -116,6 +114,5 @@ export function useWeeklyDashboardData({
     weekStart,
     weekEnd,
     selectedTrainer.id,
-    selectedTrainer.tier,
   ])
 }

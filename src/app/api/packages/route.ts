@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import { getPricePerClass } from '@/lib/pricing'
+import { getClientPricePerClass } from '@/lib/pricing'
 import type { ApiPackage, ApiSession } from '@/types/api'
 import type { TrainingMode } from '@/types'
 
@@ -12,11 +12,9 @@ import type { TrainingMode } from '@/types'
  *   they are attached to packages that still have remaining capacity, oldest → newest.
  * - Drop-ins that still don’t fit into any package remain with package_id = NULL.
  */
-async function rebalanceClientPackages(
-  trainerId: number,
-  clientId: number,
-): Promise<void> {
-  // All packages for this client+trainer, oldest → newest
+async function rebalanceClientPackages(clientId: number): Promise<void> {
+  // All packages for this client (any trainer), oldest → newest
+  // For 2v2 clients, sessions from both trainers share the same package
   const pkgRows = (await sql`
     SELECT id,
            client_id,
@@ -26,14 +24,14 @@ async function rebalanceClientPackages(
            sales_bonus,
            mode
     FROM packages
-    WHERE trainer_id = ${trainerId}
-      AND client_id = ${clientId}
+    WHERE client_id = ${clientId}
     ORDER BY start_date ASC, id ASC
   `) as ApiPackage[]
 
   if (pkgRows.length === 0) return
 
   // Sessions currently attached to some package (non-null)
+  // Include sessions from ALL trainers for this client (important for 2v2)
   const sessionRows = (await sql`
     SELECT id,
            date,
@@ -42,8 +40,7 @@ async function rebalanceClientPackages(
            package_id,
            mode
     FROM sessions
-    WHERE trainer_id = ${trainerId}
-      AND client_id = ${clientId}
+    WHERE client_id = ${clientId}
       AND package_id IS NOT NULL
     ORDER BY date ASC, id ASC
   `) as ApiSession[]
@@ -85,6 +82,7 @@ async function rebalanceClientPackages(
   // ---------- B) Absorb drop-in sessions into packages with spare capacity ----------
 
   // Drop-in sessions = no package_id (they should pay single-class until absorbed)
+  // Include sessions from ALL trainers for this client (important for 2v2)
   const dropIns = (await sql`
     SELECT id,
            date,
@@ -93,8 +91,7 @@ async function rebalanceClientPackages(
            package_id,
            mode
     FROM sessions
-    WHERE trainer_id = ${trainerId}
-      AND client_id = ${clientId}
+    WHERE client_id = ${clientId}
       AND package_id IS NULL
     ORDER BY date ASC, id ASC
   `) as ApiSession[]
@@ -153,25 +150,33 @@ export async function POST(req: NextRequest) {
       trainerId,
       sessionsPurchased,
       startDate,
-      trainerTier,
     } = await req.json()
 
     if (
       typeof clientId !== 'number' ||
       typeof trainerId !== 'number' ||
       typeof sessionsPurchased !== 'number' ||
-      typeof startDate !== 'string' ||
-      (trainerTier !== 1 && trainerTier !== 2 && trainerTier !== 3)
+      typeof startDate !== 'string'
     ) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    // Look up the client's training mode (1v1 vs 1v2)
+    // Look up the client's training mode and pricing columns
     const [clientRow] = (await sql`
-      SELECT mode
+      SELECT mode, price_1_12, price_13_20, price_21_plus, mode_premium
       FROM clients
       WHERE id = ${clientId}
-    `) as { mode: TrainingMode }[]
+    `) as {
+      mode: TrainingMode
+      price_1_12: number
+      price_13_20: number
+      price_21_plus: number
+      mode_premium: number
+    }[]
+
+    if (!clientRow) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+    }
 
     const clientMode: TrainingMode =
       clientRow?.mode === '1v2'
@@ -180,8 +185,16 @@ export async function POST(req: NextRequest) {
         ? '2v2'
         : '1v1'
 
-    const pricePerClass = getPricePerClass(
-      trainerTier,
+    // Use client's locked-in pricing
+    const clientPricing = {
+      price1_12: Number(clientRow.price_1_12),
+      price13_20: Number(clientRow.price_13_20),
+      price21Plus: Number(clientRow.price_21_plus),
+      modePremium: Number(clientRow.mode_premium),
+    }
+
+    const pricePerClass = getClientPricePerClass(
+      clientPricing,
       sessionsPurchased,
       clientMode,
     )
@@ -226,7 +239,7 @@ export async function POST(req: NextRequest) {
         : new Date(row.start_date).toISOString().slice(0, 10)
 
     // After inserting, rebalance any "negative" sessions across packages
-    await rebalanceClientPackages(trainerId, clientId)
+    await rebalanceClientPackages(clientId)
 
     return NextResponse.json({
       id: row.id,
