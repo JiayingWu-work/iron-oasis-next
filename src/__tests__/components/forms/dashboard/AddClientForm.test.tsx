@@ -39,7 +39,7 @@ describe('AddClientForm', () => {
         />,
       )
       expect(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
       ).toBeInTheDocument()
     })
 
@@ -108,7 +108,7 @@ describe('AddClientForm', () => {
       )
 
       const input = screen.getByPlaceholderText(
-        'e.g. Angela Wang or Angela & Tom',
+        'e.g. Alex Smith or Alex & Jamie',
       )
       fireEvent.change(input, { target: { value: 'Alice Smith' } })
 
@@ -229,7 +229,7 @@ describe('AddClientForm', () => {
 
       // Enter name
       fireEvent.change(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
         { target: { value: 'Alice' } },
       )
 
@@ -255,7 +255,7 @@ describe('AddClientForm', () => {
 
       // Enter name and select primary trainer
       fireEvent.change(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
         { target: { value: 'Alice & Bob' } },
       )
       fireEvent.click(screen.getByText('Select trainer...'))
@@ -293,7 +293,7 @@ describe('AddClientForm', () => {
 
       // Enter whitespace name
       fireEvent.change(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
         { target: { value: '   ' } },
       )
 
@@ -330,7 +330,7 @@ describe('AddClientForm', () => {
 
       // Fill form
       fireEvent.change(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
         { target: { value: 'Alice' } },
       )
       fireEvent.click(screen.getByText('Select trainer...'))
@@ -382,7 +382,7 @@ describe('AddClientForm', () => {
 
       // Fill and submit
       fireEvent.change(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
         { target: { value: 'Alice' } },
       )
       fireEvent.click(screen.getByText('Select trainer...'))
@@ -419,7 +419,7 @@ describe('AddClientForm', () => {
 
       // Fill and submit
       fireEvent.change(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
         { target: { value: 'Alice' } },
       )
       fireEvent.click(screen.getByText('Select trainer...'))
@@ -450,7 +450,7 @@ describe('AddClientForm', () => {
 
       // Enter name with whitespace
       fireEvent.change(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
         { target: { value: '  Alice  ' } },
       )
       fireEvent.click(screen.getByText('Select trainer...'))
@@ -524,7 +524,7 @@ describe('AddClientForm', () => {
 
       // Fill and submit
       fireEvent.change(
-        screen.getByPlaceholderText('e.g. Angela Wang or Angela & Tom'),
+        screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
         { target: { value: 'Alice' } },
       )
       fireEvent.click(screen.getByText('Select trainer...'))
