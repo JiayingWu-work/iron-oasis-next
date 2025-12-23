@@ -9,6 +9,10 @@ import {
   EditTrainerForm,
   PricingTable,
   TransferClientForm,
+  ArchiveClientForm,
+  ArchiveTrainerForm,
+  UnarchiveClientForm,
+  UnarchiveTrainerForm,
   ToastContainer,
   useToast,
 } from '@/components'
@@ -17,6 +21,7 @@ import {
   ArrowLeftRight,
   UserPen,
   Archive,
+  ArchiveRestore,
   DollarSign,
   Clock,
 } from 'lucide-react'
@@ -30,6 +35,10 @@ export default function SettingsPage() {
   const [isEditTrainerOpen, setIsEditTrainerOpen] = useState(false)
   const [isTransferClientOpen, setIsTransferClientOpen] = useState(false)
   const [isPricingTableOpen, setIsPricingTableOpen] = useState(false)
+  const [isArchiveClientOpen, setIsArchiveClientOpen] = useState(false)
+  const [isArchiveTrainerOpen, setIsArchiveTrainerOpen] = useState(false)
+  const [isUnarchiveClientOpen, setIsUnarchiveClientOpen] = useState(false)
+  const [isUnarchiveTrainerOpen, setIsUnarchiveTrainerOpen] = useState(false)
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   // Check user role
@@ -106,9 +115,15 @@ export default function SettingsPage() {
               />
               <SettingsCard
                 title="Archive Client"
-                description="Deactivate a client who no longer trains here"
+                description="Hide a client who no longer trains here"
                 icon={<Archive size={20} />}
-                badge="Coming Soon"
+                onClick={() => setIsArchiveClientOpen(true)}
+              />
+              <SettingsCard
+                title="Unarchive Client"
+                description="Restore a previously archived client"
+                icon={<ArchiveRestore size={20} />}
+                onClick={() => setIsUnarchiveClientOpen(true)}
               />
             </div>
           </div>
@@ -124,9 +139,15 @@ export default function SettingsPage() {
               />
               <SettingsCard
                 title="Archive Trainer"
-                description="Deactivate a trainer who no longer works here"
+                description="Hide a trainer who no longer works here"
                 icon={<Archive size={20} />}
-                badge="Coming Soon"
+                onClick={() => setIsArchiveTrainerOpen(true)}
+              />
+              <SettingsCard
+                title="Unarchive Trainer"
+                description="Restore a previously archived trainer"
+                icon={<ArchiveRestore size={20} />}
+                onClick={() => setIsUnarchiveTrainerOpen(true)}
               />
             </div>
           </div>
@@ -189,6 +210,50 @@ export default function SettingsPage() {
         onClose={() => setIsPricingTableOpen(false)}
         onSuccess={() => {
           showSuccess('Pricing updated successfully')
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <ArchiveClientForm
+        isOpen={isArchiveClientOpen}
+        onClose={() => setIsArchiveClientOpen(false)}
+        onSuccess={(clientName) => {
+          showSuccess(`${clientName} archived successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <ArchiveTrainerForm
+        isOpen={isArchiveTrainerOpen}
+        onClose={() => setIsArchiveTrainerOpen(false)}
+        onSuccess={(trainerName) => {
+          showSuccess(`${trainerName} archived successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <UnarchiveClientForm
+        isOpen={isUnarchiveClientOpen}
+        onClose={() => setIsUnarchiveClientOpen(false)}
+        onSuccess={(clientName) => {
+          showSuccess(`${clientName} restored successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <UnarchiveTrainerForm
+        isOpen={isUnarchiveTrainerOpen}
+        onClose={() => setIsUnarchiveTrainerOpen(false)}
+        onSuccess={(trainerName) => {
+          showSuccess(`${trainerName} restored successfully`)
         }}
         onError={(message) => {
           showError(message)

@@ -68,6 +68,7 @@ export default function AddTrainerForm({
         name: created.name,
         tier: created.tier,
         email: created.email,
+        isActive: created.isActive ?? true,
       }
 
       onCreated(trainer)

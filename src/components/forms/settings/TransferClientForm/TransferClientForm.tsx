@@ -187,26 +187,39 @@ export default function TransferClientForm({
               trainer assignments.
             </div>
           ) : (
-            <FormField
-              label="New trainer"
-              hints={
-                newTrainer && currentTrainer && newTrainer.tier !== currentTrainer.tier
-                  ? [
-                      'Client packages and existing sessions will remain unchanged.',
-                      newTrainer.tier > currentTrainer.tier
-                        ? `<strong>Pricing change:</strong> The new trainer (Tier ${newTrainer.tier}) has a higher rate than the current trainer (Tier ${currentTrainer.tier}). Please collect the price difference from the client.`
-                        : `<strong>Pricing change:</strong> The new trainer (Tier ${newTrainer.tier}) has a lower rate than the current trainer (Tier ${currentTrainer.tier}). The client may request a refund for the price difference.`,
-                    ]
-                  : undefined
-              }
-            >
-              <Select
-                value={newTrainerId}
-                onChange={(val) => setNewTrainerId(Number(val))}
-                options={trainerOptions}
-                placeholder="Select new trainer..."
-              />
-            </FormField>
+            <>
+              <FormField label="New trainer">
+                <Select
+                  value={newTrainerId}
+                  onChange={(val) => setNewTrainerId(Number(val))}
+                  options={trainerOptions}
+                  placeholder="Select new trainer..."
+                />
+              </FormField>
+
+              {newTrainer && currentTrainer && newTrainer.tier !== currentTrainer.tier && (
+                <div className={styles.info}>
+                  Client packages and existing sessions will remain unchanged.
+                  {newTrainer.tier > currentTrainer.tier ? (
+                    <>
+                      {' '}
+                      <strong>Pricing change:</strong> The new trainer (Tier{' '}
+                      {newTrainer.tier}) has a higher rate than the current
+                      trainer (Tier {currentTrainer.tier}). Please collect the
+                      price difference from the client.
+                    </>
+                  ) : (
+                    <>
+                      {' '}
+                      <strong>Pricing change:</strong> The new trainer (Tier{' '}
+                      {newTrainer.tier}) has a lower rate than the current
+                      trainer (Tier {currentTrainer.tier}). The client may
+                      request a refund for the price difference.
+                    </>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </>
       )}

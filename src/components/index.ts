@@ -18,6 +18,10 @@ export { default as EditClientForm } from './forms/settings/EditClientForm/EditC
 export { default as EditTrainerForm } from './forms/settings/EditTrainerForm/EditTrainerForm'
 export { default as PricingTable } from './forms/settings/PricingTable/PricingTable'
 export { default as TransferClientForm } from './forms/settings/TransferClientForm/TransferClientForm'
+export { default as ArchiveClientForm } from './forms/settings/ArchiveClientForm/ArchiveClientForm'
+export { default as ArchiveTrainerForm } from './forms/settings/ArchiveTrainerForm/ArchiveTrainerForm'
+export { default as UnarchiveClientForm } from './forms/settings/UnarchiveClientForm/UnarchiveClientForm'
+export { default as UnarchiveTrainerForm } from './forms/settings/UnarchiveTrainerForm/UnarchiveTrainerForm'
 
 // Layout
 export { default as DashboardHeader } from './layout/dashboard-header/DashboardHeader'

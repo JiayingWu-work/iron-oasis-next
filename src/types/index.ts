@@ -5,6 +5,7 @@ export interface Trainer {
   name: string
   tier: 1 | 2 | 3
   email: string
+  isActive: boolean
 }
 
 export interface Client {
@@ -18,7 +19,8 @@ export interface Client {
   price13_20: number
   price21Plus: number
   modePremium: number // 1v2 premium locked at signup
-  createdAt?: string
+  createdAt: string
+  isActive: boolean
 }
 
 export interface Package {

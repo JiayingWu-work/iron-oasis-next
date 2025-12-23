@@ -13,7 +13,8 @@ export function useTrainerSelection(initialTrainerId?: number) {
 
   useEffect(() => {
     async function loadTrainers() {
-      const res = await fetch('/api/trainers')
+      // Fetch only active trainers for the sidebar
+      const res = await fetch('/api/trainers?active=true')
       if (!res.ok) {
         console.error('Failed to load trainers')
         return

@@ -26,8 +26,8 @@ vi.mock('@/lib/auth/client', () => ({
 
 describe('SideBar', () => {
   const mockTrainers: Trainer[] = [
-    { id: 1, name: 'John', tier: 1, email: 'john@test.com' },
-    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com' },
+    { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true },
+    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true },
   ]
 
   const defaultProps = {

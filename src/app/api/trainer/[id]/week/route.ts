@@ -52,6 +52,19 @@ export async function GET(req: NextRequest) {
     `
   }
 
+  // Auto-migrate: ensure is_active column exists on clients table
+  const isActiveCheck = await sql`
+    SELECT EXISTS (
+      SELECT FROM information_schema.columns
+      WHERE table_name = 'clients' AND column_name = 'is_active'
+    ) as exists
+  `
+  if (!isActiveCheck[0]?.exists) {
+    await sql`
+      ALTER TABLE clients ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true
+    `
+  }
+
   // 1) trainer
   const trainerRows = (await sql`
     SELECT id, name, tier
@@ -80,7 +93,8 @@ export async function GET(req: NextRequest) {
             price_13_20,
             price_21_plus,
             mode_premium,
-            created_at
+            created_at,
+            is_active
     FROM clients
     WHERE trainer_id = ${trainerId}
         OR secondary_trainer_id = ${trainerId}

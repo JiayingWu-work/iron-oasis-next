@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
-import Toast, {
-  ToastContainer,
-  useToast,
-} from '@/components/ui/Toast/Toast'
+import { render, screen, fireEvent, act } from '@testing-library/react'
+import Toast, { ToastContainer, useToast } from '@/components/ui/Toast/Toast'
 
 describe('Toast', () => {
   beforeEach(() => {
@@ -25,9 +22,7 @@ describe('Toast', () => {
     })
 
     it('renders error toast with message', () => {
-      render(
-        <Toast message="Error message" type="error" onClose={() => {}} />,
-      )
+      render(<Toast message="Error message" type="error" onClose={() => {}} />)
 
       expect(screen.getByText('Error message')).toBeInTheDocument()
     })
@@ -36,9 +31,7 @@ describe('Toast', () => {
   describe('auto-dismiss', () => {
     it('calls onClose after default duration (4000ms)', async () => {
       const handleClose = vi.fn()
-      render(
-        <Toast message="Test" type="success" onClose={handleClose} />,
-      )
+      render(<Toast message="Test" type="success" onClose={handleClose} />)
 
       expect(handleClose).not.toHaveBeenCalled()
 
@@ -84,9 +77,7 @@ describe('Toast', () => {
   describe('manual close', () => {
     it('calls onClose when close button is clicked', async () => {
       const handleClose = vi.fn()
-      render(
-        <Toast message="Test" type="success" onClose={handleClose} />,
-      )
+      render(<Toast message="Test" type="success" onClose={handleClose} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'Close' }))
 
@@ -124,7 +115,9 @@ describe('ToastContainer', () => {
   it('calls onRemove with correct id when toast closes', async () => {
     vi.useFakeTimers()
     const handleRemove = vi.fn()
-    const toasts = [{ id: 'test-id', message: 'Test', type: 'success' as const }]
+    const toasts = [
+      { id: 'test-id', message: 'Test', type: 'success' as const },
+    ]
 
     render(<ToastContainer toasts={toasts} onRemove={handleRemove} />)
 

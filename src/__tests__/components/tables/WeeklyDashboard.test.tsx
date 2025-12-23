@@ -9,11 +9,12 @@ describe('WeeklyDashboard', () => {
     name: 'John Trainer',
     tier: 2,
     email: 'john.trainer@test.com',
+    isActive: true,
   }
 
   const mockClients: Client[] = [
-    { id: 1, name: 'Alice', trainerId: 1 },
-    { id: 2, name: 'Bob', trainerId: 1 },
+    { id: 1, name: 'Alice', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
+    { id: 2, name: 'Bob', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
   ]
 
   const mockPackages: Package[] = [
@@ -23,6 +24,7 @@ describe('WeeklyDashboard', () => {
       trainerId: 1,
       sessionsPurchased: 10,
       startDate: '2025-01-13',
+      mode: '1v1',
     },
     {
       id: 2,
@@ -30,13 +32,14 @@ describe('WeeklyDashboard', () => {
       trainerId: 1,
       sessionsPurchased: 10,
       startDate: '2025-01-10',
+      mode: '1v1',
     },
   ]
 
   const mockSessions: Session[] = [
-    { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13', packageId: null },
-    { id: 2, clientId: 1, trainerId: 1, date: '2025-01-14', packageId: null },
-    { id: 3, clientId: 2, trainerId: 1, date: '2025-01-15', packageId: null },
+    { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13', packageId: null, mode: '1v1' },
+    { id: 2, clientId: 1, trainerId: 1, date: '2025-01-14', packageId: null, mode: '1v1' },
+    { id: 3, clientId: 2, trainerId: 1, date: '2025-01-15', packageId: null, mode: '1v1' },
   ]
 
   const mockLateFees: LateFee[] = []
@@ -247,6 +250,7 @@ describe('WeeklyDashboard', () => {
         trainerId: 1,
         date: `2025-01-${(13 + (i % 7)).toString().padStart(2, '0')}`,
         packageId: null,
+        mode: '1v1' as const,
       }))
 
       const propsManySessions = {
@@ -299,8 +303,8 @@ describe('WeeklyDashboard', () => {
   describe('data filtering', () => {
     it('only shows sessions for selected trainer', () => {
       const mixedSessions: Session[] = [
-        { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13', packageId: null },
-        { id: 2, clientId: 1, trainerId: 2, date: '2025-01-14', packageId: null }, // Different trainer
+        { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13', packageId: null, mode: '1v1' },
+        { id: 2, clientId: 1, trainerId: 2, date: '2025-01-14', packageId: null, mode: '1v1' }, // Different trainer
       ]
 
       const props = {
@@ -322,6 +326,7 @@ describe('WeeklyDashboard', () => {
           trainerId: 1,
           sessionsPurchased: 10,
           startDate: '2025-01-13',
+          mode: '1v1',
         },
         {
           id: 2,
@@ -329,6 +334,7 @@ describe('WeeklyDashboard', () => {
           trainerId: 2, // Different trainer
           sessionsPurchased: 10,
           startDate: '2025-01-14',
+          mode: '1v1',
         },
       ]
 
@@ -336,7 +342,7 @@ describe('WeeklyDashboard', () => {
         ...defaultProps,
         packages: mixedPackages,
         sessions: [
-          { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13', packageId: 1 },
+          { id: 1, clientId: 1, trainerId: 1, date: '2025-01-13', packageId: 1, mode: '1v1' as const },
         ],
       }
 

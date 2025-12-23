@@ -15,6 +15,7 @@ describe('pickPackageForSession', () => {
     trainerId,
     sessionsPurchased,
     startDate,
+    mode: '1v1',
   })
 
   const createSession = (
@@ -29,6 +30,7 @@ describe('pickPackageForSession', () => {
     trainerId,
     packageId,
     date,
+    mode: '1v1',
   })
 
   it('returns undefined when no packages exist', () => {

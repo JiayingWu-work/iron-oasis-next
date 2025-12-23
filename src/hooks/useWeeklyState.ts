@@ -79,6 +79,7 @@ export function useWeeklyState(
             price21Plus: Number(c.price_21_plus),
             modePremium: Number(c.mode_premium),
             createdAt: c.created_at,
+            isActive: c.is_active ?? true,
           })),
         )
 
