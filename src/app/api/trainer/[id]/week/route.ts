@@ -39,6 +39,19 @@ export async function GET(req: NextRequest) {
 
   const { start, end } = getWeekRange(date)
 
+  // Auto-migrate: ensure mode_premium column exists on clients table
+  const columnCheck = await sql`
+    SELECT EXISTS (
+      SELECT FROM information_schema.columns
+      WHERE table_name = 'clients' AND column_name = 'mode_premium'
+    ) as exists
+  `
+  if (!columnCheck[0]?.exists) {
+    await sql`
+      ALTER TABLE clients ADD COLUMN mode_premium NUMERIC NOT NULL DEFAULT 20
+    `
+  }
+
   // 1) trainer
   const trainerRows = (await sql`
     SELECT id, name, tier
@@ -61,7 +74,13 @@ export async function GET(req: NextRequest) {
             name,
             trainer_id,
             secondary_trainer_id,
-            mode
+            mode,
+            tier_at_signup,
+            price_1_12,
+            price_13_20,
+            price_21_plus,
+            mode_premium,
+            created_at
     FROM clients
     WHERE trainer_id = ${trainerId}
         OR secondary_trainer_id = ${trainerId}

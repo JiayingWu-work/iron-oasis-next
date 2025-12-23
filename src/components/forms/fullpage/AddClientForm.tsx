@@ -62,13 +62,19 @@ export default function AddClientForm({
         trainerId: created.trainerId,
         secondaryTrainerId: created.secondaryTrainerId ?? undefined,
         mode: created.mode ?? '1v1',
+        tierAtSignup: created.tierAtSignup,
+        price1_12: created.price1_12,
+        price13_20: created.price13_20,
+        price21Plus: created.price21Plus,
+        modePremium: created.modePremium,
+        createdAt: created.createdAt,
       }
 
       onCreated(client)
     } catch (err) {
       console.error(err)
       setError(
-        'Failed to create client. Please try again! If issue persists, reach out to developer!',
+        'Failed to create client. Please try again. If issue persists, reach out to developer!',
       )
     } finally {
       setSaving(false)

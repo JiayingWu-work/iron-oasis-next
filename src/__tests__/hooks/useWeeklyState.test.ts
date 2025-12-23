@@ -10,8 +10,32 @@ describe('useWeeklyState', () => {
     weekStart: '2025-01-06',
     weekEnd: '2025-01-12',
     clients: [
-      { id: 1, name: 'Alice', trainer_id: 1, secondary_trainer_id: null, mode: '1v1' },
-      { id: 2, name: 'Bob', trainer_id: 1, secondary_trainer_id: 2, mode: '1v2' },
+      {
+        id: 1,
+        name: 'Alice',
+        trainer_id: 1,
+        secondary_trainer_id: null,
+        mode: '1v1',
+        tier_at_signup: 1,
+        price_1_12: 150,
+        price_13_20: 140,
+        price_21_plus: 130,
+        mode_premium: 20,
+        created_at: '2025-01-01T00:00:00.000Z',
+      },
+      {
+        id: 2,
+        name: 'Bob',
+        trainer_id: 1,
+        secondary_trainer_id: 2,
+        mode: '1v2',
+        tier_at_signup: 2,
+        price_1_12: 165,
+        price_13_20: 155,
+        price_21_plus: 145,
+        mode_premium: 20,
+        created_at: '2025-01-02T00:00:00.000Z',
+      },
     ],
     packages: [
       {
@@ -114,6 +138,12 @@ describe('useWeeklyState', () => {
       trainerId: 1,
       secondaryTrainerId: undefined,
       mode: '1v1',
+      tierAtSignup: 1,
+      price1_12: 150,
+      price13_20: 140,
+      price21Plus: 130,
+      modePremium: 20,
+      createdAt: '2025-01-01T00:00:00.000Z',
     })
 
     expect(result.current.clients[1]).toEqual({
@@ -122,6 +152,12 @@ describe('useWeeklyState', () => {
       trainerId: 1,
       secondaryTrainerId: 2,
       mode: '1v2',
+      tierAtSignup: 2,
+      price1_12: 165,
+      price13_20: 155,
+      price21Plus: 145,
+      modePremium: 20,
+      createdAt: '2025-01-02T00:00:00.000Z',
     })
   })
 
@@ -252,7 +288,19 @@ describe('useWeeklyState', () => {
 
     // Test setClients
     act(() => {
-      result.current.setClients([{ id: 99, name: 'New', trainerId: 1 }])
+      result.current.setClients([
+        {
+          id: 99,
+          name: 'New',
+          trainerId: 1,
+          mode: '1v1',
+          tierAtSignup: 1,
+          price1_12: 150,
+          price13_20: 140,
+          price21Plus: 130,
+          modePremium: 20,
+        },
+      ])
     })
     expect(result.current.clients).toHaveLength(1)
     expect(result.current.clients[0].name).toBe('New')
@@ -277,7 +325,7 @@ describe('useWeeklyState', () => {
   })
 
   it('refetches when trainer changes', async () => {
-    const trainer2: Trainer = { id: 2, name: 'Jane', tier: 2 }
+    const trainer2: Trainer = { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com' }
 
     vi.mocked(fetch).mockResolvedValue({
       ok: true,

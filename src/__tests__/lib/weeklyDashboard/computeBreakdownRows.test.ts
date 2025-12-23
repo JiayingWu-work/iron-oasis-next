@@ -7,11 +7,15 @@ describe('computeBreakdownRows', () => {
     id: number,
     name: string,
     trainerId: number,
-  ): Client => ({
-    id,
-    name,
-    trainerId,
-  })
+    tierAtSignup: 1 | 2 | 3 = 1,
+  ): Client => {
+    const pricing = {
+      1: { price1_12: 150, price13_20: 140, price21Plus: 130 },
+      2: { price1_12: 165, price13_20: 155, price21Plus: 145 },
+      3: { price1_12: 180, price13_20: 170, price21Plus: 160 },
+    }[tierAtSignup]
+    return { id, name, trainerId, tierAtSignup, ...pricing }
+  }
 
   const createPackage = (
     id: number,
@@ -58,7 +62,7 @@ describe('computeBreakdownRows', () => {
   })
 
   it('returns empty array when no data exists', () => {
-    const result = computeBreakdownRows([], [], [], [], [], 1)
+    const result = computeBreakdownRows([], [], [], [], [])
     expect(result).toEqual([])
   })
 
@@ -73,7 +77,6 @@ describe('computeBreakdownRows', () => {
       [],
       weeklyPackages,
       [],
-      1, // Tier 1
     )
 
     const packageRow = result.find((r) => r.type === 'package')!
@@ -93,7 +96,6 @@ describe('computeBreakdownRows', () => {
       [],
       packages,
       [],
-      1,
     )
 
     const bonusRow = result.find((r) => r.type === 'bonus')!
@@ -115,7 +117,6 @@ describe('computeBreakdownRows', () => {
       [],
       packages,
       [],
-      1,
     )
 
     const bonusRows = result.filter((r) => r.type === 'bonus')
@@ -133,11 +134,10 @@ describe('computeBreakdownRows', () => {
       sessions,
       [],
       [],
-      1, // Tier 1
     )
 
     const sessionRow = result.find((r) => r.type === 'session')!
-    // Tier 1, 10 sessions package = $150/class
+    // Client tier 1, 10 sessions package = $150/class
     // 1 session, rate = 0.46 (< 12 classes)
     // Amount = $150 * 0.46 = $69
     expect(sessionRow.amount).toBe(69)
@@ -154,11 +154,10 @@ describe('computeBreakdownRows', () => {
       sessions,
       [],
       [],
-      1, // Tier 1
     )
 
     const sessionRow = result.find((r) => r.type === 'session')!
-    // Drop-in = single class = $150 (Tier 1)
+    // Drop-in = single class = $150 (Client tier 1)
     // Rate = 0.46, Amount = $69
     expect(sessionRow.amount).toBe(69)
   })
@@ -176,11 +175,10 @@ describe('computeBreakdownRows', () => {
       sessions,
       [],
       [],
-      1,
     )
 
     const sessionRows = result.filter((r) => r.type === 'session')
-    // Tier 1, 20 sessions = $140/class
+    // Client tier 1, 20 sessions = $140/class
     // Rate = 0.51 (> 12 classes)
     // Amount per session = $140 * 0.51 = $71.4
     sessionRows.forEach((row) => {
@@ -198,7 +196,6 @@ describe('computeBreakdownRows', () => {
       [],
       [],
       lateFees,
-      1,
     )
 
     const lateFeeRow = result.find((r) => r.type === 'lateFee')!
@@ -220,7 +217,6 @@ describe('computeBreakdownRows', () => {
       sessions,
       packages,
       lateFees,
-      1,
     )
 
     // Result has: 1 session (01-06), 1 package (01-08), 1 late fee (01-10)
@@ -238,7 +234,6 @@ describe('computeBreakdownRows', () => {
       sessions,
       [],
       [],
-      1,
     )
 
     expect(result[0].clientName).toBe('Unknown client')
@@ -256,7 +251,6 @@ describe('computeBreakdownRows', () => {
       sessions,
       allPackages,
       lateFees,
-      1,
     )
 
     const types = result.map((r) => r.type)
@@ -267,20 +261,23 @@ describe('computeBreakdownRows', () => {
     expect(result).toHaveLength(4)
   })
 
-  it('calculates correct amount for different trainer tiers', () => {
-    const clients = [createClient(1, 'Alice', 1)]
-    const packages = [createPackage(1, 1, 1, 10, '2025-01-06')]
-
-    // Tier 1
-    const result1 = computeBreakdownRows(clients, packages, [], [packages[0]], [], 1)
+  it('calculates correct amount for different client pricing tiers', () => {
+    // Client with tier 1 pricing
+    const client1 = createClient(1, 'Alice', 1, 1)
+    const pkg1 = createPackage(1, 1, 1, 10, '2025-01-06')
+    const result1 = computeBreakdownRows([client1], [pkg1], [], [pkg1], [])
     expect(result1[0].amount).toBe(1500) // $150 * 10
 
-    // Tier 2
-    const result2 = computeBreakdownRows(clients, packages, [], [packages[0]], [], 2)
+    // Client with tier 2 pricing
+    const client2 = createClient(2, 'Bob', 1, 2)
+    const pkg2 = createPackage(2, 2, 1, 10, '2025-01-06')
+    const result2 = computeBreakdownRows([client2], [pkg2], [], [pkg2], [])
     expect(result2[0].amount).toBe(1650) // $165 * 10
 
-    // Tier 3
-    const result3 = computeBreakdownRows(clients, packages, [], [packages[0]], [], 3)
+    // Client with tier 3 pricing
+    const client3 = createClient(3, 'Carol', 1, 3)
+    const pkg3 = createPackage(3, 3, 1, 10, '2025-01-06')
+    const result3 = computeBreakdownRows([client3], [pkg3], [], [pkg3], [])
     expect(result3[0].amount).toBe(1800) // $180 * 10
   })
 })

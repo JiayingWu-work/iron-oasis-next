@@ -3,11 +3,10 @@ import type {
   Package,
   Session,
   LateFee,
-  Trainer,
   TrainingMode,
 } from '@/types'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
-import { getPricePerClass } from '@/lib/pricing'
+import { getClientPricePerClass } from '@/lib/pricing'
 
 export function computeBreakdownRows(
   clients: Client[],
@@ -15,7 +14,6 @@ export function computeBreakdownRows(
   weeklySessions: Session[],
   weeklyPackages: Package[],
   weeklyLateFees: LateFee[],
-  trainerTier: Trainer['tier'],
 ): WeeklyBreakdownRow[] {
   const totalClassesThisWeek = weeklySessions.length
   const rate = totalClassesThisWeek > 12 ? 0.51 : 0.46
@@ -23,11 +21,9 @@ export function computeBreakdownRows(
   const weeklyPackageRows: WeeklyBreakdownRow[] = weeklyPackages.map((p) => {
     const client = clients.find((c) => c.id === p.clientId)
     const mode: TrainingMode = p.mode ?? client?.mode ?? '1v1'
-    const pricePerClass = getPricePerClass(
-      trainerTier,
-      p.sessionsPurchased,
-      mode,
-    )
+    const pricePerClass = client
+      ? getClientPricePerClass(client, p.sessionsPurchased, mode)
+      : 0
     const totalSale = pricePerClass * p.sessionsPurchased
 
     return {
@@ -61,21 +57,23 @@ export function computeBreakdownRows(
       : undefined
 
     let mode: TrainingMode = s.mode ?? directPkg?.mode ?? client?.mode ?? '1v1'
-    let pricePerClass: number
+    let pricePerClass: number = 0
 
     const isPrePackageSession =
       directPkg !== undefined && s.date < directPkg.startDate
 
-    if (directPkg && !isPrePackageSession) {
-      pricePerClass = getPricePerClass(
-        trainerTier,
-        directPkg.sessionsPurchased,
-        mode,
-      )
-    } else {
-      // No packageId: always treat as pure drop-in at the single-class rate.
-      mode = s.mode ?? client?.mode ?? '1v1'
-      pricePerClass = getPricePerClass(trainerTier, 1, mode)
+    if (client) {
+      if (directPkg && !isPrePackageSession) {
+        pricePerClass = getClientPricePerClass(
+          client,
+          directPkg.sessionsPurchased,
+          mode,
+        )
+      } else {
+        // No packageId: always treat as pure drop-in at the single-class rate.
+        mode = s.mode ?? client?.mode ?? '1v1'
+        pricePerClass = getClientPricePerClass(client, 1, mode)
+      }
     }
 
     return {

@@ -73,6 +73,12 @@ export function useWeeklyState(
             trainerId: c.trainer_id,
             secondaryTrainerId: c.secondary_trainer_id ?? undefined,
             mode: c.mode ?? '1v1',
+            tierAtSignup: c.tier_at_signup as 1 | 2 | 3,
+            price1_12: Number(c.price_1_12),
+            price13_20: Number(c.price_13_20),
+            price21Plus: Number(c.price_21_plus),
+            modePremium: Number(c.mode_premium),
+            createdAt: c.created_at,
           })),
         )
 

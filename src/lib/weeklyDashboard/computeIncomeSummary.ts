@@ -7,7 +7,7 @@ import type {
   Client,
 } from '@/types'
 import type { WeeklyIncomeSummary } from '@/hooks/useWeeklyDashboardData'
-import { getPricePerClass } from '@/lib/pricing'
+import { getClientPricePerClass } from '@/lib/pricing'
 import { getWeekRange } from '@/lib/date'
 
 /**
@@ -34,7 +34,6 @@ export function computeIncomeSummary(
   weeklySessions: Session[],
   weeklyPackages: Package[],
   weeklyLateFees: LateFee[],
-  trainerTier: Trainer['tier'],
   trainerId: Trainer['id'],
   allSessions: Session[],
 ): WeeklyIncomeSummary {
@@ -48,6 +47,7 @@ export function computeIncomeSummary(
       : undefined
 
     const client = clients.find((c) => c.id === s.clientId)
+    if (!client) return sum // Skip if client not found
 
     let mode: TrainingMode = s.mode ?? directPkg?.mode ?? client?.mode ?? '1v1'
     let pricePerClass: number
@@ -59,15 +59,15 @@ export function computeIncomeSummary(
 
     if (directPkg && !isPrePackageSession) {
       // Has a concrete package (including rebalanced ones)
-      pricePerClass = getPricePerClass(
-        trainerTier,
+      pricePerClass = getClientPricePerClass(
+        client,
         directPkg.sessionsPurchased,
         mode,
       )
     } else {
       // No packageId: always treat as pure drop-in at the single-class rate.
       mode = s.mode ?? client?.mode ?? '1v1'
-      pricePerClass = getPricePerClass(trainerTier, 1, mode)
+      pricePerClass = getClientPricePerClass(client, 1, mode)
     }
 
     return sum + pricePerClass
@@ -95,8 +95,8 @@ export function computeIncomeSummary(
 
     // Per-class price for this package
     const pkgMode: TrainingMode = pkg.mode ?? client.mode ?? '1v1'
-    const pkgPricePerClass = getPricePerClass(
-      trainerTier,
+    const pkgPricePerClass = getClientPricePerClass(
+      client,
       pkg.sessionsPurchased,
       pkgMode,
     )
@@ -120,7 +120,7 @@ export function computeIncomeSummary(
         s.mode ?? client.mode ?? pkgMode ?? '1v1'
 
       // What we originally paid that session as: single-class highest rate
-      const singleClassPrice = getPricePerClass(trainerTier, 1, sessionMode)
+      const singleClassPrice = getClientPricePerClass(client, 1, sessionMode)
 
       const diffPerClass = singleClassPrice - pkgPricePerClass
 

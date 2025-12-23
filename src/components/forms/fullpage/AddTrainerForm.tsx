@@ -74,7 +74,7 @@ export default function AddTrainerForm({
     } catch (err) {
       console.error(err)
       setError(
-        'Failed to create trainer. Please try again! If issue persists, reach out to developer!',
+        'Failed to create trainer. Please try again. If issue persists, reach out to developer!',
       )
     } finally {
       setSaving(false)
@@ -124,7 +124,10 @@ export default function AddTrainerForm({
         />
       </FormField>
 
-      <FormField label="Tier" hints={["Tier determines the trainer's pay rate."]}>
+      <FormField
+        label="Tier"
+        hints={["Tier determines the trainer's pay rate."]}
+      >
         <Select
           value={tier}
           onChange={(val) => setTier(Number(val) as 1 | 2 | 3)}

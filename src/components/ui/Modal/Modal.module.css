@@ -25,7 +25,7 @@
 
 .modal {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   max-height: calc(100vh - 2rem);
   overflow: visible;
   background: var(--color-bg-card);

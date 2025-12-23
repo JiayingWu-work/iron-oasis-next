@@ -16,6 +16,7 @@ export { default as AddTrainerForm } from './forms/fullpage/AddTrainerForm'
 // Forms - Settings
 export { default as EditClientForm } from './forms/settings/EditClientForm/EditClientForm'
 export { default as EditTrainerForm } from './forms/settings/EditTrainerForm/EditTrainerForm'
+export { default as PricingTable } from './forms/settings/PricingTable/PricingTable'
 export { default as TransferClientForm } from './forms/settings/TransferClientForm/TransferClientForm'
 
 // Layout

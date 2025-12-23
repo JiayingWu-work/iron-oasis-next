@@ -7,6 +7,7 @@ import {
   SettingsCard,
   EditClientForm,
   EditTrainerForm,
+  PricingTable,
   TransferClientForm,
   ToastContainer,
   useToast,
@@ -28,6 +29,7 @@ export default function SettingsPage() {
   const [isEditClientOpen, setIsEditClientOpen] = useState(false)
   const [isEditTrainerOpen, setIsEditTrainerOpen] = useState(false)
   const [isTransferClientOpen, setIsTransferClientOpen] = useState(false)
+  const [isPricingTableOpen, setIsPricingTableOpen] = useState(false)
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   // Check user role
@@ -134,9 +136,9 @@ export default function SettingsPage() {
             <div className={styles.cardsGrid}>
               <SettingsCard
                 title="Update Pricing"
-                description="Adjust session rates for each tier"
+                description="View session rates for each tier"
                 icon={<DollarSign size={20} />}
-                badge="Coming Soon"
+                onClick={() => setIsPricingTableOpen(true)}
               />
               <SettingsCard
                 title="Update Late Fee"
@@ -176,6 +178,17 @@ export default function SettingsPage() {
         onClose={() => setIsTransferClientOpen(false)}
         onSuccess={(clientName, newTrainerName) => {
           showSuccess(`${clientName} transferred to ${newTrainerName}`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <PricingTable
+        isOpen={isPricingTableOpen}
+        onClose={() => setIsPricingTableOpen(false)}
+        onSuccess={() => {
+          showSuccess('Pricing updated successfully')
         }}
         onError={(message) => {
           showError(message)
