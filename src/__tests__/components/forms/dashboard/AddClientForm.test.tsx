@@ -65,7 +65,7 @@ describe('AddClientForm', () => {
       expect(screen.getByText('1v1 (private)')).toBeInTheDocument()
     })
 
-    it('renders secondary trainer dropdown with None', () => {
+    it('renders secondary trainer dropdown with None when 2v2 mode is selected', () => {
       render(
         <AddClientForm
           trainers={mockTrainers}
@@ -73,6 +73,10 @@ describe('AddClientForm', () => {
           onCancel={() => {}}
         />,
       )
+      // Secondary trainer is hidden by default, switch to 2v2 mode first
+      fireEvent.click(screen.getByText('1v1 (private)'))
+      fireEvent.click(screen.getByText('2v2 (shared package)'))
+
       // Find by looking at all select triggers and finding the one with None
       const selectTriggers = screen.getAllByRole('button')
       const hasNone = selectTriggers.some((btn) =>
@@ -190,6 +194,10 @@ describe('AddClientForm', () => {
       // Select John as primary
       fireEvent.click(screen.getByText('Select trainer...'))
       fireEvent.click(screen.getByText('John (Tier 1)'))
+
+      // Switch to 2v2 mode to show secondary trainer dropdown
+      fireEvent.click(screen.getByText('1v1 (private)'))
+      fireEvent.click(screen.getByText('2v2 (shared package)'))
 
       // Open secondary trainer dropdown (find the one with "None")
       const buttons = screen.getAllByRole('button')
