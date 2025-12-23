@@ -130,13 +130,12 @@ export default function AddClientForm({
       <FormField
         label="Client name"
         hints={[
-          'For shared packages or 1v2 clients, use names like <strong>Angela &amp; Tom</strong>.',
-          'For regular 1v1 or 1v2 clients, leave <em>Secondary trainer</em> unselected.',
+          'For shared packages or 1v2 clients, use names like <strong>Alex &amp; Jamie</strong>.',
         ]}
       >
         <input
           className={styles.input}
-          placeholder="e.g. Angela Wang or Angela & Tom"
+          placeholder="e.g. Alex Smith or Alex & Jamie"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -163,15 +162,22 @@ export default function AddClientForm({
         />
       </FormField>
 
-      <FormField label="Secondary trainer">
-        <Select
-          value={secondaryTrainerId}
-          onChange={(val) =>
-            setSecondaryTrainerId(val === '' ? '' : Number(val))
-          }
-          options={secondaryTrainerOptions}
-        />
-      </FormField>
+      {mode === '2v2' && (
+        <FormField
+          label="Secondary trainer"
+          hints={[
+            'The secondary trainer shares this package and splits sessions with the primary trainer.',
+          ]}
+        >
+          <Select
+            value={secondaryTrainerId}
+            onChange={(val) =>
+              setSecondaryTrainerId(val === '' ? '' : Number(val))
+            }
+            options={secondaryTrainerOptions}
+          />
+        </FormField>
+      )}
     </FullPageForm>
   )
 }

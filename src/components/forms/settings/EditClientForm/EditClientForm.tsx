@@ -128,14 +128,14 @@ export default function EditClientForm({
 
     if (originalMode === '1v1' && mode === '1v2') {
       return [
-        'Update name to include both clients (e.g. <strong>Angela &amp; Tom</strong>)',
+        'Update name to include both clients (e.g. <strong>Alex &amp; Jamie</strong>)',
         'Session pricing will be updated to semi-private rates',
       ]
     }
 
     if (originalMode === '1v2' && mode === '1v1') {
       return [
-        'Update name to single client only (e.g. <strong>Angela Wang</strong>)',
+        'Update name to single client only (e.g. <strong>Alex Smith</strong>)',
         'Session pricing will be updated to private rates',
       ]
     }
@@ -145,7 +145,7 @@ export default function EditClientForm({
       mode === '2v2'
     ) {
       return [
-        'Update name to include both clients (e.g. <strong>Angela &amp; Tom</strong>)',
+        'Update name to include both clients (e.g. <strong>Alex &amp; Jamie</strong>)',
         'Session pricing will be updated to shared package rates',
       ]
     }
@@ -154,8 +154,8 @@ export default function EditClientForm({
       const targetDesc = mode === '1v1' ? 'private' : 'semi-private'
       return [
         mode === '1v1'
-          ? 'Update name to single client only (e.g. <strong>Angela Wang</strong>)'
-          : 'Keep name with both clients (e.g. <strong>Angela &amp; Tom</strong>)',
+          ? 'Update name to single client only (e.g. <strong>Alex Smith</strong>)'
+          : 'Keep name with both clients (e.g. <strong>Alex &amp; Jamie</strong>)',
         `Session pricing will be updated to ${targetDesc} rates`,
       ]
     }
@@ -313,7 +313,7 @@ export default function EditClientForm({
           <FormField label="Client name" hints={nameHints}>
             <input
               className={styles.input}
-              placeholder="e.g. Angela Wang"
+              placeholder="e.g. Alex Smith"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

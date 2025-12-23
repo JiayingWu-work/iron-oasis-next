@@ -415,7 +415,7 @@ describe('TransferClientForm', () => {
   })
 
   describe('hints', () => {
-    it('shows hint about packages and sessions remaining unchanged', async () => {
+    it('shows pricing hint when transferring to trainer with different tier', async () => {
       setupMockFetch()
       render(<TransferClientForm isOpen={true} onClose={() => {}} />)
 
@@ -423,13 +423,24 @@ describe('TransferClientForm', () => {
         expect(screen.getByText('Choose a client...')).toBeInTheDocument()
       })
 
-      // Select client
+      // Select client (Alice has trainer John who is Tier 1)
       fireEvent.click(screen.getByText('Choose a client...'))
       fireEvent.click(screen.getByText('Alice'))
 
       await waitFor(() => {
+        expect(screen.getByText('New trainer')).toBeInTheDocument()
+      })
+
+      // Select a new trainer with a different tier (Jane is Tier 2)
+      fireEvent.click(screen.getByText('Select new trainer...'))
+      fireEvent.click(screen.getByText('Jane (Tier 2)'))
+
+      await waitFor(() => {
         expect(
           screen.getByText(/packages and existing sessions will remain unchanged/),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByText(/Pricing change/),
         ).toBeInTheDocument()
       })
     })
