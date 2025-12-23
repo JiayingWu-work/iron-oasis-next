@@ -25,6 +25,10 @@ describe('computeIncomeSummary', () => {
       price1_12: pricing.price1_12,
       price13_20: pricing.price13_20,
       price21Plus: pricing.price21Plus,
+      mode: '1v1' as const,
+      modePremium: 20,
+      createdAt: '2025-01-01',
+      isActive: true,
     }
   }
 
@@ -42,6 +46,7 @@ describe('computeIncomeSummary', () => {
     sessionsPurchased,
     startDate,
     salesBonus,
+    mode: '1v1',
   })
 
   const createSession = (
@@ -56,6 +61,7 @@ describe('computeIncomeSummary', () => {
     trainerId,
     packageId,
     date,
+    mode: '1v1',
   })
 
   const createLateFee = (

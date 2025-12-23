@@ -11,6 +11,14 @@ describe('computeClientRows', () => {
     id,
     name,
     trainerId,
+    mode: '1v1',
+    tierAtSignup: 1,
+    price1_12: 150,
+    price13_20: 140,
+    price21Plus: 130,
+    modePremium: 20,
+    createdAt: '2025-01-01',
+    isActive: true,
   })
 
   const createPackage = (
@@ -25,6 +33,7 @@ describe('computeClientRows', () => {
     trainerId,
     sessionsPurchased,
     startDate,
+    mode: '1v1',
   })
 
   const createSession = (
@@ -39,6 +48,7 @@ describe('computeClientRows', () => {
     trainerId,
     packageId,
     date,
+    mode: '1v1',
   })
 
   it('returns empty array when no clients exist', () => {

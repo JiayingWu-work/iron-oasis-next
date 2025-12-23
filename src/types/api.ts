@@ -12,6 +12,7 @@ export type ApiClient = {
   price_21_plus: number
   mode_premium: number
   created_at: string
+  is_active?: boolean
 }
 
 export type ApiPackage = {

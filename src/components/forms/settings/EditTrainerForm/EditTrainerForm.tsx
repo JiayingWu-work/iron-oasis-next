@@ -199,25 +199,23 @@ export default function EditTrainerForm({
             />
           </FormField>
 
-          <FormField
-            label="Tier"
-            hints={
-              originalTier !== null && tier !== originalTier
-                ? [
-                    '<strong>Existing clients:</strong> Existing clients will keep their original pricing, even for future packages.',
-                    tier > originalTier
-                      ? '<strong>New clients:</strong> New clients will be charged the higher Tier ' + tier + ' rate.'
-                      : '<strong>New clients:</strong> New clients will be charged the lower Tier ' + tier + ' rate.',
-                  ]
-                : undefined
-            }
-          >
+          <FormField label="Tier">
             <Select
               value={tier}
               onChange={(val) => setTier(Number(val) as 1 | 2 | 3)}
               options={tierOptions}
             />
           </FormField>
+
+          {originalTier !== null && tier !== originalTier && (
+            <div className={styles.info}>
+              <strong>Existing clients:</strong> Existing clients will keep
+              their original pricing, even for future packages.
+              <br />
+              <strong>New clients:</strong> New clients will be charged the{' '}
+              {tier > originalTier ? 'higher' : 'lower'} Tier {tier} rate.
+            </div>
+          )}
         </>
       )}
     </Modal>

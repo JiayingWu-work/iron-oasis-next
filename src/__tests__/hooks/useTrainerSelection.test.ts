@@ -5,9 +5,9 @@ import type { Trainer } from '@/types'
 
 describe('useTrainerSelection', () => {
   const mockTrainers: Trainer[] = [
-    { id: 1, name: 'John', tier: 1, email: 'john@test.com' },
-    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com' },
-    { id: 3, name: 'Bob', tier: 3, email: 'bob@test.com' },
+    { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true },
+    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true },
+    { id: 3, name: 'Bob', tier: 3, email: 'bob@test.com', isActive: true },
   ]
 
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe('useTrainerSelection', () => {
       expect(result.current.trainers).toEqual(mockTrainers)
     })
 
-    expect(fetch).toHaveBeenCalledWith('/api/trainers')
+    expect(fetch).toHaveBeenCalledWith('/api/trainers?active=true')
   })
 
   it('selects first trainer as default when trainers load', async () => {

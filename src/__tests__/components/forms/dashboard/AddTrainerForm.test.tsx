@@ -161,6 +161,7 @@ describe('AddTrainerForm', () => {
           name: 'Alice',
           tier: 2,
           email: 'alice@test.com',
+          isActive: true,
         })
       })
     })

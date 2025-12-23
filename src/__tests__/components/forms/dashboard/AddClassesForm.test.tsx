@@ -5,9 +5,9 @@ import type { Client } from '@/types'
 
 describe('AddClassesForm', () => {
   const mockClients: Client[] = [
-    { id: 1, name: 'Alice', trainerId: 1 },
-    { id: 2, name: 'Bob', trainerId: 1 },
-    { id: 3, name: 'Charlie', trainerId: 1 },
+    { id: 1, name: 'Alice', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
+    { id: 2, name: 'Bob', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
+    { id: 3, name: 'Charlie', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
   ]
 
   beforeEach(() => {

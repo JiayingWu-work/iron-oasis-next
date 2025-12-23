@@ -1,16 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import { Trainer } from '@/types'
 
-export async function GET() {
+type TrainerRow = {
+  id: number
+  name: string
+  tier: 1 | 2 | 3
+  email: string
+  is_active: boolean
+}
+
+export async function GET(req: NextRequest) {
   try {
-    const rows = (await sql`
-      SELECT id, name, tier, email
-      FROM trainers
-      ORDER BY id;
-    `) as Trainer[]
+    // Check if is_active column exists and add it if not
+    const isActiveCheck = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_name = 'trainers' AND column_name = 'is_active'
+      ) as exists
+    `
+    if (!isActiveCheck[0]?.exists) {
+      await sql`
+        ALTER TABLE trainers ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true
+      `
+    }
 
-    return NextResponse.json({ trainers: rows })
+    // Check for active filter in query params
+    const url = new URL(req.url)
+    const activeOnly = url.searchParams.get('active') === 'true'
+
+    const rows = activeOnly
+      ? ((await sql`
+          SELECT id, name, tier, email, is_active
+          FROM trainers
+          WHERE is_active = true
+          ORDER BY id;
+        `) as TrainerRow[])
+      : ((await sql`
+          SELECT id, name, tier, email, is_active
+          FROM trainers
+          ORDER BY id;
+        `) as TrainerRow[])
+
+    const trainers = rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      tier: row.tier,
+      email: row.email,
+      isActive: row.is_active ?? true,
+    }))
+
+    return NextResponse.json({ trainers })
   } catch (err) {
     console.error('GET /api/trainers error', err)
     return NextResponse.json(
@@ -56,7 +95,7 @@ export async function POST(req: NextRequest) {
       INSERT INTO trainers (name, tier, email)
       VALUES (${name}, ${tier}, ${email})
       RETURNING id, name, tier, email;
-    `) as Trainer[]
+    `) as { id: number; name: string; tier: 1 | 2 | 3; email: string }[]
 
     return NextResponse.json(rows[0], { status: 201 })
   } catch (err) {

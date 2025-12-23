@@ -5,9 +5,9 @@ import type { Trainer } from '@/types'
 
 describe('AddClientForm', () => {
   const mockTrainers: Trainer[] = [
-    { id: 1, name: 'John', tier: 1, email: 'john@test.com' },
-    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com' },
-    { id: 3, name: 'Bob', tier: 3, email: 'bob@test.com' },
+    { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true },
+    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true },
+    { id: 3, name: 'Bob', tier: 3, email: 'bob@test.com', isActive: true },
   ]
 
   beforeEach(() => {
@@ -317,6 +317,13 @@ describe('AddClientForm', () => {
             trainerId: 1,
             secondaryTrainerId: null,
             mode: '1v1',
+            tierAtSignup: 1,
+            price1_12: 150,
+            price13_20: 140,
+            price21Plus: 130,
+            modePremium: 20,
+            createdAt: '2025-01-15',
+            isActive: true,
           }),
       } as Response)
 
@@ -359,6 +366,13 @@ describe('AddClientForm', () => {
           trainerId: 1,
           secondaryTrainerId: undefined,
           mode: '1v1',
+          tierAtSignup: 1,
+          price1_12: 150,
+          price13_20: 140,
+          price21Plus: 130,
+          modePremium: 20,
+          createdAt: '2025-01-15',
+          isActive: true,
         })
       })
     })

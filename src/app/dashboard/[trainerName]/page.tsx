@@ -243,12 +243,12 @@ export default function TrainerDashboard() {
                   <AddClassesForm
                     date={selectedDate}
                     onDateChange={setSelectedDate}
-                    clients={clients}
+                    clients={clients.filter((c) => c.isActive !== false)}
                     onAddSessions={addSessions}
                     disabled={isReadOnly}
                   />
-                  <AddPackageForm clients={clients} onAddPackage={addPackage} disabled={isReadOnly} />
-                  <AddLateFeeForm clients={clients} onAddLateFee={addLateFee} disabled={isReadOnly} />
+                  <AddPackageForm clients={clients.filter((c) => c.isActive !== false)} onAddPackage={addPackage} disabled={isReadOnly} />
+                  <AddLateFeeForm clients={clients.filter((c) => c.isActive !== false)} onAddLateFee={addLateFee} disabled={isReadOnly} />
                 </Card>
               )}
             </div>

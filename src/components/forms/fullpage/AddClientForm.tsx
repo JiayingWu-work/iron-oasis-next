@@ -68,6 +68,7 @@ export default function AddClientForm({
         price21Plus: created.price21Plus,
         modePremium: created.modePremium,
         createdAt: created.createdAt,
+        isActive: created.isActive ?? true,
       }
 
       onCreated(client)
@@ -130,7 +131,7 @@ export default function AddClientForm({
       <FormField
         label="Client name"
         hints={[
-          'For shared packages or 1v2 clients, use names like <strong>Alex &amp; Jamie</strong>.',
+          'For shared packages or 1v2 clients, use names like <strong>Alex & Jamie</strong>.',
         ]}
       >
         <input
@@ -163,20 +164,22 @@ export default function AddClientForm({
       </FormField>
 
       {mode === '2v2' && (
-        <FormField
-          label="Secondary trainer"
-          hints={[
-            'The secondary trainer shares this package and splits sessions with the primary trainer.',
-          ]}
-        >
-          <Select
-            value={secondaryTrainerId}
-            onChange={(val) =>
-              setSecondaryTrainerId(val === '' ? '' : Number(val))
-            }
-            options={secondaryTrainerOptions}
-          />
-        </FormField>
+        <>
+          <FormField
+            label="Secondary trainer"
+            hints={[
+              'The secondary trainer shares this package and splits sessions with the primary trainer.',
+            ]}
+          >
+            <Select
+              value={secondaryTrainerId}
+              onChange={(val) =>
+                setSecondaryTrainerId(val === '' ? '' : Number(val))
+              }
+              options={secondaryTrainerOptions}
+            />
+          </FormField>
+        </>
       )}
     </FullPageForm>
   )

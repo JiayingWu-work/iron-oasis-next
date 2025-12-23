@@ -3,7 +3,7 @@ import { sql } from '@/lib/db'
 import type { TrainingMode } from '@/types'
 import { getPricingSnapshotForTier } from '@/lib/pricing'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     // Check if mode_premium column exists and add it if not
     const columnCheck = await sql`
@@ -18,24 +18,63 @@ export async function GET() {
       `
     }
 
-    const rows = (await sql`
-      SELECT id, name, trainer_id, secondary_trainer_id, mode,
-             tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at
-      FROM clients
-      ORDER BY name ASC
-    `) as {
-      id: number
-      name: string
-      trainer_id: number
-      secondary_trainer_id: number | null
-      mode: TrainingMode | null
-      tier_at_signup: number
-      price_1_12: number
-      price_13_20: number
-      price_21_plus: number
-      mode_premium: number
-      created_at: string
-    }[]
+    // Check if is_active column exists and add it if not
+    const isActiveCheck = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_name = 'clients' AND column_name = 'is_active'
+      ) as exists
+    `
+    if (!isActiveCheck[0]?.exists) {
+      await sql`
+        ALTER TABLE clients ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true
+      `
+    }
+
+    // Check for active filter in query params
+    const url = new URL(req.url)
+    const activeOnly = url.searchParams.get('active') === 'true'
+
+    const rows = activeOnly
+      ? ((await sql`
+          SELECT id, name, trainer_id, secondary_trainer_id, mode,
+                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active
+          FROM clients
+          WHERE is_active = true
+          ORDER BY name ASC
+        `) as {
+          id: number
+          name: string
+          trainer_id: number
+          secondary_trainer_id: number | null
+          mode: TrainingMode | null
+          tier_at_signup: number
+          price_1_12: number
+          price_13_20: number
+          price_21_plus: number
+          mode_premium: number
+          created_at: string
+          is_active: boolean
+        }[])
+      : ((await sql`
+          SELECT id, name, trainer_id, secondary_trainer_id, mode,
+                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active
+          FROM clients
+          ORDER BY name ASC
+        `) as {
+          id: number
+          name: string
+          trainer_id: number
+          secondary_trainer_id: number | null
+          mode: TrainingMode | null
+          tier_at_signup: number
+          price_1_12: number
+          price_13_20: number
+          price_21_plus: number
+          mode_premium: number
+          created_at: string
+          is_active: boolean
+        }[])
 
     const clients = rows.map((row) => ({
       id: row.id,
@@ -49,6 +88,7 @@ export async function GET() {
       price21Plus: Number(row.price_21_plus),
       modePremium: Number(row.mode_premium),
       createdAt: row.created_at,
+      isActive: row.is_active ?? true,
     }))
 
     return NextResponse.json(clients)
