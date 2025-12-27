@@ -50,6 +50,7 @@ export default function TrainerDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
   const [trainerIdForUser, setTrainerIdForUser] = useState<number | null>(null)
+  const [lateFeeAmount, setLateFeeAmount] = useState<number>(45)
 
   const { data: session, isPending } = authClient.useSession()
 
@@ -92,12 +93,28 @@ export default function TrainerDashboard() {
       .catch(() => setUserRole('owner'))
   }, [session, isPending, userRole])
 
+  // Fetch late fee amount
+  useEffect(() => {
+    fetch('/api/late-fees/amount')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.amount) {
+          setLateFeeAmount(data.amount)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   // Redirect trainer to their own dashboard if accessing wrong one
   useEffect(() => {
     if (userRole !== 'trainer' || !trainerIdForUser || !trainers.length) return
 
     const userTrainer = trainers.find((t) => t.id === trainerIdForUser)
-    if (userTrainer && trainerFromUrl && trainerFromUrl.id !== trainerIdForUser) {
+    if (
+      userTrainer &&
+      trainerFromUrl &&
+      trainerFromUrl.id !== trainerIdForUser
+    ) {
       router.replace(`/dashboard/${toSlug(userTrainer.name, userTrainer.id)}`)
     }
   }, [userRole, trainerIdForUser, trainerFromUrl, trainers, router])
@@ -156,9 +173,19 @@ export default function TrainerDashboard() {
   // Wait for role check to complete
   const isRoleCheckPending = userRole === null
   // For trainers, also wait until we've verified they're on the correct route
-  const isTrainerAccessPending = isReadOnly && trainerIdForUser && trainerFromUrl && trainerFromUrl.id !== trainerIdForUser
+  const isTrainerAccessPending =
+    isReadOnly &&
+    trainerIdForUser &&
+    trainerFromUrl &&
+    trainerFromUrl.id !== trainerIdForUser
 
-  if (!selectedTrainer || selectedTrainerId == null || isRoleCheckPending || isTrainerAccessPending || !trainerFromUrl) {
+  if (
+    !selectedTrainer ||
+    selectedTrainerId == null ||
+    isRoleCheckPending ||
+    isTrainerAccessPending ||
+    !trainerFromUrl
+  ) {
     return <div className={styles.app}>Loading…</div>
   }
 
@@ -222,7 +249,11 @@ export default function TrainerDashboard() {
                 onNext={handleNextWeek}
               />
             </div>
-            <div className={`${styles.mainGrid} ${isReadOnly ? styles.mainGridFullWidth : ''}`}>
+            <div
+              className={`${styles.mainGrid} ${
+                isReadOnly ? styles.mainGridFullWidth : ''
+              }`}
+            >
               <Card>
                 <WeeklyDashboard
                   clients={clients}
@@ -247,8 +278,17 @@ export default function TrainerDashboard() {
                     onAddSessions={addSessions}
                     disabled={isReadOnly}
                   />
-                  <AddPackageForm clients={clients.filter((c) => c.isActive !== false)} onAddPackage={addPackage} disabled={isReadOnly} />
-                  <AddLateFeeForm clients={clients.filter((c) => c.isActive !== false)} onAddLateFee={addLateFee} disabled={isReadOnly} />
+                  <AddPackageForm
+                    clients={clients.filter((c) => c.isActive !== false)}
+                    onAddPackage={addPackage}
+                    disabled={isReadOnly}
+                  />
+                  <AddLateFeeForm
+                    clients={clients.filter((c) => c.isActive !== false)}
+                    onAddLateFee={addLateFee}
+                    disabled={isReadOnly}
+                    lateFeeAmount={lateFeeAmount}
+                  />
                 </Card>
               )}
             </div>

@@ -11,12 +11,14 @@ interface AddLateFeeFormProps {
   clients: Client[]
   onAddLateFee: (clientId: number, date: string) => void
   disabled?: boolean
+  lateFeeAmount: number
 }
 
 export default function AddLateFeeForm({
   clients,
   onAddLateFee,
   disabled = false,
+  lateFeeAmount,
 }: AddLateFeeFormProps) {
   const [clientId, setClientId] = useState<number>()
   const [date, setDate] = useState(formatDateToInput(new Date()))
@@ -34,7 +36,7 @@ export default function AddLateFeeForm({
 
   return (
     <section className={`${styles.section} ${disabled ? styles.sectionDisabled : ''}`}>
-      <h3 className={styles.title}>Add $45 late fee</h3>
+      <h3 className={styles.title}>Add ${lateFeeAmount} late fee</h3>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.fieldRow}>
           <Select
