@@ -82,11 +82,16 @@ describe('SettingsPage', () => {
       render(<SettingsPage />)
 
       await waitFor(() => {
+        // Client Management
         expect(screen.getByText('Transfer Client')).toBeInTheDocument()
         expect(screen.getByText('Edit Client')).toBeInTheDocument()
         expect(screen.getByText('Archive Client')).toBeInTheDocument()
+        expect(screen.getByText('Unarchive Client')).toBeInTheDocument()
+        // Trainer Management
         expect(screen.getByText('Edit Trainer')).toBeInTheDocument()
         expect(screen.getByText('Archive Trainer')).toBeInTheDocument()
+        expect(screen.getByText('Unarchive Trainer')).toBeInTheDocument()
+        // Pricing
         expect(screen.getByText('Update Pricing')).toBeInTheDocument()
         expect(screen.getByText('Update Late Fee')).toBeInTheDocument()
       })
