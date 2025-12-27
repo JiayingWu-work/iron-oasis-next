@@ -14,9 +14,22 @@ export async function POST(req: Request) {
       )
     }
 
+    // Fetch late fee amount from settings, default to 45 if not found
+    let lateFeeAmount = 45
+    try {
+      const settingsResult = (await sql`
+        SELECT value FROM settings WHERE key = 'late_fee'
+      `) as { value: string }[]
+      if (settingsResult.length > 0) {
+        lateFeeAmount = parseFloat(settingsResult[0].value) || 45
+      }
+    } catch {
+      // If settings table doesn't exist yet, use default
+    }
+
     const result = (await sql`
       INSERT INTO late_fees (client_id, trainer_id, date, amount)
-      VALUES (${clientId}, ${trainerId}, ${date}, 45)
+      VALUES (${clientId}, ${trainerId}, ${date}, ${lateFeeAmount})
       RETURNING id, client_id, trainer_id, date, amount;
     `) as ApiLateFee[]
 

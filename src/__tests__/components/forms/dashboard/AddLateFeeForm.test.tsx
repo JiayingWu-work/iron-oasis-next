@@ -20,29 +20,29 @@ describe('AddLateFeeForm', () => {
 
   describe('initial render', () => {
     it('renders form title with fee amount', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
       expect(screen.getByText('Add $45 late fee')).toBeInTheDocument()
     })
 
     it('renders client dropdown with placeholder', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
       expect(screen.getByText('Select client...')).toBeInTheDocument()
     })
 
     it('renders date picker with today as default', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
       expect(screen.getByText('January 15, 2025')).toBeInTheDocument()
     })
 
     it('submit button is disabled initially (no client selected)', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
       expect(screen.getByRole('button', { name: 'Add late fee' })).toBeDisabled()
     })
   })
 
   describe('client selection', () => {
     it('opens dropdown and shows client options', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       fireEvent.click(screen.getByText('Select client...'))
 
@@ -51,7 +51,7 @@ describe('AddLateFeeForm', () => {
     })
 
     it('selects a client from dropdown', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       fireEvent.click(screen.getByText('Select client...'))
       fireEvent.click(screen.getByText('Alice'))
@@ -60,7 +60,7 @@ describe('AddLateFeeForm', () => {
     })
 
     it('enables submit button after selecting client', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       const submitButton = screen.getByRole('button', { name: 'Add late fee' })
       expect(submitButton).toBeDisabled()
@@ -74,7 +74,7 @@ describe('AddLateFeeForm', () => {
 
   describe('date selection', () => {
     it('allows changing the date', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       // Open date picker
       fireEvent.click(screen.getByText('January 15, 2025'))
@@ -86,7 +86,7 @@ describe('AddLateFeeForm', () => {
     })
 
     it('can navigate to different month and select', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       // Open date picker
       fireEvent.click(screen.getByText('January 15, 2025'))
@@ -107,7 +107,7 @@ describe('AddLateFeeForm', () => {
     it('calls onAddLateFee with client ID and date', () => {
       const handleAddLateFee = vi.fn()
       render(
-        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} />,
+        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
       )
 
       // Select client (Alice, id: 1)
@@ -123,7 +123,7 @@ describe('AddLateFeeForm', () => {
     it('submits with custom date', () => {
       const handleAddLateFee = vi.fn()
       render(
-        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} />,
+        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
       )
 
       // Select client (Bob, id: 2)
@@ -143,7 +143,7 @@ describe('AddLateFeeForm', () => {
     it('does not submit without client selected', () => {
       const handleAddLateFee = vi.fn()
       render(
-        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} />,
+        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
       )
 
       // Try to submit without selecting client
@@ -158,7 +158,7 @@ describe('AddLateFeeForm', () => {
 
   describe('empty clients list', () => {
     it('shows no options message', () => {
-      render(<AddLateFeeForm clients={[]} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={[]} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       fireEvent.click(screen.getByText('Select client...'))
 
@@ -166,7 +166,7 @@ describe('AddLateFeeForm', () => {
     })
 
     it('keeps submit disabled with no clients', () => {
-      render(<AddLateFeeForm clients={[]} onAddLateFee={() => {}} />)
+      render(<AddLateFeeForm clients={[]} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       expect(screen.getByRole('button', { name: 'Add late fee' })).toBeDisabled()
     })
@@ -176,7 +176,7 @@ describe('AddLateFeeForm', () => {
     it('complete workflow: select client, change date, submit', () => {
       const handleAddLateFee = vi.fn()
       render(
-        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} />,
+        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
       )
 
       // Step 1: Select client

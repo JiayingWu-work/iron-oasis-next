@@ -22,6 +22,7 @@ export { default as ArchiveClientForm } from './forms/settings/ArchiveClientForm
 export { default as ArchiveTrainerForm } from './forms/settings/ArchiveTrainerForm/ArchiveTrainerForm'
 export { default as UnarchiveClientForm } from './forms/settings/UnarchiveClientForm/UnarchiveClientForm'
 export { default as UnarchiveTrainerForm } from './forms/settings/UnarchiveTrainerForm/UnarchiveTrainerForm'
+export { default as LateFeeForm } from './forms/settings/LateFeeForm/LateFeeForm'
 
 // Layout
 export { default as DashboardHeader } from './layout/dashboard-header/DashboardHeader'

@@ -13,6 +13,7 @@ import {
   ArchiveTrainerForm,
   UnarchiveClientForm,
   UnarchiveTrainerForm,
+  LateFeeForm,
   ToastContainer,
   useToast,
 } from '@/components'
@@ -39,6 +40,7 @@ export default function SettingsPage() {
   const [isArchiveTrainerOpen, setIsArchiveTrainerOpen] = useState(false)
   const [isUnarchiveClientOpen, setIsUnarchiveClientOpen] = useState(false)
   const [isUnarchiveTrainerOpen, setIsUnarchiveTrainerOpen] = useState(false)
+  const [isLateFeeOpen, setIsLateFeeOpen] = useState(false)
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   // Check user role
@@ -165,7 +167,7 @@ export default function SettingsPage() {
                 title="Update Late Fee"
                 description="Adjust the late cancellation fee amount"
                 icon={<Clock size={20} />}
-                badge="Coming Soon"
+                onClick={() => setIsLateFeeOpen(true)}
               />
             </div>
           </div>
@@ -254,6 +256,17 @@ export default function SettingsPage() {
         onClose={() => setIsUnarchiveTrainerOpen(false)}
         onSuccess={(trainerName) => {
           showSuccess(`${trainerName} restored successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <LateFeeForm
+        isOpen={isLateFeeOpen}
+        onClose={() => setIsLateFeeOpen(false)}
+        onSuccess={() => {
+          showSuccess('Late fee updated successfully')
         }}
         onError={(message) => {
           showError(message)
