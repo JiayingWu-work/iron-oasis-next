@@ -54,7 +54,14 @@ export default function WeeklyBreakdownTable({
         {rows.map((row) => (
           <tr key={`${row.type}-${row.id}`}>
             <td>{row.date}</td>
-            <td>{row.clientName}</td>
+            <td>
+              {row.clientName}
+              {row.type === 'session' && row.locationOverride && row.locationOverride !== row.clientLocation && (
+                <span className={styles.locationBadge}>
+                  {row.locationOverride === 'west' ? 'W' : 'E'}
+                </span>
+              )}
+            </td>
             <td>
               {row.type === 'bonus'
                 ? 'Sales bonus'

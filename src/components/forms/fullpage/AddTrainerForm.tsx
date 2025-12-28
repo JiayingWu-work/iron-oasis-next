@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import type { Trainer } from '@/types'
+import type { Trainer, Location } from '@/types'
 import Select from '@/components/ui/Select/Select'
 import FormField from '@/components/ui/FormField/FormField'
 import FullPageForm, {
@@ -24,6 +24,7 @@ export default function AddTrainerForm({
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [tier, setTier] = useState<1 | 2 | 3>(1)
+  const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -53,6 +54,7 @@ export default function AddTrainerForm({
           name: name.trim(),
           email: email.trim().toLowerCase(),
           tier,
+          location,
         }),
       })
 
@@ -69,6 +71,7 @@ export default function AddTrainerForm({
         tier: created.tier,
         email: created.email,
         isActive: created.isActive ?? true,
+        location: created.location ?? 'west',
       }
 
       onCreated(trainer)
@@ -87,6 +90,14 @@ export default function AddTrainerForm({
       { value: 1, label: 'Tier 1' },
       { value: 2, label: 'Tier 2' },
       { value: 3, label: 'Tier 3' },
+    ],
+    [],
+  )
+
+  const locationOptions = useMemo(
+    () => [
+      { value: 'west', label: 'West (261 W 35th St)' },
+      { value: 'east', label: 'East (321 E 22nd St)' },
     ],
     [],
   )
@@ -125,14 +136,22 @@ export default function AddTrainerForm({
         />
       </FormField>
 
-      <FormField
-        label="Tier"
-        hints={["Tier determines the trainer's pay rate."]}
-      >
+      <FormField label="Tier">
         <Select
           value={tier}
           onChange={(val) => setTier(Number(val) as 1 | 2 | 3)}
           options={tierOptions}
+        />
+      </FormField>
+
+      <FormField
+        label="Location"
+        hints={['Primary gym location for this trainer.']}
+      >
+        <Select
+          value={location}
+          onChange={(val) => setLocation(val as Location)}
+          options={locationOptions}
         />
       </FormField>
     </FullPageForm>

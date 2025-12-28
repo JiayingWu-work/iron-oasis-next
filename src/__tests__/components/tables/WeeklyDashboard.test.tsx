@@ -10,11 +10,12 @@ describe('WeeklyDashboard', () => {
     tier: 2,
     email: 'john.trainer@test.com',
     isActive: true,
+    location: 'west',
   }
 
   const mockClients: Client[] = [
-    { id: 1, name: 'Alice', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
-    { id: 2, name: 'Bob', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
+    { id: 1, name: 'Alice', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true, location: 'west' },
+    { id: 2, name: 'Bob', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true, location: 'west' },
   ]
 
   const mockPackages: Package[] = [
@@ -25,6 +26,7 @@ describe('WeeklyDashboard', () => {
       sessionsPurchased: 10,
       startDate: '2025-01-13',
       mode: '1v1',
+      location: 'west',
     },
     {
       id: 2,
@@ -33,6 +35,7 @@ describe('WeeklyDashboard', () => {
       sessionsPurchased: 10,
       startDate: '2025-01-10',
       mode: '1v1',
+      location: 'west',
     },
   ]
 
@@ -327,6 +330,7 @@ describe('WeeklyDashboard', () => {
           sessionsPurchased: 10,
           startDate: '2025-01-13',
           mode: '1v1',
+          location: 'west',
         },
         {
           id: 2,
@@ -335,6 +339,7 @@ describe('WeeklyDashboard', () => {
           sessionsPurchased: 10,
           startDate: '2025-01-14',
           mode: '1v1',
+          location: 'west',
         },
       ]
 

@@ -5,9 +5,9 @@ import type { Client } from '@/types'
 
 describe('AddClassesForm', () => {
   const mockClients: Client[] = [
-    { id: 1, name: 'Alice', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
-    { id: 2, name: 'Bob', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
-    { id: 3, name: 'Charlie', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true },
+    { id: 1, name: 'Alice', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true, location: 'west' },
+    { id: 2, name: 'Bob', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true, location: 'west' },
+    { id: 3, name: 'Charlie', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true, location: 'west' },
   ]
 
   beforeEach(() => {
@@ -280,7 +280,7 @@ describe('AddClassesForm', () => {
       // Submit
       fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
 
-      expect(handleAddSessions).toHaveBeenCalledWith('2025-01-15', [1, 3])
+      expect(handleAddSessions).toHaveBeenCalledWith('2025-01-15', [1, 3], undefined)
     })
 
     it('clears selection after submission', () => {
@@ -347,6 +347,151 @@ describe('AddClassesForm', () => {
 
       // Should be disabled again after clearing
       expect(saveButton).toBeDisabled()
+    })
+  })
+
+  describe('location override', () => {
+    it('renders location override toggle button', () => {
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={() => {}}
+        />,
+      )
+
+      expect(
+        screen.getByRole('button', { name: 'Different location?' }),
+      ).toBeInTheDocument()
+    })
+
+    it('shows location dropdown when override is enabled', () => {
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={() => {}}
+        />,
+      )
+
+      // Click the override toggle
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Different location?' }),
+      )
+
+      // Location dropdown should appear
+      expect(screen.getByText('West (261 W 35th St)')).toBeInTheDocument()
+    })
+
+    it('hides location dropdown when override is disabled', () => {
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={() => {}}
+        />,
+      )
+
+      // Location dropdown should not be visible initially
+      expect(
+        screen.queryByText('West (261 W 35th St)'),
+      ).not.toBeInTheDocument()
+
+      // Enable override
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Different location?' }),
+      )
+      expect(screen.getByText('West (261 W 35th St)')).toBeInTheDocument()
+
+      // Disable override
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Different location?' }),
+      )
+      expect(
+        screen.queryByText('West (261 W 35th St)'),
+      ).not.toBeInTheDocument()
+    })
+
+    it('calls onAddSessions with locationOverride when enabled', () => {
+      const handleAddSessions = vi.fn()
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={handleAddSessions}
+        />,
+      )
+
+      // Select a client
+      fireEvent.click(screen.getByRole('checkbox', { name: /alice/i }))
+
+      // Enable override and select East
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Different location?' }),
+      )
+      fireEvent.click(screen.getByText('West (261 W 35th St)'))
+      fireEvent.click(screen.getByText('East (321 E 22nd St)'))
+
+      // Submit
+      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+
+      expect(handleAddSessions).toHaveBeenCalledWith('2025-01-15', [1], 'east')
+    })
+
+    it('calls onAddSessions without locationOverride when disabled', () => {
+      const handleAddSessions = vi.fn()
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={handleAddSessions}
+        />,
+      )
+
+      // Select a client
+      fireEvent.click(screen.getByRole('checkbox', { name: /alice/i }))
+
+      // Submit without enabling location override
+      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+
+      expect(handleAddSessions).toHaveBeenCalledWith(
+        '2025-01-15',
+        [1],
+        undefined,
+      )
+    })
+
+    it('resets location override after submission', () => {
+      render(
+        <AddClassesForm
+          date="2025-01-15"
+          onDateChange={() => {}}
+          clients={mockClients}
+          onAddSessions={() => {}}
+        />,
+      )
+
+      // Select a client
+      fireEvent.click(screen.getByRole('checkbox', { name: /alice/i }))
+
+      // Enable override
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Different location?' }),
+      )
+      expect(screen.getByText('West (261 W 35th St)')).toBeInTheDocument()
+
+      // Submit
+      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+
+      // Location dropdown should be hidden after reset
+      expect(
+        screen.queryByText('West (261 W 35th St)'),
+      ).not.toBeInTheDocument()
     })
   })
 })

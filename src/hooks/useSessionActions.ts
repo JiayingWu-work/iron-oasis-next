@@ -1,11 +1,11 @@
 import type { Dispatch, SetStateAction } from 'react'
-import type { Trainer, Session } from '@/types'
+import type { Trainer, Session, Location } from '@/types'
 
 export function useSessionActions(
   selectedTrainer: Trainer | null,
   setSessions: Dispatch<SetStateAction<Session[]>>,
 ) {
-  const addSessions = async (date: string, clientIds: number[]) => {
+  const addSessions = async (date: string, clientIds: number[], locationOverride?: Location) => {
     if (!selectedTrainer) return
 
     const res = await fetch('/api/sessions', {
@@ -15,6 +15,7 @@ export function useSessionActions(
         date,
         trainerId: selectedTrainer.id,
         clientIds,
+        locationOverride,
       }),
     })
 

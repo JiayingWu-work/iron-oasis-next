@@ -82,6 +82,8 @@ export function computeBreakdownRows(
       clientName: client?.name ?? 'Unknown client',
       type: 'session',
       amount: pricePerClass * rate,
+      clientLocation: client?.location,
+      locationOverride: s.locationOverride,
     }
   })
 

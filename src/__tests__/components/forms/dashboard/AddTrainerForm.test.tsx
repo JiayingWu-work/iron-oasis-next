@@ -151,6 +151,7 @@ describe('AddTrainerForm', () => {
             name: 'Alice',
             email: 'alice@test.com',
             tier: 2,
+            location: 'west',
           }),
         })
       })
@@ -162,6 +163,7 @@ describe('AddTrainerForm', () => {
           tier: 2,
           email: 'alice@test.com',
           isActive: true,
+          location: 'west',
         })
       })
     })
@@ -247,6 +249,7 @@ describe('AddTrainerForm', () => {
             name: 'Alice', // trimmed
             email: 'alice@test.com',
             tier: 1,
+            location: 'west',
           }),
         })
       })

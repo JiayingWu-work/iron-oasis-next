@@ -32,6 +32,30 @@ export async function POST() {
       ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true
     `;
 
+    // Add location column to trainers table (default 'west' for backfill)
+    await sql`
+      ALTER TABLE trainers
+      ADD COLUMN IF NOT EXISTS location VARCHAR(10) NOT NULL DEFAULT 'west'
+    `;
+
+    // Add location column to clients table (default 'west' for backfill)
+    await sql`
+      ALTER TABLE clients
+      ADD COLUMN IF NOT EXISTS location VARCHAR(10) NOT NULL DEFAULT 'west'
+    `;
+
+    // Add location column to packages table (default 'west' for backfill)
+    await sql`
+      ALTER TABLE packages
+      ADD COLUMN IF NOT EXISTS location VARCHAR(10) NOT NULL DEFAULT 'west'
+    `;
+
+    // Add location_override column to sessions table (nullable - null means use client's default)
+    await sql`
+      ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS location_override VARCHAR(10)
+    `;
+
     return NextResponse.json({
       success: true,
       message: 'Database setup completed successfully'

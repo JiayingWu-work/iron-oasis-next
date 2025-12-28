@@ -1,8 +1,11 @@
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Trainer } from '@/types'
+import type { Trainer, Location } from '@/types'
 import { authClient } from '@/lib/auth/client'
 import { LogOut, Settings, X } from 'lucide-react'
 import styles from './SideBar.module.css'
+
+type LocationFilter = 'all' | Location
 
 interface SideBarProps {
   trainers: Trainer[]
@@ -28,6 +31,15 @@ export default function SideBar({
   const router = useRouter()
   const { data: session } = authClient.useSession()
   const userName = session?.user?.name || 'User'
+  const [locationFilter, setLocationFilter] = useState<LocationFilter>('all')
+
+  const filteredTrainers = useMemo(() => {
+    if (locationFilter === 'all') return trainers
+    return trainers.filter((t) => t.location === locationFilter)
+  }, [trainers, locationFilter])
+
+  const westCount = useMemo(() => trainers.filter((t) => t.location === 'west').length, [trainers])
+  const eastCount = useMemo(() => trainers.filter((t) => t.location === 'east').length, [trainers])
 
   const handleSettings = () => {
     onClose?.()
@@ -101,8 +113,33 @@ export default function SideBar({
         )}
         <div className={styles.trainersSection}>
           <h3 className={styles.sectionTitle}>{readOnly ? 'Trainer' : 'Trainers'}</h3>
+          {!readOnly && (
+            <div className={styles.locationTabs}>
+              <button
+                type="button"
+                className={`${styles.locationTab} ${locationFilter === 'all' ? styles.locationTabActive : ''}`}
+                onClick={() => setLocationFilter('all')}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                className={`${styles.locationTab} ${locationFilter === 'west' ? styles.locationTabActive : ''}`}
+                onClick={() => setLocationFilter('west')}
+              >
+                West ({westCount})
+              </button>
+              <button
+                type="button"
+                className={`${styles.locationTab} ${locationFilter === 'east' ? styles.locationTabActive : ''}`}
+                onClick={() => setLocationFilter('east')}
+              >
+                East ({eastCount})
+              </button>
+            </div>
+          )}
           <ul className={styles.trainerList}>
-            {(readOnly ? trainers.filter((t) => t.id === selectedTrainerId) : trainers).map((t) => (
+            {(readOnly ? trainers.filter((t) => t.id === selectedTrainerId) : filteredTrainers).map((t) => (
               <li
                 key={t.id}
                 className={`${styles.trainerItem} ${

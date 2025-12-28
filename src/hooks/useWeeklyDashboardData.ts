@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { isWithinRange } from '@/lib/date'
-import type { Client, Package, Session, Trainer, LateFee } from '@/types'
+import type { Client, Package, Session, Trainer, LateFee, Location } from '@/types'
 import {
   computeClientRows,
   computeIncomeSummary,
@@ -34,6 +34,8 @@ export interface WeeklyBreakdownRow {
   clientName: string
   type: CombinedRowType
   amount: number
+  clientLocation?: Location // client's default location
+  locationOverride?: Location // session-specific override (only for sessions)
 }
 
 interface UseWeeklyDashboardArgs {

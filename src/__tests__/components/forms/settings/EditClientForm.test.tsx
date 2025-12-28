@@ -4,14 +4,14 @@ import EditClientForm from '@/components/forms/settings/EditClientForm/EditClien
 
 describe('EditClientForm', () => {
   const mockClients = [
-    { id: 1, name: 'Alice', trainerId: 1, mode: '1v1' },
-    { id: 2, name: 'Bob & Carol', trainerId: 2, secondaryTrainerId: 1, mode: '2v2' },
-    { id: 3, name: 'David & Eve', trainerId: 1, mode: '1v2' },
+    { id: 1, name: 'Alice', trainerId: 1, mode: '1v1', location: 'west' },
+    { id: 2, name: 'Bob & Carol', trainerId: 2, secondaryTrainerId: 1, mode: '2v2', location: 'west' },
+    { id: 3, name: 'David & Eve', trainerId: 1, mode: '1v2', location: 'east' },
   ]
 
   const mockTrainers = [
-    { id: 1, name: 'John', tier: 1, email: 'john@test.com' },
-    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com' },
+    { id: 1, name: 'John', tier: 1, email: 'john@test.com', location: 'west' },
+    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', location: 'east' },
   ]
 
   beforeEach(() => {
@@ -378,6 +378,132 @@ describe('EditClientForm', () => {
 
       // Should not show the previously selected client's name
       expect(screen.queryByDisplayValue('Alice')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('location editing', () => {
+    it('populates location field when client is selected', async () => {
+      setupMockFetch()
+      render(<EditClientForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a client...')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText('Choose a client...'))
+      fireEvent.click(screen.getByText('Alice'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Alice')).toBeInTheDocument()
+      })
+
+      // Alice is at West location
+      expect(screen.getByText('West (261 W 35th St)')).toBeInTheDocument()
+    })
+
+    it('shows east location for client at east location', async () => {
+      setupMockFetch()
+      render(<EditClientForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a client...')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText('Choose a client...'))
+      fireEvent.click(screen.getByText('David & Eve'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('David & Eve')).toBeInTheDocument()
+      })
+
+      // David & Eve is at East location
+      expect(screen.getByText('East (321 E 22nd St)')).toBeInTheDocument()
+    })
+
+    it('can change client location to east', async () => {
+      setupMockFetch()
+      render(<EditClientForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a client...')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText('Choose a client...'))
+      fireEvent.click(screen.getByText('Alice'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Alice')).toBeInTheDocument()
+      })
+
+      // Click on the location dropdown and select East
+      fireEvent.click(screen.getByText('West (261 W 35th St)'))
+      fireEvent.click(screen.getByText('East (321 E 22nd St)'))
+
+      expect(screen.getByText('East (321 E 22nd St)')).toBeInTheDocument()
+    })
+
+    it('submits updated location to API', async () => {
+      const handleSuccess = vi.fn()
+
+      vi.mocked(fetch).mockImplementation((url, options) => {
+        if (url === '/api/clients') {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockClients),
+          } as Response)
+        }
+        if (url === '/api/trainers') {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ trainers: mockTrainers }),
+          } as Response)
+        }
+        if (typeof url === 'string' && url.includes('/api/clients/') && options?.method === 'PATCH') {
+          const body = JSON.parse(options.body as string)
+          expect(body.location).toBe('east')
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                id: 1,
+                name: 'Alice',
+                trainerId: 1,
+                mode: '1v1',
+                location: 'east',
+              }),
+          } as Response)
+        }
+        return Promise.resolve({ ok: false } as Response)
+      })
+
+      render(
+        <EditClientForm
+          isOpen={true}
+          onClose={() => {}}
+          onSuccess={handleSuccess}
+        />,
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a client...')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText('Choose a client...'))
+      fireEvent.click(screen.getByText('Alice'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Alice')).toBeInTheDocument()
+      })
+
+      // Change location to East
+      fireEvent.click(screen.getByText('West (261 W 35th St)'))
+      fireEvent.click(screen.getByText('East (321 E 22nd St)'))
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+
+      await waitFor(() => {
+        expect(handleSuccess).toHaveBeenCalledWith('Alice')
+      })
     })
   })
 })

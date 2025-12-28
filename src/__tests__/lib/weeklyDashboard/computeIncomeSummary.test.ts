@@ -29,6 +29,7 @@ describe('computeIncomeSummary', () => {
       modePremium: 20,
       createdAt: '2025-01-01',
       isActive: true,
+      location: 'west' as const,
     }
   }
 
@@ -47,6 +48,7 @@ describe('computeIncomeSummary', () => {
     startDate,
     salesBonus,
     mode: '1v1',
+    location: 'west',
   })
 
   const createSession = (

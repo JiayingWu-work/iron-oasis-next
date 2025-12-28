@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
-import type { Trainer, Session, Package } from '@/types'
+import type { Trainer, Session, Package, Location } from '@/types'
 import { ApiPackage, ApiSession, TrainerWeekResponse } from '@/types/api'
 
 export function usePackageActions(
@@ -59,6 +59,7 @@ export function usePackageActions(
             ? undefined
             : Number(p.sales_bonus),
         mode: p.mode,
+        location: (p.location ?? 'west') as Location,
       })),
     )
 
@@ -70,6 +71,7 @@ export function usePackageActions(
         clientId: s.client_id,
         packageId: s.package_id,
         mode: s.mode,
+        locationOverride: s.location_override ?? undefined,
       })),
     )
   }

@@ -1,11 +1,14 @@
 export type TrainingMode = '1v1' | '1v2' | '2v2'
 
+export type Location = 'west' | 'east'
+
 export interface Trainer {
   id: number
   name: string
   tier: 1 | 2 | 3
   email: string
   isActive: boolean
+  location: Location
 }
 
 export interface Client {
@@ -21,6 +24,7 @@ export interface Client {
   modePremium: number // 1v2 premium locked at signup
   createdAt: string
   isActive: boolean
+  location: Location
 }
 
 export interface Package {
@@ -31,6 +35,7 @@ export interface Package {
   startDate: string // YYYY-MM-DD
   salesBonus?: number
   mode: TrainingMode
+  location: Location
 }
 
 export interface Session {
@@ -40,6 +45,7 @@ export interface Session {
   clientId: number
   packageId: number | null
   mode: TrainingMode
+  locationOverride?: Location // null = use client's default location
 }
 
 export type LateFee = {

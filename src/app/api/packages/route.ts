@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getClientPricePerClass } from '@/lib/pricing'
 import type { ApiPackage, ApiSession } from '@/types/api'
-import type { TrainingMode } from '@/types'
+import type { TrainingMode, Location } from '@/types'
 
 /**
  * After a new package is created, rebalance sessions across all packages for this client+trainer:
@@ -161,9 +161,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    // Look up the client's training mode and pricing columns
+    // Look up the client's training mode, pricing columns, and location
     const [clientRow] = (await sql`
-      SELECT mode, price_1_12, price_13_20, price_21_plus, mode_premium
+      SELECT mode, price_1_12, price_13_20, price_21_plus, mode_premium, location
       FROM clients
       WHERE id = ${clientId}
     `) as {
@@ -172,6 +172,7 @@ export async function POST(req: NextRequest) {
       price_13_20: number
       price_21_plus: number
       mode_premium: number
+      location: Location
     }[]
 
     if (!clientRow) {
@@ -206,6 +207,9 @@ export async function POST(req: NextRequest) {
     const salesBonus =
       bonusRate > 0 ? pricePerClass * sessionsPurchased * bonusRate : 0
 
+    // Package inherits location from client
+    const clientLocation = clientRow.location ?? 'west'
+
     const [row] = (await sql`
       INSERT INTO packages (
         client_id,
@@ -213,7 +217,8 @@ export async function POST(req: NextRequest) {
         sessions_purchased,
         start_date,
         sales_bonus,
-        mode
+        mode,
+        location
       )
       VALUES (
         ${clientId},
@@ -221,7 +226,8 @@ export async function POST(req: NextRequest) {
         ${sessionsPurchased},
         ${startDate},
         ${salesBonus},
-        ${clientMode}
+        ${clientMode},
+        ${clientLocation}
       )
       RETURNING
         id,
@@ -230,8 +236,9 @@ export async function POST(req: NextRequest) {
         sessions_purchased,
         start_date,
         sales_bonus,
-        mode
-    `) as ApiPackage[]
+        mode,
+        location
+    `) as (ApiPackage & { location: Location })[]
 
     const normalizedStartDate =
       typeof row.start_date === 'string'
@@ -252,6 +259,7 @@ export async function POST(req: NextRequest) {
           ? undefined
           : Number(row.sales_bonus),
       mode: row.mode ?? '1v1',
+      location: row.location ?? 'west',
     })
   } catch (err) {
     console.error('Error adding package', err)
