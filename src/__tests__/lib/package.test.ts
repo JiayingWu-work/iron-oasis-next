@@ -16,6 +16,7 @@ describe('pickPackageForSession', () => {
     sessionsPurchased,
     startDate,
     mode: '1v1',
+    location: 'west',
   })
 
   const createSession = (

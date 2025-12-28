@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import type { Client, Trainer, TrainingMode } from '@/types'
+import type { Client, Trainer, TrainingMode, Location } from '@/types'
 import { Modal, FormField, Select } from '@/components'
 import styles from './EditClientForm.module.css'
 
@@ -27,6 +27,7 @@ export default function EditClientForm({
   const [originalMode, setOriginalMode] = useState<TrainingMode>('1v1')
   const [primaryTrainerId, setPrimaryTrainerId] = useState<number | ''>('')
   const [secondaryTrainerId, setSecondaryTrainerId] = useState<number | ''>('')
+  const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -61,6 +62,7 @@ export default function EditClientForm({
       setOriginalMode('1v1')
       setPrimaryTrainerId('')
       setSecondaryTrainerId('')
+      setLocation('west')
       setError(null)
     }
   }, [isOpen])
@@ -73,6 +75,7 @@ export default function EditClientForm({
       setOriginalMode('1v1')
       setPrimaryTrainerId('')
       setSecondaryTrainerId('')
+      setLocation('west')
       return
     }
 
@@ -84,6 +87,7 @@ export default function EditClientForm({
       setOriginalMode(clientMode)
       setPrimaryTrainerId(client.trainerId)
       setSecondaryTrainerId(client.secondaryTrainerId ?? '')
+      setLocation(client.location ?? 'west')
     }
   }, [selectedClientId, clients])
 
@@ -201,11 +205,13 @@ export default function EditClientForm({
       const payload: {
         name: string
         mode: TrainingMode
+        location: Location
         trainerId?: number
         secondaryTrainerId?: number | null
       } = {
         name: name.trim(),
         mode,
+        location,
       }
 
       // Include trainer changes if mode involves trainer updates
@@ -278,6 +284,14 @@ export default function EditClientForm({
     [trainers, primaryTrainerId],
   )
 
+  const locationOptions = useMemo(
+    () => [
+      { value: 'west', label: 'West (261 W 35th St)' },
+      { value: 'east', label: 'East (321 E 22nd St)' },
+    ],
+    [],
+  )
+
   const submitDisabled =
     selectedClientId === '' ||
     !name.trim() ||
@@ -324,6 +338,14 @@ export default function EditClientForm({
               value={mode}
               onChange={(val) => setMode(val as TrainingMode)}
               options={modeOptions}
+            />
+          </FormField>
+
+          <FormField label="Location">
+            <Select
+              value={location}
+              onChange={(val) => setLocation(val as Location)}
+              options={locationOptions}
             />
           </FormField>
 

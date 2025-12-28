@@ -1,4 +1,4 @@
-import { TrainingMode } from '.'
+import { TrainingMode, Location } from '.'
 
 export type ApiClient = {
   id: number
@@ -13,6 +13,7 @@ export type ApiClient = {
   mode_premium: number
   created_at: string
   is_active?: boolean
+  location?: Location
 }
 
 export type ApiPackage = {
@@ -23,6 +24,7 @@ export type ApiPackage = {
   start_date: string
   sales_bonus: number | null
   mode: TrainingMode
+  location?: Location
 }
 
 export type ApiSession = {
@@ -32,6 +34,7 @@ export type ApiSession = {
   client_id: number
   package_id: number | null
   mode: TrainingMode
+  location_override?: Location | null
 }
 
 export type ApiLateFee = {

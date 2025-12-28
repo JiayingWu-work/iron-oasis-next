@@ -19,6 +19,7 @@ describe('computeClientRows', () => {
     modePremium: 20,
     createdAt: '2025-01-01',
     isActive: true,
+    location: 'west',
   })
 
   const createPackage = (
@@ -34,6 +35,7 @@ describe('computeClientRows', () => {
     sessionsPurchased,
     startDate,
     mode: '1v1',
+    location: 'west',
   })
 
   const createSession = (

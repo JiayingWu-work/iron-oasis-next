@@ -4,7 +4,7 @@ import { useWeeklyState } from '@/hooks/useWeeklyState'
 import type { Trainer } from '@/types'
 
 describe('useWeeklyState', () => {
-  const mockTrainer: Trainer = { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true }
+  const mockTrainer: Trainer = { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true, location: 'west' }
 
   const mockApiResponse = {
     weekStart: '2025-01-06',
@@ -145,6 +145,7 @@ describe('useWeeklyState', () => {
       modePremium: 20,
       createdAt: '2025-01-01T00:00:00.000Z',
       isActive: true,
+      location: 'west',
     })
 
     expect(result.current.clients[1]).toEqual({
@@ -160,6 +161,7 @@ describe('useWeeklyState', () => {
       modePremium: 20,
       createdAt: '2025-01-02T00:00:00.000Z',
       isActive: true,
+      location: 'west',
     })
   })
 
@@ -185,6 +187,7 @@ describe('useWeeklyState', () => {
       startDate: '2025-01-01',
       salesBonus: 50,
       mode: '1v1',
+      location: 'west',
     })
   })
 
@@ -303,6 +306,7 @@ describe('useWeeklyState', () => {
           modePremium: 20,
           createdAt: '2025-01-01',
           isActive: true,
+          location: 'west',
         },
       ])
     })
@@ -329,7 +333,7 @@ describe('useWeeklyState', () => {
   })
 
   it('refetches when trainer changes', async () => {
-    const trainer2: Trainer = { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true }
+    const trainer2: Trainer = { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true, location: 'west' }
 
     vi.mocked(fetch).mockResolvedValue({
       ok: true,

@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import type { Client, Session, Package, Trainer, LateFee } from '@/types'
+import type { Client, Session, Package, Trainer, LateFee, Location } from '@/types'
 import { getWeekRange } from '@/lib/date'
 import {
   ApiClient,
@@ -80,6 +80,7 @@ export function useWeeklyState(
             modePremium: Number(c.mode_premium),
             createdAt: c.created_at,
             isActive: c.is_active ?? true,
+            location: (c.location ?? 'west') as Location,
           })),
         )
 
@@ -95,6 +96,7 @@ export function useWeeklyState(
                 ? undefined
                 : Number(p.sales_bonus),
             mode: p.mode ?? '1v1',
+            location: (p.location ?? 'west') as Location,
           })),
         )
 
@@ -106,6 +108,7 @@ export function useWeeklyState(
             clientId: s.client_id,
             packageId: s.package_id,
             mode: s.mode ?? '1v1',
+            locationOverride: s.location_override ?? undefined,
           })),
         )
 

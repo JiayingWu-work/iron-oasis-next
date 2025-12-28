@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import type { Client, Trainer, TrainingMode } from '@/types'
+import type { Client, Trainer, TrainingMode, Location } from '@/types'
 import Select from '@/components/ui/Select/Select'
 import FormField from '@/components/ui/FormField/FormField'
 import FullPageForm, {
@@ -23,6 +23,7 @@ export default function AddClientForm({
   const [primaryTrainerId, setPrimaryTrainerId] = useState<number | ''>('')
   const [secondaryTrainerId, setSecondaryTrainerId] = useState<number | ''>('')
   const [mode, setMode] = useState<TrainingMode>('1v1')
+  const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -46,6 +47,7 @@ export default function AddClientForm({
           secondaryTrainerId:
             secondaryTrainerId === '' ? null : secondaryTrainerId,
           mode,
+          location,
         }),
       })
 
@@ -69,6 +71,7 @@ export default function AddClientForm({
         modePremium: created.modePremium,
         createdAt: created.createdAt,
         isActive: created.isActive ?? true,
+        location: created.location ?? 'west',
       }
 
       onCreated(client)
@@ -109,6 +112,14 @@ export default function AddClientForm({
       { value: '1v1', label: '1v1 (private)' },
       { value: '1v2', label: '1v2 (semi-private)' },
       { value: '2v2', label: '2v2 (shared package)' },
+    ],
+    [],
+  )
+
+  const locationOptions = useMemo(
+    () => [
+      { value: 'west', label: 'West (261 W 35th St)' },
+      { value: 'east', label: 'East (321 E 22nd St)' },
     ],
     [],
   )
@@ -160,6 +171,17 @@ export default function AddClientForm({
           value={mode}
           onChange={(val) => setMode(val as TrainingMode)}
           options={modeOptions}
+        />
+      </FormField>
+
+      <FormField
+        label="Location"
+        hints={['Primary gym location for this client.']}
+      >
+        <Select
+          value={location}
+          onChange={(val) => setLocation(val as Location)}
+          options={locationOptions}
         />
       </FormField>
 

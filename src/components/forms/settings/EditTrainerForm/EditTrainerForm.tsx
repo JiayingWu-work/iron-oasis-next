@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import type { Trainer } from '@/types'
+import type { Trainer, Location } from '@/types'
 import { Modal, FormField, Select } from '@/components'
 import styles from './EditTrainerForm.module.css'
 
@@ -24,6 +24,7 @@ export default function EditTrainerForm({
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [tier, setTier] = useState<1 | 2 | 3>(1)
+  const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -50,6 +51,7 @@ export default function EditTrainerForm({
       setName('')
       setEmail('')
       setTier(1)
+      setLocation('west')
       setError(null)
     }
   }, [isOpen])
@@ -67,6 +69,7 @@ export default function EditTrainerForm({
       setName('')
       setEmail('')
       setTier(1)
+      setLocation('west')
       return
     }
 
@@ -75,6 +78,7 @@ export default function EditTrainerForm({
       setName(trainer.name)
       setEmail(trainer.email)
       setTier(trainer.tier)
+      setLocation(trainer.location ?? 'west')
     }
   }, [selectedTrainerId, trainers])
 
@@ -113,6 +117,7 @@ export default function EditTrainerForm({
           name: name.trim(),
           email: email.trim(),
           tier,
+          location,
         }),
       })
 
@@ -148,6 +153,14 @@ export default function EditTrainerForm({
       { value: 1, label: 'Tier 1' },
       { value: 2, label: 'Tier 2' },
       { value: 3, label: 'Tier 3' },
+    ],
+    [],
+  )
+
+  const locationOptions = useMemo(
+    () => [
+      { value: 'west', label: 'West (261 W 35th St)' },
+      { value: 'east', label: 'East (321 E 22nd St)' },
     ],
     [],
   )
@@ -204,6 +217,14 @@ export default function EditTrainerForm({
               value={tier}
               onChange={(val) => setTier(Number(val) as 1 | 2 | 3)}
               options={tierOptions}
+            />
+          </FormField>
+
+          <FormField label="Location">
+            <Select
+              value={location}
+              onChange={(val) => setLocation(val as Location)}
+              options={locationOptions}
             />
           </FormField>
 

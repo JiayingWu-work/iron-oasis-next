@@ -54,7 +54,7 @@ export async function PATCH(
   }
 
   try {
-    const { name, email, tier } = await request.json();
+    const { name, email, tier, location } = await request.json();
 
     // Validate name
     if (typeof name !== 'string' || !name.trim()) {
@@ -83,6 +83,9 @@ export async function PATCH(
     // Validate tier
     const validTier = tier === 1 || tier === 2 || tier === 3 ? tier : 1;
 
+    // Validate location
+    const validLocation = location === 'west' || location === 'east' ? location : 'west';
+
     // Check email uniqueness (excluding current trainer)
     const existingTrainer = await sql`
       SELECT id FROM trainers
@@ -100,9 +103,9 @@ export async function PATCH(
     // Update trainer
     const result = await sql`
       UPDATE trainers
-      SET name = ${name.trim()}, email = ${email.trim().toLowerCase()}, tier = ${validTier}
+      SET name = ${name.trim()}, email = ${email.trim().toLowerCase()}, tier = ${validTier}, location = ${validLocation}
       WHERE id = ${trainerId}
-      RETURNING id, name, email, tier
+      RETURNING id, name, email, tier, location
     `;
 
     if (result.length === 0) {

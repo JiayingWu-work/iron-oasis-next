@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 
+import type { Location } from '@/types'
+
 type TrainerRow = {
   id: number
   name: string
   tier: 1 | 2 | 3
   email: string
   is_active: boolean
+  location: Location
 }
 
 export async function GET(req: NextRequest) {
@@ -30,13 +33,13 @@ export async function GET(req: NextRequest) {
 
     const rows = activeOnly
       ? ((await sql`
-          SELECT id, name, tier, email, is_active
+          SELECT id, name, tier, email, is_active, location
           FROM trainers
           WHERE is_active = true
           ORDER BY id;
         `) as TrainerRow[])
       : ((await sql`
-          SELECT id, name, tier, email, is_active
+          SELECT id, name, tier, email, is_active, location
           FROM trainers
           ORDER BY id;
         `) as TrainerRow[])
@@ -47,6 +50,7 @@ export async function GET(req: NextRequest) {
       tier: row.tier,
       email: row.email,
       isActive: row.is_active ?? true,
+      location: row.location ?? 'west',
     }))
 
     return NextResponse.json({ trainers })
@@ -65,6 +69,7 @@ export async function POST(req: NextRequest) {
     const name = String(body.name ?? '').trim()
     const email = String(body.email ?? '').trim().toLowerCase()
     const tier = Number(body.tier)
+    const location = (body.location === 'east' ? 'east' : 'west') as Location
 
     if (!name || ![1, 2, 3].includes(tier)) {
       return NextResponse.json(
@@ -92,12 +97,12 @@ export async function POST(req: NextRequest) {
     }
 
     const rows = (await sql`
-      INSERT INTO trainers (name, tier, email)
-      VALUES (${name}, ${tier}, ${email})
-      RETURNING id, name, tier, email;
-    `) as { id: number; name: string; tier: 1 | 2 | 3; email: string }[]
+      INSERT INTO trainers (name, tier, email, location)
+      VALUES (${name}, ${tier}, ${email}, ${location})
+      RETURNING id, name, tier, email, location;
+    `) as { id: number; name: string; tier: 1 | 2 | 3; email: string; location: Location }[]
 
-    return NextResponse.json(rows[0], { status: 201 })
+    return NextResponse.json({ ...rows[0], isActive: true }, { status: 201 })
   } catch (err) {
     console.error('POST /api/trainers error', err)
     return NextResponse.json(

@@ -94,7 +94,8 @@ export async function GET(req: NextRequest) {
             price_21_plus,
             mode_premium,
             created_at,
-            is_active
+            is_active,
+            location
     FROM clients
     WHERE trainer_id = ${trainerId}
         OR secondary_trainer_id = ${trainerId}
@@ -117,7 +118,8 @@ export async function GET(req: NextRequest) {
                sessions_purchased,
                start_date,
                sales_bonus,
-               mode
+               mode,
+               location
         FROM packages
         WHERE client_id = ANY(${clientIds})
       `) as ApiPackage[])
@@ -130,7 +132,8 @@ export async function GET(req: NextRequest) {
             trainer_id,
             client_id,
             package_id,
-            mode
+            mode,
+            location_override
     FROM sessions
     WHERE client_id = ANY(${clientIds})
     ORDER BY date ASC, id ASC

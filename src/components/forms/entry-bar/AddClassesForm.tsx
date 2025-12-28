@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
-import type { Client } from '@/types'
+import { useState, useMemo } from 'react'
+import type { Client, Location } from '@/types'
 import DatePicker from '@/components/ui/DatePicker/DatePicker'
+import Select from '@/components/ui/Select/Select'
 import styles from './entry-bar.module.css'
 
 interface AddClassesFormProps {
   date: string
   onDateChange: (value: string) => void
   clients: Client[]
-  onAddSessions: (date: string, clientIds: number[]) => void
+  onAddSessions: (date: string, clientIds: number[], locationOverride?: Location) => void
   disabled?: boolean
 }
 
@@ -21,6 +22,16 @@ export default function AddClassesForm({
   disabled = false,
 }: AddClassesFormProps) {
   const [selectedClientIds, setSelectedClientIds] = useState<number[]>([])
+  const [overrideLocation, setOverrideLocation] = useState(false)
+  const [locationOverride, setLocationOverride] = useState<Location>('west')
+
+  const locationOptions = useMemo(
+    () => [
+      { value: 'west', label: 'West (261 W 35th St)' },
+      { value: 'east', label: 'East (321 E 22nd St)' },
+    ],
+    [],
+  )
 
   const handleToggleClient = (id: number) => {
     setSelectedClientIds((prev) =>
@@ -30,8 +41,9 @@ export default function AddClassesForm({
 
   const handleSave = () => {
     if (selectedClientIds.length === 0) return
-    onAddSessions(date, selectedClientIds)
+    onAddSessions(date, selectedClientIds, overrideLocation ? locationOverride : undefined)
     setSelectedClientIds([])
+    setOverrideLocation(false)
   }
 
   return (
@@ -57,6 +69,24 @@ export default function AddClassesForm({
           ))}
         </div>
       )}
+      <div className={styles.locationOverrideRow}>
+        <button
+          type="button"
+          className={`${styles.locationToggle} ${overrideLocation ? styles.locationToggleActive : ''}`}
+          onClick={() => setOverrideLocation(!overrideLocation)}
+          disabled={disabled}
+        >
+          Different location?
+        </button>
+        {overrideLocation && (
+          <Select
+            value={locationOverride}
+            onChange={(val) => setLocationOverride(val as Location)}
+            options={locationOptions}
+            disabled={disabled}
+          />
+        )}
+      </div>
       <button
         className={styles.primaryButton}
         onClick={handleSave}

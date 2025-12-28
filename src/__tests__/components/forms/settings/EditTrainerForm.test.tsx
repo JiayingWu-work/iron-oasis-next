@@ -4,8 +4,8 @@ import EditTrainerForm from '@/components/forms/settings/EditTrainerForm/EditTra
 
 describe('EditTrainerForm', () => {
   const mockTrainers = [
-    { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true },
-    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true },
+    { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true, location: 'west' },
+    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true, location: 'east' },
   ]
 
   beforeEach(() => {
@@ -336,6 +336,100 @@ describe('EditTrainerForm', () => {
       })
 
       expect(screen.queryByDisplayValue('John')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('location editing', () => {
+    it('populates location field when trainer is selected', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('John (Tier 1)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('John')).toBeInTheDocument()
+      })
+
+      // John is at West location
+      expect(screen.getByText('West (261 W 35th St)')).toBeInTheDocument()
+    })
+
+    it('can change trainer location to east', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('John (Tier 1)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('John')).toBeInTheDocument()
+      })
+
+      // Click on the location dropdown and select East
+      fireEvent.click(screen.getByText('West (261 W 35th St)'))
+      fireEvent.click(screen.getByText('East (321 E 22nd St)'))
+
+      expect(screen.getByText('East (321 E 22nd St)')).toBeInTheDocument()
+    })
+
+    it('submits updated location to API', async () => {
+      const handleSuccess = vi.fn()
+
+      vi.mocked(fetch).mockImplementation((url, options) => {
+        if (typeof url === 'string' && url.includes('/api/trainers') && !options) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ trainers: mockTrainers }),
+          } as Response)
+        }
+        if (typeof url === 'string' && url.includes('/api/trainers/') && options?.method === 'PATCH') {
+          const body = JSON.parse(options.body as string)
+          expect(body.location).toBe('east')
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ id: 1, name: 'John', tier: 1, email: 'john@test.com', location: 'east' }),
+          } as Response)
+        }
+        return Promise.resolve({ ok: false } as Response)
+      })
+
+      render(
+        <EditTrainerForm
+          isOpen={true}
+          onClose={() => {}}
+          onSuccess={handleSuccess}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('John (Tier 1)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('John')).toBeInTheDocument()
+      })
+
+      // Change location to East
+      fireEvent.click(screen.getByText('West (261 W 35th St)'))
+      fireEvent.click(screen.getByText('East (321 E 22nd St)'))
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+
+      await waitFor(() => {
+        expect(handleSuccess).toHaveBeenCalledWith('John')
+      })
     })
   })
 })

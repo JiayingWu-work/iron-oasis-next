@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import type { TrainingMode } from '@/types'
+import type { TrainingMode, Location } from '@/types'
 import { getPricingSnapshotForTier } from '@/lib/pricing'
 
 export async function GET(req: NextRequest) {
@@ -35,46 +35,36 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url)
     const activeOnly = url.searchParams.get('active') === 'true'
 
+    type ClientRow = {
+      id: number
+      name: string
+      trainer_id: number
+      secondary_trainer_id: number | null
+      mode: TrainingMode | null
+      tier_at_signup: number
+      price_1_12: number
+      price_13_20: number
+      price_21_plus: number
+      mode_premium: number
+      created_at: string
+      is_active: boolean
+      location: Location
+    }
+
     const rows = activeOnly
       ? ((await sql`
           SELECT id, name, trainer_id, secondary_trainer_id, mode,
-                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active
+                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active, location
           FROM clients
           WHERE is_active = true
           ORDER BY name ASC
-        `) as {
-          id: number
-          name: string
-          trainer_id: number
-          secondary_trainer_id: number | null
-          mode: TrainingMode | null
-          tier_at_signup: number
-          price_1_12: number
-          price_13_20: number
-          price_21_plus: number
-          mode_premium: number
-          created_at: string
-          is_active: boolean
-        }[])
+        `) as ClientRow[])
       : ((await sql`
           SELECT id, name, trainer_id, secondary_trainer_id, mode,
-                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active
+                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active, location
           FROM clients
           ORDER BY name ASC
-        `) as {
-          id: number
-          name: string
-          trainer_id: number
-          secondary_trainer_id: number | null
-          mode: TrainingMode | null
-          tier_at_signup: number
-          price_1_12: number
-          price_13_20: number
-          price_21_plus: number
-          mode_premium: number
-          created_at: string
-          is_active: boolean
-        }[])
+        `) as ClientRow[])
 
     const clients = rows.map((row) => ({
       id: row.id,
@@ -89,6 +79,7 @@ export async function GET(req: NextRequest) {
       modePremium: Number(row.mode_premium),
       createdAt: row.created_at,
       isActive: row.is_active ?? true,
+      location: row.location ?? 'west',
     }))
 
     return NextResponse.json(clients)
@@ -103,7 +94,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, trainerId, secondaryTrainerId, mode } = await req.json()
+    const { name, trainerId, secondaryTrainerId, mode, location: reqLocation } = await req.json()
+    const location = (reqLocation === 'east' ? 'east' : 'west') as Location
 
     if (
       typeof name !== 'string' ||
@@ -132,14 +124,14 @@ export async function POST(req: NextRequest) {
     const [row] = (await sql`
       INSERT INTO clients (
         name, trainer_id, secondary_trainer_id, mode,
-        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at
+        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
       )
       VALUES (
         ${name.trim()}, ${trainerId}, ${secondaryId}, ${trainingMode},
-        ${trainerTier}, ${pricingSnapshot.price1_12}, ${pricingSnapshot.price13_20}, ${pricingSnapshot.price21Plus}, ${pricingSnapshot.modePremium}, NOW()
+        ${trainerTier}, ${pricingSnapshot.price1_12}, ${pricingSnapshot.price13_20}, ${pricingSnapshot.price21Plus}, ${pricingSnapshot.modePremium}, NOW(), ${location}
       )
       RETURNING id, name, trainer_id, secondary_trainer_id, mode,
-                tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at
+                tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
     `) as {
       id: number
       name: string
@@ -152,6 +144,7 @@ export async function POST(req: NextRequest) {
       price_21_plus: number
       mode_premium: number
       created_at: string
+      location: Location
     }[]
 
     return NextResponse.json({
@@ -166,6 +159,8 @@ export async function POST(req: NextRequest) {
       price21Plus: Number(row.price_21_plus),
       modePremium: Number(row.mode_premium),
       createdAt: row.created_at,
+      location: row.location,
+      isActive: true,
     })
   } catch (err) {
     console.error('Error creating client', err)

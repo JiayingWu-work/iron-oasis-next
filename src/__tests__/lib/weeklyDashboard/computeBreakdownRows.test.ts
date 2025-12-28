@@ -14,7 +14,7 @@ describe('computeBreakdownRows', () => {
       2: { price1_12: 165, price13_20: 155, price21Plus: 145 },
       3: { price1_12: 180, price13_20: 170, price21Plus: 160 },
     }[tierAtSignup]
-    return { id, name, trainerId, tierAtSignup, mode: '1v1' as const, modePremium: 20, createdAt: '2025-01-01', isActive: true, ...pricing }
+    return { id, name, trainerId, tierAtSignup, mode: '1v1' as const, modePremium: 20, createdAt: '2025-01-01', isActive: true, location: 'west' as const, ...pricing }
   }
 
   const createPackage = (
@@ -32,6 +32,7 @@ describe('computeBreakdownRows', () => {
     startDate,
     salesBonus,
     mode: '1v1',
+    location: 'west',
   })
 
   const createSession = (

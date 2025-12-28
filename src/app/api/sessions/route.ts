@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import type { Package, Session, TrainingMode } from '@/types'
+import type { Package, Session, TrainingMode, Location } from '@/types'
 import type { ApiPackage, ApiSession } from '@/types/api'
 
 type AddSessionsBody = {
   date: string
   trainerId: number
   clientIds: number[]
+  locationOverride?: Location // optional: override the client's default location
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { date, trainerId, clientIds } = (await req.json()) as AddSessionsBody
+    const { date, trainerId, clientIds, locationOverride } = (await req.json()) as AddSessionsBody
 
     if (!date || typeof trainerId !== 'number' || !Array.isArray(clientIds)) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
+
+    // Validate locationOverride if provided
+    const validLocationOverride = locationOverride === 'west' || locationOverride === 'east' ? locationOverride : null
 
     // 1) Fetch ALL packages for these clients (any trainer)
     const packagesRows = (await sql`
@@ -25,7 +29,8 @@ export async function POST(req: NextRequest) {
              sessions_purchased,
              start_date,
              sales_bonus,
-             mode
+             mode,
+             location
       FROM packages
       WHERE client_id = ANY(${clientIds})
     `) as ApiPackage[]
@@ -47,6 +52,7 @@ export async function POST(req: NextRequest) {
             ? undefined
             : Number(p.sales_bonus),
         mode: (p.mode as TrainingMode) ?? '1v1',
+        location: (p.location as Location) ?? 'west',
       }
     })
 
@@ -78,10 +84,10 @@ export async function POST(req: NextRequest) {
       const clientMode = clientModeMap.get(clientId) ?? '1v1'
 
       const [inserted] = (await sql`
-        INSERT INTO sessions (date, trainer_id, client_id, package_id, mode)
-        VALUES (${date}, ${trainerId}, ${clientId}, ${packageId}, ${clientMode})
-        RETURNING id, date, trainer_id, client_id, package_id, mode
-      `) as ApiSession[]
+        INSERT INTO sessions (date, trainer_id, client_id, package_id, mode, location_override)
+        VALUES (${date}, ${trainerId}, ${clientId}, ${packageId}, ${clientMode}, ${validLocationOverride})
+        RETURNING id, date, trainer_id, client_id, package_id, mode, location_override
+      `) as (ApiSession & { location_override: Location | null })[]
 
       const normalizedDate =
         typeof inserted.date === 'string'
@@ -95,6 +101,7 @@ export async function POST(req: NextRequest) {
         clientId: inserted.client_id,
         packageId: inserted.package_id,
         mode: (inserted.mode as TrainingMode) ?? clientMode,
+        locationOverride: inserted.location_override ?? undefined,
       })
     }
 

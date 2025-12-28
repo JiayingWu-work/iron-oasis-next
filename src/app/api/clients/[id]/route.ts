@@ -15,7 +15,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid client ID' }, { status: 400 })
     }
 
-    const { name, mode, trainerId, secondaryTrainerId } = await req.json()
+    const { name, mode, trainerId, secondaryTrainerId, location } = await req.json()
 
     if (typeof name !== 'string' || !name.trim()) {
       return NextResponse.json(
@@ -26,6 +26,9 @@ export async function PATCH(
 
     const trainingMode: TrainingMode =
       mode === '1v2' || mode === '2v2' ? mode : '1v1'
+
+    // Validate location if provided
+    const validLocation = location === 'west' || location === 'east' ? location : undefined
 
     // Define row type including pricing columns
     type ClientRow = {
@@ -40,6 +43,7 @@ export async function PATCH(
       price_21_plus: number
       mode_premium: number
       created_at: string
+      location: string
     }
 
     let row: ClientRow
@@ -70,49 +74,88 @@ export async function PATCH(
         const newTier = (newTrainer?.tier ?? 1) as 1 | 2 | 3
         const newPricing = await getPricingSnapshotForTier(newTier)
 
-        const [result] = (await sql`
-          UPDATE clients
-          SET
-            name = ${name.trim()},
-            mode = ${trainingMode},
-            trainer_id = ${primaryId},
-            secondary_trainer_id = ${secondaryId},
-            tier_at_signup = ${newTier},
-            price_1_12 = ${newPricing.price1_12},
-            price_13_20 = ${newPricing.price13_20},
-            price_21_plus = ${newPricing.price21Plus},
-            mode_premium = ${newPricing.modePremium}
-          WHERE id = ${clientId}
-          RETURNING id, name, trainer_id, secondary_trainer_id, mode,
-                    tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at
-        `) as ClientRow[]
+        const [result] = validLocation
+          ? (await sql`
+              UPDATE clients
+              SET
+                name = ${name.trim()},
+                mode = ${trainingMode},
+                trainer_id = ${primaryId},
+                secondary_trainer_id = ${secondaryId},
+                tier_at_signup = ${newTier},
+                price_1_12 = ${newPricing.price1_12},
+                price_13_20 = ${newPricing.price13_20},
+                price_21_plus = ${newPricing.price21Plus},
+                mode_premium = ${newPricing.modePremium},
+                location = ${validLocation}
+              WHERE id = ${clientId}
+              RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+            `) as ClientRow[]
+          : (await sql`
+              UPDATE clients
+              SET
+                name = ${name.trim()},
+                mode = ${trainingMode},
+                trainer_id = ${primaryId},
+                secondary_trainer_id = ${secondaryId},
+                tier_at_signup = ${newTier},
+                price_1_12 = ${newPricing.price1_12},
+                price_13_20 = ${newPricing.price13_20},
+                price_21_plus = ${newPricing.price21Plus},
+                mode_premium = ${newPricing.modePremium}
+              WHERE id = ${clientId}
+              RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+            `) as ClientRow[]
 
         row = result
       } else {
         // Trainer not changing - just update name, mode, secondary trainer
-        const [result] = (await sql`
-          UPDATE clients
-          SET
-            name = ${name.trim()},
-            mode = ${trainingMode},
-            trainer_id = COALESCE(${primaryId}, trainer_id),
-            secondary_trainer_id = ${secondaryId}
-          WHERE id = ${clientId}
-          RETURNING id, name, trainer_id, secondary_trainer_id, mode,
-                    tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at
-        `) as ClientRow[]
+        const [result] = validLocation
+          ? (await sql`
+              UPDATE clients
+              SET
+                name = ${name.trim()},
+                mode = ${trainingMode},
+                trainer_id = COALESCE(${primaryId}, trainer_id),
+                secondary_trainer_id = ${secondaryId},
+                location = ${validLocation}
+              WHERE id = ${clientId}
+              RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+            `) as ClientRow[]
+          : (await sql`
+              UPDATE clients
+              SET
+                name = ${name.trim()},
+                mode = ${trainingMode},
+                trainer_id = COALESCE(${primaryId}, trainer_id),
+                secondary_trainer_id = ${secondaryId}
+              WHERE id = ${clientId}
+              RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+            `) as ClientRow[]
 
         row = result
       }
     } else {
-      // Only update name and mode
-      const [result] = (await sql`
-        UPDATE clients
-        SET name = ${name.trim()}, mode = ${trainingMode}
-        WHERE id = ${clientId}
-        RETURNING id, name, trainer_id, secondary_trainer_id, mode,
-                  tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at
-      `) as ClientRow[]
+      // Only update name, mode, and optionally location
+      const [result] = validLocation
+        ? (await sql`
+            UPDATE clients
+            SET name = ${name.trim()}, mode = ${trainingMode}, location = ${validLocation}
+            WHERE id = ${clientId}
+            RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                      tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+          `) as ClientRow[]
+        : (await sql`
+            UPDATE clients
+            SET name = ${name.trim()}, mode = ${trainingMode}
+            WHERE id = ${clientId}
+            RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                      tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+          `) as ClientRow[]
 
       row = result
     }
@@ -133,6 +176,7 @@ export async function PATCH(
       price21Plus: Number(row.price_21_plus),
       modePremium: Number(row.mode_premium),
       createdAt: row.created_at,
+      location: row.location,
     })
   } catch (err) {
     console.error('Error updating client', err)

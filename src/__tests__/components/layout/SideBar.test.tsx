@@ -26,8 +26,9 @@ vi.mock('@/lib/auth/client', () => ({
 
 describe('SideBar', () => {
   const mockTrainers: Trainer[] = [
-    { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true },
-    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true },
+    { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true, location: 'west' },
+    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true, location: 'west' },
+    { id: 3, name: 'Mike', tier: 1, email: 'mike@test.com', isActive: true, location: 'east' },
   ]
 
   const defaultProps = {
@@ -90,7 +91,8 @@ describe('SideBar', () => {
     it('shows tier information for each trainer', () => {
       render(<SideBar {...defaultProps} />)
 
-      expect(screen.getByText('Tier 1')).toBeInTheDocument()
+      // 2 trainers at Tier 1 (John and Mike), 1 trainer at Tier 2 (Jane)
+      expect(screen.getAllByText('Tier 1')).toHaveLength(2)
       expect(screen.getByText('Tier 2')).toBeInTheDocument()
     })
 
@@ -168,6 +170,80 @@ describe('SideBar', () => {
       fireEvent.click(screen.getByRole('button', { name: /settings/i }))
 
       expect(onClose).toHaveBeenCalled()
+    })
+  })
+
+  describe('location tabs', () => {
+    it('shows location tab buttons (All, West, East)', () => {
+      render(<SideBar {...defaultProps} />)
+
+      expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /West/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /East/ })).toBeInTheDocument()
+    })
+
+    it('shows trainer counts in location tabs', () => {
+      render(<SideBar {...defaultProps} />)
+
+      // 2 trainers at West (John, Jane), 1 at East (Mike)
+      expect(screen.getByRole('button', { name: 'West (2)' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'East (1)' })).toBeInTheDocument()
+    })
+
+    it('shows all trainers by default', () => {
+      render(<SideBar {...defaultProps} />)
+
+      expect(screen.getByText('John')).toBeInTheDocument()
+      expect(screen.getByText('Jane')).toBeInTheDocument()
+      expect(screen.getByText('Mike')).toBeInTheDocument()
+    })
+
+    it('filters trainers when West tab is clicked', () => {
+      render(<SideBar {...defaultProps} />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'West (2)' }))
+
+      // West trainers should be visible
+      expect(screen.getByText('John')).toBeInTheDocument()
+      expect(screen.getByText('Jane')).toBeInTheDocument()
+      // East trainer should not be visible
+      expect(screen.queryByText('Mike')).not.toBeInTheDocument()
+    })
+
+    it('filters trainers when East tab is clicked', () => {
+      render(<SideBar {...defaultProps} />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'East (1)' }))
+
+      // East trainer should be visible
+      expect(screen.getByText('Mike')).toBeInTheDocument()
+      // West trainers should not be visible
+      expect(screen.queryByText('John')).not.toBeInTheDocument()
+      expect(screen.queryByText('Jane')).not.toBeInTheDocument()
+    })
+
+    it('shows all trainers when All tab is clicked after filtering', () => {
+      render(<SideBar {...defaultProps} />)
+
+      // First filter to West
+      fireEvent.click(screen.getByRole('button', { name: 'West (2)' }))
+      expect(screen.queryByText('Mike')).not.toBeInTheDocument()
+
+      // Then click All
+      fireEvent.click(screen.getByRole('button', { name: 'All' }))
+
+      // All trainers should be visible again
+      expect(screen.getByText('John')).toBeInTheDocument()
+      expect(screen.getByText('Jane')).toBeInTheDocument()
+      expect(screen.getByText('Mike')).toBeInTheDocument()
+    })
+
+    it('hides location tabs when readOnly is true', () => {
+      render(<SideBar {...defaultProps} readOnly />)
+
+      expect(screen.queryByRole('button', { name: 'All' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /West/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /East/ })).not.toBeInTheDocument()
     })
   })
 })
