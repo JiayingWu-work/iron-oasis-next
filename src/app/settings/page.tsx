@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
 import {
   SettingsCard,
+  AddClientSettingsForm,
+  AddTrainerSettingsForm,
   EditClientForm,
   EditTrainerForm,
   PricingTable,
@@ -16,11 +18,13 @@ import {
   LateFeeForm,
   ToastContainer,
   useToast,
+  Spinner,
 } from '@/components'
 import {
   ArrowLeft,
   ArrowLeftRight,
   UserPen,
+  UserPlus,
   Archive,
   ArchiveRestore,
   DollarSign,
@@ -32,6 +36,8 @@ export default function SettingsPage() {
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
   const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false)
+  const [isAddTrainerOpen, setIsAddTrainerOpen] = useState(false)
   const [isEditClientOpen, setIsEditClientOpen] = useState(false)
   const [isEditTrainerOpen, setIsEditTrainerOpen] = useState(false)
   const [isTransferClientOpen, setIsTransferClientOpen] = useState(false)
@@ -69,7 +75,7 @@ export default function SettingsPage() {
     return (
       <div className={styles.page}>
         <div className={styles.loadingContainer}>
-          <div className={styles.loadingSpinner} />
+          <Spinner size="lg" />
         </div>
       </div>
     )
@@ -104,6 +110,12 @@ export default function SettingsPage() {
             <h2 className={styles.sectionLabel}>Client Management</h2>
             <div className={styles.cardsGrid}>
               <SettingsCard
+                title="Add Client"
+                description="Create a new client for a trainer"
+                icon={<UserPlus size={20} />}
+                onClick={() => setIsAddClientOpen(true)}
+              />
+              <SettingsCard
                 title="Transfer Client"
                 description="Reassign a client to a different trainer"
                 icon={<ArrowLeftRight size={20} />}
@@ -133,6 +145,12 @@ export default function SettingsPage() {
           <div className={styles.sectionGroup}>
             <h2 className={styles.sectionLabel}>Trainer Management</h2>
             <div className={styles.cardsGrid}>
+              <SettingsCard
+                title="Add Trainer"
+                description="Create a new trainer for the gym"
+                icon={<UserPlus size={20} />}
+                onClick={() => setIsAddTrainerOpen(true)}
+              />
               <SettingsCard
                 title="Edit Trainer"
                 description="Update trainer name, email, or tier"
@@ -173,6 +191,28 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <AddClientSettingsForm
+        isOpen={isAddClientOpen}
+        onClose={() => setIsAddClientOpen(false)}
+        onSuccess={(clientName) => {
+          showSuccess(`${clientName} created successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <AddTrainerSettingsForm
+        isOpen={isAddTrainerOpen}
+        onClose={() => setIsAddTrainerOpen(false)}
+        onSuccess={(trainerName) => {
+          showSuccess(`${trainerName} created successfully`)
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
 
       <EditClientForm
         isOpen={isEditClientOpen}

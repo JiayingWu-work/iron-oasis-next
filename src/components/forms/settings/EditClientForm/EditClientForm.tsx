@@ -237,7 +237,7 @@ export default function EditClientForm({
       const updated = await res.json()
       onClose()
       onSuccess?.(updated.name)
-    } catch (err) {
+    } catch {
       const errorMessage = 'Failed to update client. Please try again.'
       setError(errorMessage)
       onError?.(errorMessage)

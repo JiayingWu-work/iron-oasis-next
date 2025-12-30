@@ -83,11 +83,13 @@ describe('SettingsPage', () => {
 
       await waitFor(() => {
         // Client Management
+        expect(screen.getByText('Add Client')).toBeInTheDocument()
         expect(screen.getByText('Transfer Client')).toBeInTheDocument()
         expect(screen.getByText('Edit Client')).toBeInTheDocument()
         expect(screen.getByText('Archive Client')).toBeInTheDocument()
         expect(screen.getByText('Unarchive Client')).toBeInTheDocument()
         // Trainer Management
+        expect(screen.getByText('Add Trainer')).toBeInTheDocument()
         expect(screen.getByText('Edit Trainer')).toBeInTheDocument()
         expect(screen.getByText('Archive Trainer')).toBeInTheDocument()
         expect(screen.getByText('Unarchive Trainer')).toBeInTheDocument()
@@ -133,8 +135,8 @@ describe('SettingsPage', () => {
 
       render(<SettingsPage />)
 
-      // Should show loading state (the spinner div exists)
-      expect(document.querySelector('[class*="loadingSpinner"]')).toBeInTheDocument()
+      // Should show loading state (the spinner component exists)
+      expect(document.querySelector('[class*="spinner"]')).toBeInTheDocument()
     })
   })
 })
