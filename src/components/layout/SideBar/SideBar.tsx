@@ -56,7 +56,8 @@ export default function SideBar({
   // Derive effective filter - sync to trainer's location on external navigation
   const locationFilter = useMemo(() => {
     if (selectedTrainerId !== filterState.syncedTrainerId) {
-      const trainer = selectedTrainer ?? trainers.find((t) => t.id === selectedTrainerId)
+      const trainer =
+        selectedTrainer ?? trainers.find((t) => t.id === selectedTrainerId)
       if (trainer) return trainer.location
       return filterState.filter
     }
@@ -157,15 +158,23 @@ export default function SideBar({
             <div className={styles.locationTabs}>
               <button
                 type="button"
-                className={`${styles.locationTab} ${locationFilter === 'west' ? styles.locationTabActive : ''}`}
-                onClick={() => setLocationFilter(locationFilter === 'west' ? null : 'west')}
+                className={`${styles.locationTab} ${
+                  locationFilter === 'west' ? styles.locationTabActive : ''
+                }`}
+                onClick={() =>
+                  setLocationFilter(locationFilter === 'west' ? null : 'west')
+                }
               >
                 West ({westCount})
               </button>
               <button
                 type="button"
-                className={`${styles.locationTab} ${locationFilter === 'east' ? styles.locationTabActive : ''}`}
-                onClick={() => setLocationFilter(locationFilter === 'east' ? null : 'east')}
+                className={`${styles.locationTab} ${
+                  locationFilter === 'east' ? styles.locationTabActive : ''
+                }`}
+                onClick={() =>
+                  setLocationFilter(locationFilter === 'east' ? null : 'east')
+                }
               >
                 East ({eastCount})
               </button>
@@ -176,7 +185,9 @@ export default function SideBar({
             {displayedTrainers.map((t) => (
               <li
                 key={t.id}
-                className={`${styles.trainerItem} ${t.id === selectedTrainerId ? styles.trainerItemActive : ''} ${readOnly ? styles.trainerItemDisabled : ''}`}
+                className={`${styles.trainerItem} ${
+                  t.id === selectedTrainerId ? styles.trainerItemActive : ''
+                } ${readOnly ? styles.trainerItemDisabled : ''}`}
                 onClick={readOnly ? undefined : () => handleSelectTrainer(t.id)}
                 style={readOnly ? { cursor: 'default' } : undefined}
               >
