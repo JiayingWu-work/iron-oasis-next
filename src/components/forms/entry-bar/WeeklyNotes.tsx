@@ -5,16 +5,23 @@ interface WeeklyNotesProps {
   trainerId: number
   weekStart: string
   readOnly?: boolean
+  externalNotes?: string
+  onNotesChange?: (notes: string) => void
 }
 
 export default function WeeklyNotes({
   trainerId,
   weekStart,
   readOnly = false,
+  externalNotes,
+  onNotesChange,
 }: WeeklyNotesProps) {
   const [notes, setNotes] = useState('')
   const [savedNotes, setSavedNotes] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+
+  // Use external notes if provided (for read-only display synced with editor)
+  const displayNotes = externalNotes !== undefined ? externalNotes : notes
 
   useEffect(() => {
     // Clear immediately when week/trainer changes
@@ -24,14 +31,17 @@ export default function WeeklyNotes({
     fetch(`/api/weekly-notes?trainerId=${trainerId}&weekStart=${weekStart}`)
       .then((res) => (res.ok ? res.json() : { notes: '' }))
       .then((data) => {
-        setNotes(data.notes ?? '')
-        setSavedNotes(data.notes ?? '')
+        const fetchedNotes = data.notes ?? ''
+        setNotes(fetchedNotes)
+        setSavedNotes(fetchedNotes)
+        onNotesChange?.(fetchedNotes)
       })
       .catch(() => {
         setNotes('')
         setSavedNotes('')
+        onNotesChange?.('')
       })
-  }, [trainerId, weekStart])
+  }, [trainerId, weekStart, onNotesChange])
 
   const handleSave = async () => {
     if (notes === savedNotes) return
@@ -43,6 +53,7 @@ export default function WeeklyNotes({
         body: JSON.stringify({ trainerId, weekStart, notes }),
       })
       setSavedNotes(notes)
+      onNotesChange?.(notes)
     } catch {
       // ignore
     } finally {
@@ -53,7 +64,7 @@ export default function WeeklyNotes({
   const hasChanges = notes !== savedNotes
 
   // If read-only and no notes, don't show anything
-  if (readOnly && !notes.trim()) {
+  if (readOnly && !displayNotes.trim()) {
     return null
   }
 
@@ -63,7 +74,7 @@ export default function WeeklyNotes({
         Notes
       </h3>
       {readOnly ? (
-        <div className={styles.weeklyNotesReadOnly}>{notes}</div>
+        <div className={styles.weeklyNotesReadOnly}>{displayNotes}</div>
       ) : (
         <>
           <textarea

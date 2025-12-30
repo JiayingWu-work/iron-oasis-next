@@ -66,7 +66,7 @@ describe('AddClientForm', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie'),
+          screen.getByPlaceholderText('e.g. Alex Smith'),
         ).toBeInTheDocument()
       })
     })
@@ -181,7 +181,7 @@ describe('AddClientForm', () => {
       })
 
       // Enter name but don't select trainer
-      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie')
+      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith')
       fireEvent.change(nameInput, { target: { value: 'Alice' } })
 
       expect(screen.getByRole('button', { name: 'Save Client' })).toBeDisabled()
@@ -196,7 +196,7 @@ describe('AddClientForm', () => {
       })
 
       // Enter name
-      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie')
+      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith')
       fireEvent.change(nameInput, { target: { value: 'Alice' } })
 
       // Select trainer
@@ -215,7 +215,7 @@ describe('AddClientForm', () => {
       })
 
       // Enter name and select primary trainer
-      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie')
+      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith')
       fireEvent.change(nameInput, { target: { value: 'Alice & Bob' } })
 
       fireEvent.click(screen.getByText('Select trainer...'))
@@ -267,7 +267,7 @@ describe('AddClientForm', () => {
       })
 
       // Fill form
-      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie')
+      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith')
       fireEvent.change(nameInput, { target: { value: 'Alice' } })
 
       fireEvent.click(screen.getByText('Select trainer...'))
@@ -314,7 +314,7 @@ describe('AddClientForm', () => {
       })
 
       // Fill form
-      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie')
+      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith')
       fireEvent.change(nameInput, { target: { value: 'Alice' } })
 
       fireEvent.click(screen.getByText('Select trainer...'))
@@ -342,7 +342,7 @@ describe('AddClientForm', () => {
       })
 
       // Fill in some data
-      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie')
+      const nameInput = screen.getByPlaceholderText('e.g. Alex Smith')
       fireEvent.change(nameInput, { target: { value: 'Alice' } })
 
       // Close and reopen
@@ -354,7 +354,7 @@ describe('AddClientForm', () => {
       })
 
       // Name should be cleared
-      expect(screen.getByPlaceholderText('e.g. Alex Smith or Alex & Jamie')).toHaveValue('')
+      expect(screen.getByPlaceholderText('e.g. Alex Smith')).toHaveValue('')
     })
   })
 })

@@ -4,7 +4,7 @@ import styles from './FormField.module.css'
 interface FormFieldProps {
   label: string
   children: ReactNode
-  hints?: string[]
+  hints?: ReactNode[]
 }
 
 export default function FormField({ label, children, hints }: FormFieldProps) {
@@ -15,7 +15,7 @@ export default function FormField({ label, children, hints }: FormFieldProps) {
       {hints && hints.length > 0 && (
         <ul className={styles.hints}>
           {hints.map((hint, index) => (
-            <li key={index} dangerouslySetInnerHTML={{ __html: hint }} />
+            <li key={index}>{hint}</li>
           ))}
         </ul>
       )}

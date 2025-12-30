@@ -132,24 +132,25 @@ export default function EditClientForm({
 
     if (originalMode === '1v1' && mode === '1v2') {
       return [
-        'Update name to include both clients (e.g. <strong>Alex &amp; Jamie</strong>)',
+        <>
+          For 1v2 clients, use name e.g. <strong>Alex and Jamie</strong>
+        </>,
         'Session pricing will be updated to semi-private rates',
       ]
     }
 
     if (originalMode === '1v2' && mode === '1v1') {
       return [
-        'Update name to single client only (e.g. <strong>Alex Smith</strong>)',
+        <>
+          Update name to single client, e.g. <strong>Alex Smith</strong>
+        </>,
         'Session pricing will be updated to private rates',
       ]
     }
 
-    if (
-      (originalMode === '1v1' || originalMode === '1v2') &&
-      mode === '2v2'
-    ) {
+    if ((originalMode === '1v1' || originalMode === '1v2') && mode === '2v2') {
       return [
-        'Update name to include both clients (e.g. <strong>Alex &amp; Jamie</strong>)',
+        <>For 2v2 clients, use name e.g. <strong>Alex/Jamie</strong></>,
         'Session pricing will be updated to shared package rates',
       ]
     }
@@ -158,8 +159,8 @@ export default function EditClientForm({
       const targetDesc = mode === '1v1' ? 'private' : 'semi-private'
       return [
         mode === '1v1'
-          ? 'Update name to single client only (e.g. <strong>Alex Smith</strong>)'
-          : 'Keep name with both clients (e.g. <strong>Alex &amp; Jamie</strong>)',
+          ? <>Update name to single client, e.g. <strong>Alex Smith</strong></>
+          : <>For 1v2 clients, use name e.g. <strong>Alex and Jamie</strong></>,
         `Session pricing will be updated to ${targetDesc} rates`,
       ]
     }

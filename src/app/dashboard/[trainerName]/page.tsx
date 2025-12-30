@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { formatDateToInput, shiftDateByDays } from '@/lib/date'
 import { authClient } from '@/lib/auth/client'
@@ -49,6 +49,11 @@ export default function TrainerDashboard() {
   const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
   const [trainerIdForUser, setTrainerIdForUser] = useState<number | null>(null)
   const [lateFeeAmount, setLateFeeAmount] = useState<number>(45)
+  const [weeklyNotes, setWeeklyNotes] = useState<string>('')
+
+  const handleNotesChange = useCallback((notes: string) => {
+    setWeeklyNotes(notes)
+  }, [])
 
   const { data: session, isPending } = authClient.useSession()
 
@@ -228,6 +233,7 @@ export default function TrainerDashboard() {
                   onDeletePackage={isReadOnly ? undefined : deletePackage}
                   onDeleteLateFee={isReadOnly ? undefined : deleteLateFee}
                   readOnly={isReadOnly}
+                  weeklyNotes={weeklyNotes}
                 />
               </Card>
               {!isReadOnly && (
@@ -253,6 +259,7 @@ export default function TrainerDashboard() {
                   <WeeklyNotes
                     trainerId={selectedTrainer.id}
                     weekStart={weekStart}
+                    onNotesChange={handleNotesChange}
                   />
                 </Card>
               )}
