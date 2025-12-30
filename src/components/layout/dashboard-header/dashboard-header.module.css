@@ -27,6 +27,7 @@
 .weekNav {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .weekBtn {
@@ -60,6 +61,22 @@
 
 .label {
   margin-left: 0.5rem;
+}
+
+/* Tablet - make buttons more compact */
+@media (max-width: 900px) {
+  .weekBtn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  .icon {
+    font-size: 0.7rem;
+  }
+
+  .label {
+    margin-left: 0.375rem;
+  }
 }
 
 /* Mobile Responsive */
