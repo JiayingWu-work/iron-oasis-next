@@ -78,10 +78,10 @@
 /* Weekly Income Summary */
 
 .incomeSummary {
+  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  margin-top: 1rem;
   font-size: 0.8rem;
   color: var(--color-text-secondary);
 }

@@ -14,6 +14,7 @@ import {
   AddTrainerForm,
   SideBar,
   Card,
+  WeeklyNotes,
 } from '@/components'
 import {
   useTrainerSelection,
@@ -288,6 +289,10 @@ export default function TrainerDashboard() {
                     onAddLateFee={addLateFee}
                     disabled={isReadOnly}
                     lateFeeAmount={lateFeeAmount}
+                  />
+                  <WeeklyNotes
+                    trainerId={selectedTrainer.id}
+                    weekStart={weekStart}
                   />
                 </Card>
               )}

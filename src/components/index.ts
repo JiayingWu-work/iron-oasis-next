@@ -8,6 +8,7 @@ export { default as WeeklyIncomeSummary } from './tables/WeeklyIncomeSummary'
 export { default as AddClassesForm } from './forms/entry-bar/AddClassesForm'
 export { default as AddPackageForm } from './forms/entry-bar/AddPackageForm'
 export { default as AddLateFeeForm } from './forms/entry-bar/AddLateFeeForm'
+export { default as WeeklyNotes } from './forms/entry-bar/WeeklyNotes'
 
 // Forms - Full Page
 export { default as AddClientForm } from './forms/fullpage/AddClientForm'

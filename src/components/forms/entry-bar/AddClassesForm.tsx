@@ -10,7 +10,11 @@ interface AddClassesFormProps {
   date: string
   onDateChange: (value: string) => void
   clients: Client[]
-  onAddSessions: (date: string, clientIds: number[], locationOverride?: Location) => void
+  onAddSessions: (
+    date: string,
+    clientIds: number[],
+    locationOverride?: Location,
+  ) => void
   disabled?: boolean
 }
 
@@ -41,13 +45,21 @@ export default function AddClassesForm({
 
   const handleSave = () => {
     if (selectedClientIds.length === 0) return
-    onAddSessions(date, selectedClientIds, overrideLocation ? locationOverride : undefined)
+    onAddSessions(
+      date,
+      selectedClientIds,
+      overrideLocation ? locationOverride : undefined,
+    )
     setSelectedClientIds([])
     setOverrideLocation(false)
   }
 
   return (
-    <section className={`${styles.section} ${styles.sectionFirst} ${disabled ? styles.sectionDisabled : ''}`}>
+    <section
+      className={`${styles.section} ${styles.sectionFirst} ${
+        disabled ? styles.sectionDisabled : ''
+      }`}
+    >
       <h3 className={styles.title}>Add classes</h3>
       <div className={styles.fieldRow}>
         <DatePicker value={date} onChange={onDateChange} disabled={disabled} />
@@ -72,7 +84,9 @@ export default function AddClassesForm({
       <div className={styles.locationOverrideRow}>
         <button
           type="button"
-          className={`${styles.locationToggle} ${overrideLocation ? styles.locationToggleActive : ''}`}
+          className={`${styles.locationToggle} ${
+            overrideLocation ? styles.locationToggleActive : ''
+          }`}
           onClick={() => setOverrideLocation(!overrideLocation)}
           disabled={disabled}
         >
@@ -92,7 +106,7 @@ export default function AddClassesForm({
         onClick={handleSave}
         disabled={disabled || selectedClientIds.length === 0}
       >
-        Save Classes
+        Save classes
       </button>
     </section>
   )
