@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
+import { Spinner } from '@/components'
 import styles from './page.module.css'
 
 /** Convert trainer name and ID to URL-safe slug (e.g., "jiaying-1") */
@@ -119,5 +120,11 @@ export default function DashboardRouter() {
     )
   }
 
-  return <div className={styles.app}>Loading…</div>
+  return (
+    <div className={styles.app}>
+      <div className={styles.loadingContent}>
+        <Spinner size="lg" />
+      </div>
+    </div>
+  )
 }

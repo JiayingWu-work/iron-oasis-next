@@ -5,8 +5,17 @@ type TrainersResponse = {
   trainers: Trainer[]
 }
 
+// Module-level cache to persist trainers across route navigations
+let trainersCache: Trainer[] | null = null
+
+// Export for testing - allows resetting the cache between tests
+export function clearTrainersCache() {
+  trainersCache = null
+}
+
 export function useTrainerSelection(initialTrainerId?: number) {
-  const [trainers, setTrainers] = useState<Trainer[]>([])
+  // Initialize with cached trainers if available to prevent flash on navigation
+  const [trainers, setTrainers] = useState<Trainer[]>(trainersCache ?? [])
   const [selectedTrainerId, setSelectedTrainerId] = useState<number | null>(
     initialTrainerId ?? null,
   )
@@ -20,6 +29,9 @@ export function useTrainerSelection(initialTrainerId?: number) {
         return
       }
       const data: TrainersResponse = await res.json()
+
+      // Update cache and state
+      trainersCache = data.trainers
       setTrainers(data.trainers)
 
       // pick first trainer as default if none selected and no initial ID provided

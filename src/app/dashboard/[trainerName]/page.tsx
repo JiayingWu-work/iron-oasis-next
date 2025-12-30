@@ -10,11 +10,10 @@ import {
   AddClassesForm,
   AddPackageForm,
   AddLateFeeForm,
-  AddClientForm,
-  AddTrainerForm,
   SideBar,
   Card,
   WeeklyNotes,
+  Spinner,
 } from '@/components'
 import {
   useTrainerSelection,
@@ -46,8 +45,6 @@ export default function TrainerDashboard() {
   const [selectedDate, setSelectedDate] = useState<string>(
     formatDateToInput(new Date()),
   )
-  const [isAddingClient, setIsAddingClient] = useState(false)
-  const [isAddingTrainer, setIsAddingTrainer] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
   const [trainerIdForUser, setTrainerIdForUser] = useState<number | null>(null)
@@ -57,7 +54,6 @@ export default function TrainerDashboard() {
 
   const {
     trainers,
-    setTrainers,
     selectedTrainerId,
     setSelectedTrainerId,
     selectedTrainer,
@@ -130,7 +126,6 @@ export default function TrainerDashboard() {
     packages,
     sessions,
     lateFees,
-    setClients,
     setPackages,
     setSessions,
     setLateFees,
@@ -167,8 +162,6 @@ export default function TrainerDashboard() {
     if (trainer) {
       router.push(`/dashboard/${toSlug(trainer.name, trainer.id)}`)
     }
-    setIsAddingClient(false)
-    setIsAddingTrainer(false)
   }
 
   // Wait for role check to complete
@@ -180,27 +173,13 @@ export default function TrainerDashboard() {
     trainerFromUrl &&
     trainerFromUrl.id !== trainerIdForUser
 
-  if (
-    !selectedTrainer ||
-    selectedTrainerId == null ||
-    isRoleCheckPending ||
-    isTrainerAccessPending ||
-    !trainerFromUrl
-  ) {
-    return <div className={styles.app}>Loading…</div>
-  }
-
-  const handleClientCreated = (client: typeof clients[number]) => {
-    setClients((prev) =>
-      [...prev, client].sort((a, b) => a.name.localeCompare(b.name)),
-    )
-    setIsAddingClient(false)
-  }
-
-  const handleTrainerCreated = (trainer: typeof trainers[number]) => {
-    setTrainers((prev) => [...prev, trainer].sort((a, b) => a.id - b.id))
-    setIsAddingTrainer(false)
-  }
+  // Check if main content is ready to render
+  const isContentReady =
+    selectedTrainer &&
+    selectedTrainerId != null &&
+    !isRoleCheckPending &&
+    !isTrainerAccessPending &&
+    trainerFromUrl
 
   return (
     <div className={styles.app}>
@@ -208,31 +187,12 @@ export default function TrainerDashboard() {
         trainers={trainers}
         selectedTrainerId={selectedTrainerId}
         onSelectTrainer={handleSelectTrainer}
-        onAddClient={() => {
-          setIsAddingClient(true)
-          setIsAddingTrainer(false)
-        }}
-        onAddTrainer={() => {
-          setIsAddingTrainer(true)
-          setIsAddingClient(false)
-        }}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         readOnly={isReadOnly}
       />
       <div className={styles.main}>
-        {isAddingClient ? (
-          <AddClientForm
-            trainers={trainers}
-            onCreated={handleClientCreated}
-            onCancel={() => setIsAddingClient(false)}
-          />
-        ) : isAddingTrainer ? (
-          <AddTrainerForm
-            onCreated={handleTrainerCreated}
-            onCancel={() => setIsAddingTrainer(false)}
-          />
-        ) : (
+        {isContentReady ? (
           <>
             <div className={styles.mobileHeaderRow}>
               <button
@@ -298,6 +258,10 @@ export default function TrainerDashboard() {
               )}
             </div>
           </>
+        ) : (
+          <div className={styles.loadingContent}>
+            <Spinner size="lg" />
+          </div>
         )}
       </div>
     </div>

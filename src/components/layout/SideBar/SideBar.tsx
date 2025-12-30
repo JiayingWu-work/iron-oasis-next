@@ -1,19 +1,27 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Trainer, Location } from '@/types'
 import { authClient } from '@/lib/auth/client'
 import { LogOut, Settings, X } from 'lucide-react'
 import styles from './SideBar.module.css'
 
-type LocationFilter = 'all' | Location
+type LocationFilter = Location | null
+
+// Module-level caches to persist state across route navigations
+let locationFilterCache: LocationFilter = null
+let filteredTrainersCache: Trainer[] = []
+
+// Export for testing - allows resetting the cache between tests
+export function clearLocationFilterCache() {
+  locationFilterCache = null
+  filteredTrainersCache = []
+}
 
 interface SideBarProps {
   trainers: Trainer[]
   selectedTrainerId: number | null
   onSelectTrainer: (id: number) => void
-  onAddClient: () => void
-  onAddTrainer: () => void
-  isOpen?: boolean // used for mobile drawer
+  isOpen?: boolean
   onClose?: () => void
   readOnly?: boolean
 }
@@ -22,8 +30,6 @@ export default function SideBar({
   trainers,
   selectedTrainerId,
   onSelectTrainer,
-  onAddClient,
-  onAddTrainer,
   isOpen = true,
   onClose,
   readOnly = false,
@@ -31,15 +37,70 @@ export default function SideBar({
   const router = useRouter()
   const { data: session } = authClient.useSession()
   const userName = session?.user?.name || 'User'
-  const [locationFilter, setLocationFilter] = useState<LocationFilter>('all')
 
+  const selectedTrainer = useMemo(
+    () => trainers.find((t) => t.id === selectedTrainerId),
+    [trainers, selectedTrainerId],
+  )
+
+  // Track filter and last synced trainer ID to detect external navigation
+  const [filterState, setFilterState] = useState<{
+    filter: LocationFilter
+    syncedTrainerId: number | null
+  }>(() => {
+    const trainer = trainers.find((t) => t.id === selectedTrainerId)
+    const initialFilter = locationFilterCache ?? trainer?.location ?? 'west'
+    return { filter: initialFilter, syncedTrainerId: selectedTrainerId }
+  })
+
+  // Derive effective filter - sync to trainer's location on external navigation
+  const locationFilter = useMemo(() => {
+    if (selectedTrainerId !== filterState.syncedTrainerId) {
+      const trainer = selectedTrainer ?? trainers.find((t) => t.id === selectedTrainerId)
+      if (trainer) return trainer.location
+      return filterState.filter
+    }
+    return filterState.filter
+  }, [selectedTrainerId, filterState, selectedTrainer, trainers])
+
+  // Update location filter cache
+  useEffect(() => {
+    if (locationFilter !== null) {
+      locationFilterCache = locationFilter
+    }
+  }, [locationFilter])
+
+  const setLocationFilter = (newFilter: LocationFilter) => {
+    if (newFilter !== null) {
+      locationFilterCache = newFilter
+    }
+    setFilterState({ filter: newFilter, syncedTrainerId: selectedTrainerId })
+  }
+
+  // Filter trainers by location, using cache during loading to prevent flash
   const filteredTrainers = useMemo(() => {
-    if (locationFilter === 'all') return trainers
+    if (trainers.length === 0 && filteredTrainersCache.length > 0) {
+      return filteredTrainersCache
+    }
+    if (locationFilter === null) return trainers
     return trainers.filter((t) => t.location === locationFilter)
   }, [trainers, locationFilter])
 
-  const westCount = useMemo(() => trainers.filter((t) => t.location === 'west').length, [trainers])
-  const eastCount = useMemo(() => trainers.filter((t) => t.location === 'east').length, [trainers])
+  // Update filtered trainers cache
+  useEffect(() => {
+    if (filteredTrainers.length > 0) {
+      filteredTrainersCache = filteredTrainers
+    }
+  }, [filteredTrainers])
+
+  const westCount = useMemo(
+    () => trainers.filter((t) => t.location === 'west').length,
+    [trainers],
+  )
+  const eastCount = useMemo(
+    () => trainers.filter((t) => t.location === 'east').length,
+    [trainers],
+  )
 
   const handleSettings = () => {
     onClose?.()
@@ -48,16 +109,6 @@ export default function SideBar({
 
   const handleSelectTrainer = (id: number) => {
     onSelectTrainer(id)
-    onClose?.()
-  }
-
-  const handleAddClient = () => {
-    onAddClient()
-    onClose?.()
-  }
-
-  const handleAddTrainer = () => {
-    onAddTrainer()
     onClose?.()
   }
 
@@ -73,6 +124,10 @@ export default function SideBar({
   const sidebarClass = isOpen
     ? `${styles.sidebar} ${styles.sidebarOpen}`
     : styles.sidebar
+
+  const displayedTrainers = readOnly
+    ? trainers.filter((t) => t.id === selectedTrainerId)
+    : filteredTrainers
 
   return (
     <>
@@ -92,59 +147,36 @@ export default function SideBar({
           </div>
           <p className={styles.subtitle}>Welcome, {userName}</p>
         </div>
-        {!readOnly && (
-          <div>
-            <h3 className={styles.sectionTitle}>Forms</h3>
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={handleAddClient}
-            >
-              + Add new client
-            </button>
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={handleAddTrainer}
-            >
-              + Add new trainer
-            </button>
-          </div>
-        )}
+
         <div className={styles.trainersSection}>
-          <h3 className={styles.sectionTitle}>{readOnly ? 'Trainer' : 'Trainers'}</h3>
+          <h3 className={styles.sectionTitle}>
+            {readOnly ? 'Trainer' : 'Trainers'}
+          </h3>
+
           {!readOnly && (
             <div className={styles.locationTabs}>
               <button
                 type="button"
-                className={`${styles.locationTab} ${locationFilter === 'all' ? styles.locationTabActive : ''}`}
-                onClick={() => setLocationFilter('all')}
-              >
-                All
-              </button>
-              <button
-                type="button"
                 className={`${styles.locationTab} ${locationFilter === 'west' ? styles.locationTabActive : ''}`}
-                onClick={() => setLocationFilter('west')}
+                onClick={() => setLocationFilter(locationFilter === 'west' ? null : 'west')}
               >
                 West ({westCount})
               </button>
               <button
                 type="button"
                 className={`${styles.locationTab} ${locationFilter === 'east' ? styles.locationTabActive : ''}`}
-                onClick={() => setLocationFilter('east')}
+                onClick={() => setLocationFilter(locationFilter === 'east' ? null : 'east')}
               >
                 East ({eastCount})
               </button>
             </div>
           )}
+
           <ul className={styles.trainerList}>
-            {(readOnly ? trainers.filter((t) => t.id === selectedTrainerId) : filteredTrainers).map((t) => (
+            {displayedTrainers.map((t) => (
               <li
                 key={t.id}
-                className={`${styles.trainerItem} ${
-                  t.id === selectedTrainerId ? styles.trainerItemActive : ''
-                } ${readOnly ? styles.trainerItemDisabled : ''}`}
+                className={`${styles.trainerItem} ${t.id === selectedTrainerId ? styles.trainerItemActive : ''} ${readOnly ? styles.trainerItemDisabled : ''}`}
                 onClick={readOnly ? undefined : () => handleSelectTrainer(t.id)}
                 style={readOnly ? { cursor: 'default' } : undefined}
               >
@@ -154,6 +186,7 @@ export default function SideBar({
             ))}
           </ul>
         </div>
+
         <div className={styles.footer}>
           {!readOnly && (
             <button

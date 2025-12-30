@@ -67,19 +67,19 @@ export default function Modal({
       {onSubmit && (
         <div className={styles.actions}>
           <button
-            type="submit"
-            className={`${styles.btn} ${styles.btnPrimary}`}
-            disabled={saving || submitDisabled}
-          >
-            {saving ? 'Saving…' : submitLabel}
-          </button>
-          <button
             type="button"
             className={`${styles.btn} ${styles.btnSecondary}`}
             disabled={saving}
             onClick={onClose}
           >
             Cancel
+          </button>
+          <button
+            type="submit"
+            className={`${styles.btn} ${styles.btnPrimary}`}
+            disabled={saving || submitDisabled}
+          >
+            {saving ? 'Saving…' : submitLabel}
           </button>
         </div>
       )}

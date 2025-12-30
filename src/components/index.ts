@@ -10,11 +10,9 @@ export { default as AddPackageForm } from './forms/entry-bar/AddPackageForm'
 export { default as AddLateFeeForm } from './forms/entry-bar/AddLateFeeForm'
 export { default as WeeklyNotes } from './forms/entry-bar/WeeklyNotes'
 
-// Forms - Full Page
-export { default as AddClientForm } from './forms/fullpage/AddClientForm'
-export { default as AddTrainerForm } from './forms/fullpage/AddTrainerForm'
-
 // Forms - Settings
+export { default as AddClientSettingsForm } from './forms/settings/AddClientForm/AddClientForm'
+export { default as AddTrainerSettingsForm } from './forms/settings/AddTrainerForm/AddTrainerForm'
 export { default as EditClientForm } from './forms/settings/EditClientForm/EditClientForm'
 export { default as EditTrainerForm } from './forms/settings/EditTrainerForm/EditTrainerForm'
 export { default as PricingTable } from './forms/settings/PricingTable/PricingTable'
@@ -34,7 +32,6 @@ export * from './ui/Card/Card'
 export { default as DatePicker } from './ui/DatePicker/DatePicker'
 export { default as DeleteButton } from './ui/DeleteButton/DeleteButton'
 export { default as FormField } from './ui/FormField/FormField'
-export { default as FullPageForm, fullPageFormStyles } from './ui/FullPageForm/FullPageForm'
 export { default as Select } from './ui/Select/Select'
 export { default as SettingsCard } from './ui/SettingsCard/SettingsCard'
 export { default as Modal } from './ui/Modal/Modal'
@@ -44,3 +41,4 @@ export {
   useToast,
 } from './ui/Toast/Toast'
 export type { ToastType, ToastItem } from './ui/Toast/Toast'
+export { default as Spinner } from './ui/Spinner/Spinner'

@@ -81,7 +81,7 @@ export default function UnarchiveTrainerForm({
       const result = await res.json()
       onClose()
       onSuccess?.(result.name)
-    } catch (err) {
+    } catch {
       const errorMessage = 'Failed to unarchive trainer. Please try again.'
       setError(errorMessage)
       onError?.(errorMessage)

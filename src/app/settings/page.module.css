@@ -22,21 +22,6 @@
   min-height: 100vh;
 }
 
-.loadingSpinner {
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--color-border);
-  border-top-color: var(--color-accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Header */
 .header {
   margin-bottom: 2.5rem;

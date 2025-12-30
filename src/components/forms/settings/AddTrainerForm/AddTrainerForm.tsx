@@ -1,16 +1,15 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import type { Trainer, Location } from '@/types'
-import Select from '@/components/ui/Select/Select'
-import FormField from '@/components/ui/FormField/FormField'
-import FullPageForm, {
-  fullPageFormStyles as styles,
-} from '@/components/ui/FullPageForm/FullPageForm'
+import { useState, useEffect, useMemo } from 'react'
+import type { Location } from '@/types'
+import { Modal, FormField, Select } from '@/components'
+import styles from './AddTrainerForm.module.css'
 
 interface AddTrainerFormProps {
-  onCreated: (trainer: Trainer) => void
-  onCancel: () => void
+  isOpen: boolean
+  onClose: () => void
+  onSuccess?: (trainerName: string) => void
+  onError?: (message: string) => void
 }
 
 function isValidEmail(email: string): boolean {
@@ -18,8 +17,10 @@ function isValidEmail(email: string): boolean {
 }
 
 export default function AddTrainerForm({
-  onCreated,
-  onCancel,
+  isOpen,
+  onClose,
+  onSuccess,
+  onError,
 }: AddTrainerFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -27,6 +28,17 @@ export default function AddTrainerForm({
   const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setName('')
+      setEmail('')
+      setTier(1)
+      setLocation('west')
+      setError(null)
+    }
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,22 +76,12 @@ export default function AddTrainerForm({
       }
 
       const created = await res.json()
-
-      const trainer: Trainer = {
-        id: created.id,
-        name: created.name,
-        tier: created.tier,
-        email: created.email,
-        isActive: created.isActive ?? true,
-        location: created.location ?? 'west',
-      }
-
-      onCreated(trainer)
-    } catch (err) {
-      console.error(err)
-      setError(
-        'Failed to create trainer. Please try again. If issue persists, reach out to developer!',
-      )
+      onClose()
+      onSuccess?.(created.name)
+    } catch {
+      const errorMessage = 'Failed to create trainer. Please try again.'
+      setError(errorMessage)
+      onError?.(errorMessage)
     } finally {
       setSaving(false)
     }
@@ -105,11 +107,12 @@ export default function AddTrainerForm({
   const isFormValid = name.trim() && email.trim() && isValidEmail(email.trim())
 
   return (
-    <FullPageForm
-      title="Add new trainer"
-      onCancel={onCancel}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add New Trainer"
       onSubmit={handleSubmit}
-      submitLabel="Save trainer"
+      submitLabel="Save Trainer"
       submitDisabled={!isFormValid}
       saving={saving}
       error={error}
@@ -154,6 +157,6 @@ export default function AddTrainerForm({
           options={locationOptions}
         />
       </FormField>
-    </FullPageForm>
+    </Modal>
   )
 }

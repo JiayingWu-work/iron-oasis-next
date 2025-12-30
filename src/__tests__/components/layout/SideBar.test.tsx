@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import SideBar from '@/components/layout/SideBar/SideBar'
+import SideBar, { clearLocationFilterCache } from '@/components/layout/SideBar/SideBar'
 import type { Trainer } from '@/types'
 
 // Mock next/navigation
@@ -35,13 +35,12 @@ describe('SideBar', () => {
     trainers: mockTrainers,
     selectedTrainerId: 1,
     onSelectTrainer: vi.fn(),
-    onAddClient: vi.fn(),
-    onAddTrainer: vi.fn(),
   }
 
   beforeEach(() => {
     vi.clearAllMocks()
     mockPush.mockClear()
+    clearLocationFilterCache()
     // Mock window.location
     Object.defineProperty(window, 'location', {
       value: { href: '' },
@@ -91,8 +90,8 @@ describe('SideBar', () => {
     it('shows tier information for each trainer', () => {
       render(<SideBar {...defaultProps} />)
 
-      // 2 trainers at Tier 1 (John and Mike), 1 trainer at Tier 2 (Jane)
-      expect(screen.getAllByText('Tier 1')).toHaveLength(2)
+      // By default, only West trainers are shown (John Tier 1, Jane Tier 2)
+      expect(screen.getByText('Tier 1')).toBeInTheDocument()
       expect(screen.getByText('Tier 2')).toBeInTheDocument()
     })
 
@@ -105,43 +104,7 @@ describe('SideBar', () => {
     })
   })
 
-  describe('action buttons', () => {
-    it('renders add client button when not readOnly', () => {
-      render(<SideBar {...defaultProps} />)
-
-      expect(screen.getByText('+ Add new client')).toBeInTheDocument()
-    })
-
-    it('renders add trainer button when not readOnly', () => {
-      render(<SideBar {...defaultProps} />)
-
-      expect(screen.getByText('+ Add new trainer')).toBeInTheDocument()
-    })
-
-    it('hides action buttons when readOnly is true', () => {
-      render(<SideBar {...defaultProps} readOnly />)
-
-      expect(screen.queryByText('+ Add new client')).not.toBeInTheDocument()
-      expect(screen.queryByText('+ Add new trainer')).not.toBeInTheDocument()
-    })
-
-    it('calls onAddClient when add client button is clicked', () => {
-      render(<SideBar {...defaultProps} />)
-
-      fireEvent.click(screen.getByText('+ Add new client'))
-
-      expect(defaultProps.onAddClient).toHaveBeenCalled()
-    })
-
-    it('calls onAddTrainer when add trainer button is clicked', () => {
-      render(<SideBar {...defaultProps} />)
-
-      fireEvent.click(screen.getByText('+ Add new trainer'))
-
-      expect(defaultProps.onAddTrainer).toHaveBeenCalled()
-    })
-  })
-
+  
   describe('settings button', () => {
     it('renders the settings button when not readOnly', () => {
       render(<SideBar {...defaultProps} />)
@@ -174,10 +137,9 @@ describe('SideBar', () => {
   })
 
   describe('location tabs', () => {
-    it('shows location tab buttons (All, West, East)', () => {
+    it('shows location tab buttons (West, East)', () => {
       render(<SideBar {...defaultProps} />)
 
-      expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /West/ })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /East/ })).toBeInTheDocument()
     })
@@ -190,18 +152,8 @@ describe('SideBar', () => {
       expect(screen.getByRole('button', { name: 'East (1)' })).toBeInTheDocument()
     })
 
-    it('shows all trainers by default', () => {
+    it('shows only West trainers by default', () => {
       render(<SideBar {...defaultProps} />)
-
-      expect(screen.getByText('John')).toBeInTheDocument()
-      expect(screen.getByText('Jane')).toBeInTheDocument()
-      expect(screen.getByText('Mike')).toBeInTheDocument()
-    })
-
-    it('filters trainers when West tab is clicked', () => {
-      render(<SideBar {...defaultProps} />)
-
-      fireEvent.click(screen.getByRole('button', { name: 'West (2)' }))
 
       // West trainers should be visible
       expect(screen.getByText('John')).toBeInTheDocument()
@@ -210,9 +162,22 @@ describe('SideBar', () => {
       expect(screen.queryByText('Mike')).not.toBeInTheDocument()
     })
 
+    it('shows all trainers when West tab is clicked (toggle off)', () => {
+      render(<SideBar {...defaultProps} />)
+
+      // West is selected by default, clicking it should show all trainers
+      fireEvent.click(screen.getByRole('button', { name: 'West (2)' }))
+
+      // All trainers should be visible
+      expect(screen.getByText('John')).toBeInTheDocument()
+      expect(screen.getByText('Jane')).toBeInTheDocument()
+      expect(screen.getByText('Mike')).toBeInTheDocument()
+    })
+
     it('filters trainers when East tab is clicked', () => {
       render(<SideBar {...defaultProps} />)
 
+      // Click East to filter (first click filters to East only)
       fireEvent.click(screen.getByRole('button', { name: 'East (1)' }))
 
       // East trainer should be visible
@@ -222,26 +187,27 @@ describe('SideBar', () => {
       expect(screen.queryByText('Jane')).not.toBeInTheDocument()
     })
 
-    it('shows all trainers when All tab is clicked after filtering', () => {
+    it('can toggle between locations', () => {
       render(<SideBar {...defaultProps} />)
 
-      // First filter to West
-      fireEvent.click(screen.getByRole('button', { name: 'West (2)' }))
+      // Default is West - only West trainers visible
+      expect(screen.getByText('John')).toBeInTheDocument()
       expect(screen.queryByText('Mike')).not.toBeInTheDocument()
 
-      // Then click All
-      fireEvent.click(screen.getByRole('button', { name: 'All' }))
+      // Click East to filter to East only
+      fireEvent.click(screen.getByRole('button', { name: 'East (1)' }))
+      expect(screen.getByText('Mike')).toBeInTheDocument()
+      expect(screen.queryByText('John')).not.toBeInTheDocument()
 
-      // All trainers should be visible again
+      // Click East again to show all
+      fireEvent.click(screen.getByRole('button', { name: 'East (1)' }))
       expect(screen.getByText('John')).toBeInTheDocument()
-      expect(screen.getByText('Jane')).toBeInTheDocument()
       expect(screen.getByText('Mike')).toBeInTheDocument()
     })
 
     it('hides location tabs when readOnly is true', () => {
       render(<SideBar {...defaultProps} readOnly />)
 
-      expect(screen.queryByRole('button', { name: 'All' })).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: /West/ })).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: /East/ })).not.toBeInTheDocument()
     })

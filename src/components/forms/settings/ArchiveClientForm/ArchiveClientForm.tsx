@@ -79,7 +79,7 @@ export default function ArchiveClientForm({
       const result = await res.json()
       onClose()
       onSuccess?.(result.name)
-    } catch (err) {
+    } catch {
       const errorMessage = 'Failed to archive client. Please try again.'
       setError(errorMessage)
       onError?.(errorMessage)

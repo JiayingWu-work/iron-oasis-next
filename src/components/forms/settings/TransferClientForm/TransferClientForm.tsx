@@ -109,7 +109,7 @@ export default function TransferClientForm({
       const updated = await res.json()
       onClose()
       onSuccess?.(updated.name, newTrainer?.name || 'new trainer')
-    } catch (err) {
+    } catch {
       const errorMessage = 'Failed to transfer client. Please try again.'
       setError(errorMessage)
       onError?.(errorMessage)

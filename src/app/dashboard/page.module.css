@@ -149,3 +149,13 @@
   color: var(--color-text-light);
   border-color: var(--color-text-muted);
 }
+
+/* Loading state for main content */
+.loadingContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}

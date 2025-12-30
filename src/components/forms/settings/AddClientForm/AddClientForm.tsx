@@ -1,24 +1,25 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import type { Client, Trainer, TrainingMode, Location } from '@/types'
-import Select from '@/components/ui/Select/Select'
-import FormField from '@/components/ui/FormField/FormField'
-import FullPageForm, {
-  fullPageFormStyles as styles,
-} from '@/components/ui/FullPageForm/FullPageForm'
+import { useState, useEffect, useMemo } from 'react'
+import type { Trainer, TrainingMode, Location } from '@/types'
+import { Modal, FormField, Select } from '@/components'
+import styles from './AddClientForm.module.css'
 
 interface AddClientFormProps {
-  trainers: Trainer[]
-  onCreated: (client: Client) => void
-  onCancel: () => void
+  isOpen: boolean
+  onClose: () => void
+  onSuccess?: (clientName: string) => void
+  onError?: (message: string) => void
 }
 
 export default function AddClientForm({
-  trainers,
-  onCreated,
-  onCancel,
+  isOpen,
+  onClose,
+  onSuccess,
+  onError,
 }: AddClientFormProps) {
+  const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const [primaryTrainerId, setPrimaryTrainerId] = useState<number | ''>('')
   const [secondaryTrainerId, setSecondaryTrainerId] = useState<number | ''>('')
@@ -26,6 +27,30 @@ export default function AddClientForm({
   const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Fetch trainers when modal opens
+  useEffect(() => {
+    if (!isOpen) return
+
+    setLoading(true)
+    fetch('/api/trainers')
+      .then((res) => (res.ok ? res.json().then((d) => d.trainers || []) : []))
+      .then((trainersData) => setTrainers(trainersData))
+      .catch(() => setTrainers([]))
+      .finally(() => setLoading(false))
+  }, [isOpen])
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setName('')
+      setPrimaryTrainerId('')
+      setSecondaryTrainerId('')
+      setMode('1v1')
+      setLocation('west')
+      setError(null)
+    }
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,29 +82,12 @@ export default function AddClientForm({
       }
 
       const created = await res.json()
-
-      const client: Client = {
-        id: created.id,
-        name: created.name,
-        trainerId: created.trainerId,
-        secondaryTrainerId: created.secondaryTrainerId ?? undefined,
-        mode: created.mode ?? '1v1',
-        tierAtSignup: created.tierAtSignup,
-        price1_12: created.price1_12,
-        price13_20: created.price13_20,
-        price21Plus: created.price21Plus,
-        modePremium: created.modePremium,
-        createdAt: created.createdAt,
-        isActive: created.isActive ?? true,
-        location: created.location ?? 'west',
-      }
-
-      onCreated(client)
-    } catch (err) {
-      console.error(err)
-      setError(
-        'Failed to create client. Please try again. If issue persists, reach out to developer!',
-      )
+      onClose()
+      onSuccess?.(created.name)
+    } catch {
+      const errorMessage = 'Failed to create client. Please try again.'
+      setError(errorMessage)
+      onError?.(errorMessage)
     } finally {
       setSaving(false)
     }
@@ -130,11 +138,12 @@ export default function AddClientForm({
     (mode === '2v2' && secondaryTrainerId === '')
 
   return (
-    <FullPageForm
-      title="Add new client"
-      onCancel={onCancel}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add New Client"
       onSubmit={handleSubmit}
-      submitLabel="Save client"
+      submitLabel="Save Client"
       submitDisabled={submitDisabled}
       saving={saving}
       error={error}
@@ -154,16 +163,20 @@ export default function AddClientForm({
       </FormField>
 
       <FormField label="Primary trainer (package owner)">
-        <Select
-          value={primaryTrainerId}
-          onChange={(val) => {
-            const newId = Number(val)
-            setPrimaryTrainerId(newId)
-            if (secondaryTrainerId === newId) setSecondaryTrainerId('')
-          }}
-          options={primaryTrainerOptions}
-          placeholder="Select trainer..."
-        />
+        {loading ? (
+          <div className={styles.loading}>Loading trainers...</div>
+        ) : (
+          <Select
+            value={primaryTrainerId}
+            onChange={(val) => {
+              const newId = Number(val)
+              setPrimaryTrainerId(newId)
+              if (secondaryTrainerId === newId) setSecondaryTrainerId('')
+            }}
+            options={primaryTrainerOptions}
+            placeholder="Select trainer..."
+          />
+        )}
       </FormField>
 
       <FormField label="Training mode">
@@ -186,23 +199,21 @@ export default function AddClientForm({
       </FormField>
 
       {mode === '2v2' && (
-        <>
-          <FormField
-            label="Secondary trainer"
-            hints={[
-              'The secondary trainer shares this package and splits sessions with the primary trainer.',
-            ]}
-          >
-            <Select
-              value={secondaryTrainerId}
-              onChange={(val) =>
-                setSecondaryTrainerId(val === '' ? '' : Number(val))
-              }
-              options={secondaryTrainerOptions}
-            />
-          </FormField>
-        </>
+        <FormField
+          label="Secondary trainer"
+          hints={[
+            'The secondary trainer shares this package and splits sessions with the primary trainer.',
+          ]}
+        >
+          <Select
+            value={secondaryTrainerId}
+            onChange={(val) =>
+              setSecondaryTrainerId(val === '' ? '' : Number(val))
+            }
+            options={secondaryTrainerOptions}
+          />
+        </FormField>
       )}
-    </FullPageForm>
+    </Modal>
   )
 }
