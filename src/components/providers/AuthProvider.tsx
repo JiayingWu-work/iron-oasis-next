@@ -14,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       replace={(path) => router.replace(path)}
       redirectTo="/"
       social={{ providers: [] }}
-      credentials={{ forgotPassword: true }}
+      credentials={{ forgotPassword: true, rememberMe: true }}
     >
       {children}
     </NeonAuthUIProvider>
