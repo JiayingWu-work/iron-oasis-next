@@ -150,13 +150,23 @@ export default function AddClientForm({
     >
       <FormField
         label="Client name"
-        hints={[
-          'For shared packages or 1v2 clients, use names like <strong>Alex & Jamie</strong>.',
-        ]}
+        hints={
+          mode === '1v2'
+            ? [<>For 1v2 clients, use name e.g. <strong>Alex and Jamie</strong></>]
+            : mode === '2v2'
+              ? [<>For 2v2 clients, use name e.g. <strong>Alex/Jamie</strong></>]
+              : undefined
+        }
       >
         <input
           className={styles.input}
-          placeholder="e.g. Alex Smith or Alex & Jamie"
+          placeholder={
+            mode === '1v2'
+              ? 'e.g. Alex and Jamie'
+              : mode === '2v2'
+                ? 'e.g. Alex/Jamie'
+                : 'e.g. Alex Smith'
+          }
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
