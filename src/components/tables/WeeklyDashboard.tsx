@@ -4,6 +4,7 @@ import {
   WeeklyBreakdownTable,
   WeeklyClientTable,
   WeeklyIncomeSummary,
+  WeeklyNotes,
 } from '@/components'
 import styles from './tables.module.css'
 
@@ -59,6 +60,13 @@ export default function WeeklyDashboard({
         backfillAdjustment={incomeSummary.backfillAdjustment}
         finalWeeklyIncome={incomeSummary.finalWeeklyIncome}
       />
+      {readOnly && (
+        <WeeklyNotes
+          trainerId={selectedTrainer.id}
+          weekStart={weekStart}
+          readOnly
+        />
+      )}
       <h3 className={styles.breakdownTitle}>Breakdown of the week</h3>
       <WeeklyBreakdownTable
         rows={breakdownRows}

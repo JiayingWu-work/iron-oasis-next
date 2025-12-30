@@ -101,7 +101,7 @@
   color: var(--color-accent);
 }
 
-.clientItem input[type="checkbox"] {
+.clientItem input[type='checkbox'] {
   width: 16px;
   height: 16px;
   accent-color: var(--color-accent);
@@ -111,15 +111,17 @@
 /* Primary button */
 
 .primaryButton {
-  width: 100%;
+  display: inline-block;
+  width: auto;
+  align-self: flex-start;
   margin-top: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  border-radius: var(--radius-full);
-  border: none;
-  background: linear-gradient(135deg, var(--color-bg-dark) 0%, #1e293b 100%);
-  color: var(--color-text-light);
-  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
   font-weight: 500;
+  color: var(--color-text-light);
+  background: linear-gradient(135deg, var(--color-bg-dark) 0%, #1e293b 100%);
+  border: none;
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition: all var(--transition-base);
 }
@@ -154,7 +156,7 @@
   border: 1px dashed var(--color-border);
   background: transparent;
   color: var(--color-text-muted);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -183,4 +185,66 @@
 .sectionDisabled {
   opacity: 0.6;
   pointer-events: none;
+}
+
+/* Weekly Notes */
+
+.weeklyNotesTextarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  resize: none;
+  min-height: 60px;
+  transition: border-color var(--transition-fast);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-muted) transparent;
+}
+
+.weeklyNotesTextarea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.weeklyNotesTextarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.weeklyNotesTextarea::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 2px;
+}
+
+.weeklyNotesTextarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.weeklyNotesTextarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.weeklyNotesReadOnly {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* Weekly Notes - Read Only (for trainer view) */
+
+.weeklyNotesSection {
+  margin-top: 1.25rem;
+}
+
+.weeklyNotesLabel {
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
 }
