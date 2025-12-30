@@ -132,7 +132,7 @@ describe('EditClientForm', () => {
 
       // Should show hints
       expect(
-        screen.getByText(/Update name to include both clients/),
+        screen.getByText(/For 1v2 clients, use name/),
       ).toBeInTheDocument()
       expect(
         screen.getByText(/pricing will be updated to semi-private rates/),
