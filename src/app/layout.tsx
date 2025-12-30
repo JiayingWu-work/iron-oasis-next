@@ -3,8 +3,8 @@ import type { Metadata } from 'next'
 import { AuthProvider } from '@/components/providers/AuthProvider'
 
 export const metadata: Metadata = {
-  title: 'Iron Oasis Dashboard',
-  description: 'Class & payment tracking for Iron Oasis',
+  title: 'Iron Oasis',
+  description: 'Class & payment tracking dashboard for Iron Oasis',
 }
 
 export default function RootLayout({
