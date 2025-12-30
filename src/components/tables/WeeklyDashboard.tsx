@@ -20,6 +20,7 @@ export interface WeeklyDashboardProps {
   onDeletePackage?: (id: number) => void
   onDeleteLateFee?: (id: number) => void
   readOnly?: boolean
+  weeklyNotes?: string
 }
 
 export default function WeeklyDashboard({
@@ -34,6 +35,7 @@ export default function WeeklyDashboard({
   onDeletePackage,
   onDeleteLateFee,
   readOnly = false,
+  weeklyNotes,
 }: WeeklyDashboardProps) {
   const { clientRows, incomeSummary, breakdownRows } = useWeeklyDashboardData({
     clients,
@@ -60,13 +62,12 @@ export default function WeeklyDashboard({
         backfillAdjustment={incomeSummary.backfillAdjustment}
         finalWeeklyIncome={incomeSummary.finalWeeklyIncome}
       />
-      {readOnly && (
-        <WeeklyNotes
-          trainerId={selectedTrainer.id}
-          weekStart={weekStart}
-          readOnly
-        />
-      )}
+      <WeeklyNotes
+        trainerId={selectedTrainer.id}
+        weekStart={weekStart}
+        readOnly
+        externalNotes={weeklyNotes}
+      />
       <h3 className={styles.breakdownTitle}>Breakdown of the week</h3>
       <WeeklyBreakdownTable
         rows={breakdownRows}
