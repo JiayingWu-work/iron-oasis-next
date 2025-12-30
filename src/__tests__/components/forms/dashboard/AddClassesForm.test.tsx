@@ -85,7 +85,7 @@ describe('AddClassesForm', () => {
           onAddSessions={() => {}}
         />,
       )
-      expect(screen.getByRole('button', { name: 'Save Classes' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Save classes' })).toBeDisabled()
     })
   })
 
@@ -161,7 +161,7 @@ describe('AddClassesForm', () => {
         />,
       )
 
-      const saveButton = screen.getByRole('button', { name: 'Save Classes' })
+      const saveButton = screen.getByRole('button', { name: 'Save classes' })
       expect(saveButton).toBeDisabled()
 
       fireEvent.click(screen.getByRole('checkbox', { name: /alice/i }))
@@ -179,7 +179,7 @@ describe('AddClassesForm', () => {
       )
 
       const aliceCheckbox = screen.getByRole('checkbox', { name: /alice/i })
-      const saveButton = screen.getByRole('button', { name: 'Save Classes' })
+      const saveButton = screen.getByRole('button', { name: 'Save classes' })
 
       // Select then deselect
       fireEvent.click(aliceCheckbox)
@@ -241,7 +241,7 @@ describe('AddClassesForm', () => {
         />,
       )
 
-      expect(screen.getByRole('button', { name: 'Save Classes' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Save classes' })).toBeDisabled()
     })
 
     it('disables date picker when disabled prop is true', () => {
@@ -278,7 +278,7 @@ describe('AddClassesForm', () => {
       fireEvent.click(screen.getByRole('checkbox', { name: /charlie/i }))
 
       // Submit
-      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Save classes' }))
 
       expect(handleAddSessions).toHaveBeenCalledWith('2025-01-15', [1, 3], undefined)
     })
@@ -303,7 +303,7 @@ describe('AddClassesForm', () => {
       expect(bobCheckbox).toBeChecked()
 
       // Submit
-      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Save classes' }))
 
       // Should be cleared
       expect(aliceCheckbox).not.toBeChecked()
@@ -322,7 +322,7 @@ describe('AddClassesForm', () => {
       )
 
       // Try to submit without selecting
-      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Save classes' }))
 
       expect(handleAddSessions).not.toHaveBeenCalled()
     })
@@ -337,7 +337,7 @@ describe('AddClassesForm', () => {
         />,
       )
 
-      const saveButton = screen.getByRole('button', { name: 'Save Classes' })
+      const saveButton = screen.getByRole('button', { name: 'Save classes' })
 
       // Select and submit
       fireEvent.click(screen.getByRole('checkbox', { name: /alice/i }))
@@ -437,7 +437,7 @@ describe('AddClassesForm', () => {
       fireEvent.click(screen.getByText('East (321 E 22nd St)'))
 
       // Submit
-      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Save classes' }))
 
       expect(handleAddSessions).toHaveBeenCalledWith('2025-01-15', [1], 'east')
     })
@@ -457,7 +457,7 @@ describe('AddClassesForm', () => {
       fireEvent.click(screen.getByRole('checkbox', { name: /alice/i }))
 
       // Submit without enabling location override
-      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Save classes' }))
 
       expect(handleAddSessions).toHaveBeenCalledWith(
         '2025-01-15',
@@ -486,7 +486,7 @@ describe('AddClassesForm', () => {
       expect(screen.getByText('West (261 W 35th St)')).toBeInTheDocument()
 
       // Submit
-      fireEvent.click(screen.getByRole('button', { name: 'Save Classes' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Save classes' }))
 
       // Location dropdown should be hidden after reset
       expect(
