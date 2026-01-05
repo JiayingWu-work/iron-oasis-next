@@ -22,3 +22,127 @@
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
+
+/* Rate Tier Inputs */
+
+.rateTiers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rateTierCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.rateTierNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rateTierFields {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.rateTierGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.rateTierLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.rateInput {
+  width: 56px;
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.rateInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-subtle);
+}
+
+.rateInputWide {
+  width: 64px;
+}
+
+.rateDash {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.ratePercent {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.removeTierButton {
+  padding: 0.25rem;
+  font-size: 0.75rem;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removeTierButton:hover {
+  background: var(--color-error-subtle);
+  color: var(--color-error);
+}
+
+.addTierButton {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  background: var(--color-bg-card);
+  color: var(--color-accent);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  width: 100%;
+  text-align: center;
+}
+
+.addTierButton:hover {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  border-style: solid;
+}

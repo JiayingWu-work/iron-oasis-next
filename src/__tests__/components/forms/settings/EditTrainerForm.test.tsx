@@ -4,8 +4,29 @@ import EditTrainerForm from '@/components/forms/settings/EditTrainerForm/EditTra
 
 describe('EditTrainerForm', () => {
   const mockTrainers = [
-    { id: 1, name: 'John', tier: 1, email: 'john@test.com', isActive: true, location: 'west' },
-    { id: 2, name: 'Jane', tier: 2, email: 'jane@test.com', isActive: true, location: 'east' },
+    {
+      id: 1,
+      name: 'John',
+      tier: 1,
+      email: 'john@test.com',
+      isActive: true,
+      location: 'west',
+      incomeRates: [
+        { id: 1, trainerId: 1, minClasses: 1, maxClasses: 12, rate: 0.46 },
+        { id: 2, trainerId: 1, minClasses: 13, maxClasses: null, rate: 0.51 },
+      ],
+    },
+    {
+      id: 2,
+      name: 'Jane',
+      tier: 2,
+      email: 'jane@test.com',
+      isActive: true,
+      location: 'east',
+      incomeRates: [
+        { id: 3, trainerId: 2, minClasses: 1, maxClasses: null, rate: 0.50 },
+      ],
+    },
   ]
 
   beforeEach(() => {
@@ -430,6 +451,234 @@ describe('EditTrainerForm', () => {
       await waitFor(() => {
         expect(handleSuccess).toHaveBeenCalledWith('John')
       })
+    })
+  })
+
+  describe('pay rate tiers', () => {
+    it('displays existing income rates when trainer is selected', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      // Select John who has 2 rate tiers (46% for 1-12, 51% for 13+)
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('John (Tier 1)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('John')).toBeInTheDocument()
+      })
+
+      // Should show the existing rate tiers
+      expect(screen.getByDisplayValue('46')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('51')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('12')).toBeInTheDocument()
+      // Should have 2 remove buttons for 2 tiers
+      expect(screen.getAllByRole('button', { name: 'Remove tier' })).toHaveLength(2)
+    })
+
+    it('displays single rate tier trainer correctly', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      // Select Jane who has 1 rate tier (50% for 1+)
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('Jane (Tier 2)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Jane')).toBeInTheDocument()
+      })
+
+      // Should show the existing rate tier at 50%
+      expect(screen.getByDisplayValue('50')).toBeInTheDocument()
+      // Should not have remove button (only 1 tier)
+      expect(screen.queryByRole('button', { name: 'Remove tier' })).not.toBeInTheDocument()
+    })
+
+    it('can add a new rate tier', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      // Select Jane who has 1 rate tier
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('Jane (Tier 2)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Jane')).toBeInTheDocument()
+      })
+
+      // Set max for first tier
+      const maxInput = screen.getByPlaceholderText('∞')
+      fireEvent.change(maxInput, { target: { value: '10' } })
+
+      // Add a new tier
+      fireEvent.click(screen.getByText('+ Add Threshold'))
+
+      // Should now have 2 remove buttons
+      expect(screen.getAllByRole('button', { name: 'Remove tier' })).toHaveLength(2)
+    })
+
+    it('can remove a rate tier', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      // Select John who has 2 rate tiers
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('John (Tier 1)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('John')).toBeInTheDocument()
+      })
+
+      // Should have 2 remove buttons
+      const removeButtons = screen.getAllByRole('button', { name: 'Remove tier' })
+      expect(removeButtons).toHaveLength(2)
+
+      // Remove first tier
+      fireEvent.click(removeButtons[0])
+
+      // Should now have no remove buttons (only 1 tier left)
+      expect(screen.queryByRole('button', { name: 'Remove tier' })).not.toBeInTheDocument()
+    })
+
+    it('can modify rate tier values', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      // Select Jane who has 1 rate tier at 50%
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('Jane (Tier 2)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Jane')).toBeInTheDocument()
+      })
+
+      // Change the rate from 50% to 55%
+      const rateInput = screen.getByDisplayValue('50')
+      fireEvent.change(rateInput, { target: { value: '55' } })
+
+      expect(screen.getByDisplayValue('55')).toBeInTheDocument()
+    })
+
+    it('submits updated rate tiers to API', async () => {
+      const handleSuccess = vi.fn()
+
+      vi.mocked(fetch).mockImplementation((url, options) => {
+        if (typeof url === 'string' && url.includes('/api/trainers') && !options) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ trainers: mockTrainers }),
+          } as Response)
+        }
+        if (typeof url === 'string' && url.includes('/api/trainers/') && options?.method === 'PATCH') {
+          const body = JSON.parse(options.body as string)
+          // Verify the updated income rates are sent
+          expect(body.incomeRates).toEqual([
+            { minClasses: 1, maxClasses: null, rate: 0.55 },
+          ])
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ id: 2, name: 'Jane', tier: 2, email: 'jane@test.com' }),
+          } as Response)
+        }
+        return Promise.resolve({ ok: false } as Response)
+      })
+
+      render(
+        <EditTrainerForm
+          isOpen={true}
+          onClose={() => {}}
+          onSuccess={handleSuccess}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      // Select Jane
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('Jane (Tier 2)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Jane')).toBeInTheDocument()
+      })
+
+      // Change rate from 50% to 55%
+      const rateInput = screen.getByDisplayValue('50')
+      fireEvent.change(rateInput, { target: { value: '55' } })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+
+      await waitFor(() => {
+        expect(handleSuccess).toHaveBeenCalledWith('Jane')
+      })
+    })
+
+    it('disables submit when rate tiers have gaps', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      // Select John who has 2 rate tiers (1-12, 13+)
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('John (Tier 1)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('John')).toBeInTheDocument()
+      })
+
+      // Change first tier max from 12 to 5 (creates gap 6-12)
+      const maxInput = screen.getByDisplayValue('12')
+      fireEvent.change(maxInput, { target: { value: '5' } })
+
+      // Submit should be disabled due to gap
+      expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
+    })
+
+    it('disables submit when rate is 0', async () => {
+      setupMockFetch()
+      render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose a trainer...')).toBeInTheDocument()
+      })
+
+      // Select Jane
+      fireEvent.click(screen.getByText('Choose a trainer...'))
+      fireEvent.click(screen.getByText('Jane (Tier 2)'))
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Jane')).toBeInTheDocument()
+      })
+
+      // Set rate to 0
+      const rateInput = screen.getByDisplayValue('50')
+      fireEvent.change(rateInput, { target: { value: '0' } })
+
+      // Submit should be disabled
+      expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
     })
   })
 })

@@ -9,6 +9,7 @@ export interface Trainer {
   email: string
   isActive: boolean
   location: Location
+  incomeRates?: IncomeRate[]
 }
 
 export interface Client {
@@ -54,4 +55,12 @@ export type LateFee = {
   trainerId: number
   date: string
   amount: number
+}
+
+export interface IncomeRate {
+  id: number
+  trainerId: number
+  minClasses: number
+  maxClasses: number | null
+  rate: number
 }

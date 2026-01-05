@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import type { IncomeRate } from '@/types';
+import { validateIncomeRates } from '@/lib/incomeRates';
+
+type IncomeRateRow = {
+  id: number
+  trainer_id: number
+  min_classes: number
+  max_classes: number | null
+  rate: string
+}
 
 export async function GET(
   request: NextRequest,
@@ -17,7 +27,7 @@ export async function GET(
 
   try {
     const result = await sql`
-      SELECT id, name, tier
+      SELECT id, name, tier, email, is_active, location
       FROM trainers
       WHERE id = ${trainerId}
     `;
@@ -29,7 +39,33 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(result[0]);
+    // Fetch income rates for this trainer
+    const incomeRateRows = (await sql`
+      SELECT id, trainer_id, min_classes, max_classes, rate
+      FROM trainer_income_rates
+      WHERE trainer_id = ${trainerId}
+      ORDER BY min_classes
+    `) as IncomeRateRow[]
+
+    const incomeRates: IncomeRate[] = incomeRateRows.map((row) => ({
+      id: row.id,
+      trainerId: row.trainer_id,
+      minClasses: row.min_classes,
+      maxClasses: row.max_classes,
+      rate: parseFloat(row.rate),
+    }))
+
+    const trainer = result[0] as { id: number; name: string; tier: number; email: string; is_active: boolean; location: string }
+
+    return NextResponse.json({
+      id: trainer.id,
+      name: trainer.name,
+      tier: trainer.tier,
+      email: trainer.email,
+      isActive: trainer.is_active ?? true,
+      location: trainer.location ?? 'west',
+      incomeRates,
+    });
   } catch (error) {
     console.error('Error fetching trainer:', error);
     return NextResponse.json(
@@ -54,7 +90,7 @@ export async function PATCH(
   }
 
   try {
-    const { name, email, tier, location } = await request.json();
+    const { name, email, tier, location, incomeRates } = await request.json();
 
     // Validate name
     if (typeof name !== 'string' || !name.trim()) {
@@ -115,7 +151,62 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json(result[0]);
+    // Update income rates if provided
+    let updatedIncomeRates: IncomeRate[] = []
+    if (incomeRates && Array.isArray(incomeRates)) {
+      // Validate that income rates cover 1 to infinity with no gaps
+      const ratesError = validateIncomeRates(incomeRates)
+      if (ratesError) {
+        return NextResponse.json(
+          { error: ratesError },
+          { status: 400 }
+        );
+      }
+
+      // Delete existing rates
+      await sql`
+        DELETE FROM trainer_income_rates
+        WHERE trainer_id = ${trainerId}
+      `
+
+      // Insert new rates
+      for (const rate of incomeRates as { minClasses: number; maxClasses: number | null; rate: number }[]) {
+        const rateRows = (await sql`
+          INSERT INTO trainer_income_rates (trainer_id, min_classes, max_classes, rate)
+          VALUES (${trainerId}, ${rate.minClasses}, ${rate.maxClasses}, ${rate.rate})
+          RETURNING id, trainer_id, min_classes, max_classes, rate
+        `) as IncomeRateRow[]
+
+        updatedIncomeRates.push({
+          id: rateRows[0].id,
+          trainerId: rateRows[0].trainer_id,
+          minClasses: rateRows[0].min_classes,
+          maxClasses: rateRows[0].max_classes,
+          rate: parseFloat(rateRows[0].rate),
+        })
+      }
+    } else {
+      // Fetch existing rates if not updating
+      const existingRates = (await sql`
+        SELECT id, trainer_id, min_classes, max_classes, rate
+        FROM trainer_income_rates
+        WHERE trainer_id = ${trainerId}
+        ORDER BY min_classes
+      `) as IncomeRateRow[]
+
+      updatedIncomeRates = existingRates.map((row) => ({
+        id: row.id,
+        trainerId: row.trainer_id,
+        minClasses: row.min_classes,
+        maxClasses: row.max_classes,
+        rate: parseFloat(row.rate),
+      }))
+    }
+
+    return NextResponse.json({
+      ...result[0],
+      incomeRates: updatedIncomeRates,
+    });
   } catch (error) {
     console.error('Error updating trainer:', error);
     return NextResponse.json(

@@ -7,6 +7,7 @@ import type {
   ApiSession,
   ApiLateFee,
   TrainerWeekResponse,
+  ApiIncomeRate,
 } from '@/types/api'
 import { Trainer } from '@/types'
 
@@ -80,6 +81,14 @@ export async function GET(req: NextRequest) {
       { status: 404 },
     )
   }
+
+  // 1b) income rates for this trainer
+  const incomeRateRows = (await sql`
+    SELECT id, trainer_id, min_classes, max_classes, rate
+    FROM trainer_income_rates
+    WHERE trainer_id = ${trainerId}
+    ORDER BY min_classes
+  `) as ApiIncomeRate[]
 
   // 2) clients for this trainer
   const clientRows = (await sql`
@@ -157,6 +166,7 @@ export async function GET(req: NextRequest) {
     packages: packageRows,
     sessions: sessionRows,
     lateFees: lateFeeRows,
+    incomeRates: incomeRateRows,
     weekStart: start,
     weekEnd: end,
   }

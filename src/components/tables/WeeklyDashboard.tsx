@@ -1,4 +1,4 @@
-import type { Client, Session, Package, Trainer, LateFee } from '../../types'
+import type { Client, Session, Package, Trainer, LateFee, IncomeRate } from '../../types'
 import { useWeeklyDashboardData } from '@/hooks/useWeeklyDashboardData'
 import {
   WeeklyBreakdownTable,
@@ -13,6 +13,7 @@ export interface WeeklyDashboardProps {
   packages: Package[]
   sessions: Session[]
   lateFees: LateFee[]
+  incomeRates: IncomeRate[]
   weekStart: string
   weekEnd: string
   selectedTrainer: Trainer
@@ -21,6 +22,7 @@ export interface WeeklyDashboardProps {
   onDeleteLateFee?: (id: number) => void
   readOnly?: boolean
   weeklyNotes?: string
+  isLoading?: boolean
 }
 
 export default function WeeklyDashboard({
@@ -28,6 +30,7 @@ export default function WeeklyDashboard({
   packages,
   sessions,
   lateFees,
+  incomeRates,
   weekStart,
   weekEnd,
   selectedTrainer,
@@ -36,12 +39,14 @@ export default function WeeklyDashboard({
   onDeleteLateFee,
   readOnly = false,
   weeklyNotes,
+  isLoading = false,
 }: WeeklyDashboardProps) {
   const { clientRows, incomeSummary, breakdownRows } = useWeeklyDashboardData({
     clients,
     packages,
     sessions,
     lateFees,
+    incomeRates,
     weekStart,
     weekEnd,
     selectedTrainer,
@@ -61,6 +66,8 @@ export default function WeeklyDashboard({
         lateFees={incomeSummary.lateFeeIncome}
         backfillAdjustment={incomeSummary.backfillAdjustment}
         finalWeeklyIncome={incomeSummary.finalWeeklyIncome}
+        incomeRates={incomeRates}
+        isLoading={isLoading}
       />
       <WeeklyNotes
         trainerId={selectedTrainer.id}

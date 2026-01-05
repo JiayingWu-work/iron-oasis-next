@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { X } from 'lucide-react'
 import type { Location } from '@/types'
 import { Modal, FormField, Select } from '@/components'
+import { INITIAL_INCOME_RATES, validateIncomeRates } from '@/lib/incomeRates'
 import styles from './AddTrainerForm.module.css'
 
 interface AddTrainerFormProps {
@@ -12,9 +14,17 @@ interface AddTrainerFormProps {
   onError?: (message: string) => void
 }
 
+interface RateTierInput {
+  minClasses: number
+  maxClasses: number | null
+  rate: number
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
+
+const MAX_TIERS = 6
 
 export default function AddTrainerForm({
   isOpen,
@@ -28,6 +38,9 @@ export default function AddTrainerForm({
   const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [incomeRates, setIncomeRates] = useState<RateTierInput[]>(
+    INITIAL_INCOME_RATES.map((r) => ({ ...r })),
+  )
 
   // Reset form when modal closes
   useEffect(() => {
@@ -37,6 +50,7 @@ export default function AddTrainerForm({
       setTier(1)
       setLocation('west')
       setError(null)
+      setIncomeRates(INITIAL_INCOME_RATES.map((r) => ({ ...r })))
     }
   }, [isOpen])
 
@@ -55,6 +69,13 @@ export default function AddTrainerForm({
       return
     }
 
+    // Validate income rates - must cover 1 to infinity with no gaps
+    const ratesError = validateIncomeRates(incomeRates)
+    if (ratesError) {
+      setError(ratesError)
+      return
+    }
+
     setSaving(true)
     setError(null)
 
@@ -67,6 +88,7 @@ export default function AddTrainerForm({
           email: email.trim().toLowerCase(),
           tier,
           location,
+          incomeRates,
         }),
       })
 
@@ -104,7 +126,9 @@ export default function AddTrainerForm({
     [],
   )
 
-  const isFormValid = name.trim() && email.trim() && isValidEmail(email.trim())
+  // Check if all form fields are valid
+  const ratesValid = validateIncomeRates(incomeRates) === null
+  const isFormValid = name.trim() && email.trim() && isValidEmail(email.trim()) && ratesValid
 
   return (
     <Modal
@@ -156,6 +180,110 @@ export default function AddTrainerForm({
           onChange={(val) => setLocation(val as Location)}
           options={locationOptions}
         />
+      </FormField>
+
+      <FormField
+        label="Pay Rate Tiers"
+        hints={['Configure income rates based on weekly class count.']}
+      >
+        <div className={styles.rateTiers}>
+          {incomeRates.map((rateTier, idx) => (
+            <div key={idx} className={styles.rateTierCard}>
+              <span className={styles.rateTierNumber}>{idx + 1}</span>
+              <div className={styles.rateTierFields}>
+                <div className={styles.rateTierGroup}>
+                  <span className={styles.rateTierLabel}>Classes</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className={styles.rateInput}
+                    value={rateTier.minClasses || ''}
+                    onChange={(e) => {
+                      const updated = [...incomeRates]
+                      const val = e.target.value
+                      // Allow empty string while typing, store as 0 temporarily
+                      updated[idx].minClasses = val === '' ? 0 : (parseInt(val) || 0)
+                      setIncomeRates(updated)
+                    }}
+                    onBlur={(e) => {
+                      const updated = [...incomeRates]
+                      const val = parseInt(e.target.value)
+                      // Default to 1 if empty or invalid on blur
+                      updated[idx].minClasses = val > 0 ? val : 1
+                      setIncomeRates(updated)
+                    }}
+                  />
+                  <span className={styles.rateDash}>–</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className={styles.rateInput}
+                    value={rateTier.maxClasses ?? ''}
+                    onChange={(e) => {
+                      const updated = [...incomeRates]
+                      const val = e.target.value
+                      updated[idx].maxClasses = val === '' ? null : (parseInt(val) || null)
+                      setIncomeRates(updated)
+                    }}
+                    placeholder="∞"
+                  />
+                </div>
+                <div className={styles.rateTierGroup}>
+                  <span className={styles.rateTierLabel}>Rate</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className={`${styles.rateInput} ${styles.rateInputWide}`}
+                    value={rateTier.rate === 0 ? '' : Math.round(rateTier.rate * 100)}
+                    onChange={(e) => {
+                      const updated = [...incomeRates]
+                      const val = e.target.value
+                      // Allow empty string while typing
+                      updated[idx].rate = val === '' ? 0 : (parseInt(val) || 0) / 100
+                      setIncomeRates(updated)
+                    }}
+                    onBlur={(e) => {
+                      const updated = [...incomeRates]
+                      const val = parseInt(e.target.value)
+                      // Default to 50% if empty or invalid on blur
+                      updated[idx].rate = val > 0 ? Math.min(val, 100) / 100 : 0.50
+                      setIncomeRates(updated)
+                    }}
+                  />
+                  <span className={styles.ratePercent}>%</span>
+                </div>
+              </div>
+              {incomeRates.length > 1 && (
+                <button
+                  type="button"
+                  className={styles.removeTierButton}
+                  onClick={() => {
+                    setIncomeRates(incomeRates.filter((_, i) => i !== idx))
+                  }}
+                  aria-label="Remove tier"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+          ))}
+          {incomeRates.length < MAX_TIERS && (
+            <button
+              type="button"
+              className={styles.addTierButton}
+              onClick={() => {
+                const lastTier = incomeRates[incomeRates.length - 1]
+                const newMin = (lastTier?.maxClasses ?? lastTier?.minClasses ?? 0) + 1
+                setIncomeRates([
+                  ...incomeRates,
+                  { minClasses: newMin, maxClasses: null, rate: 0.50 },
+                ])
+              }}
+            >
+              + Add Threshold
+            </button>
+          )}
+        </div>
       </FormField>
     </Modal>
   )

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { isWithinRange } from '@/lib/date'
-import type { Client, Package, Session, Trainer, LateFee, Location } from '@/types'
+import type { Client, Package, Session, Trainer, LateFee, Location, IncomeRate } from '@/types'
 import {
   computeClientRows,
   computeIncomeSummary,
@@ -43,6 +43,7 @@ interface UseWeeklyDashboardArgs {
   packages: Package[]
   sessions: Session[]
   lateFees: LateFee[]
+  incomeRates: IncomeRate[]
   weekStart: string
   weekEnd: string
   selectedTrainer: Trainer
@@ -53,6 +54,7 @@ export function useWeeklyDashboardData({
   packages,
   sessions,
   lateFees,
+  incomeRates,
   weekStart,
   weekEnd,
   selectedTrainer,
@@ -92,6 +94,7 @@ export function useWeeklyDashboardData({
       weeklyLateFees,
       selectedTrainer.id,
       sessions,
+      incomeRates,
     )
 
     // 3) Breakdown rows (now uses client-level pricing)
@@ -101,18 +104,21 @@ export function useWeeklyDashboardData({
       weeklySessions,
       weeklyPackages,
       weeklyLateFees,
+      incomeRates,
     )
 
     return {
       clientRows,
       incomeSummary,
       breakdownRows,
+      incomeRates,
     }
   }, [
     clients,
     packages,
     sessions,
     lateFees,
+    incomeRates,
     weekStart,
     weekEnd,
     selectedTrainer.id,

@@ -26,8 +26,8 @@
 .modal {
   width: 100%;
   max-width: 520px;
-  max-height: calc(100vh - 2rem);
-  overflow: visible;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
   background: var(--color-bg-card);
   border-radius: var(--radius-xl);
   padding: 2rem 2.5rem;
@@ -35,6 +35,26 @@
   border: 1px solid var(--color-border-light);
   position: relative;
   animation: slideUp 0.2s ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+/* Webkit scrollbar styling */
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
 }
 
 @keyframes slideUp {
@@ -46,6 +66,11 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Expand modal height when a dropdown is open to show more options */
+.modal:has([data-select-open="true"]) {
+  min-height: min(420px, calc(100vh - 3rem));
 }
 
 .closeButton {

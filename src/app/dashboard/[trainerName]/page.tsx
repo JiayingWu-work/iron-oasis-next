@@ -131,6 +131,8 @@ export default function TrainerDashboard() {
     packages,
     sessions,
     lateFees,
+    incomeRates,
+    isLoading: isWeeklyDataLoading,
     setPackages,
     setSessions,
     setLateFees,
@@ -226,6 +228,7 @@ export default function TrainerDashboard() {
                   packages={packages}
                   sessions={sessions}
                   lateFees={lateFees}
+                  incomeRates={incomeRates}
                   weekStart={weekStart}
                   weekEnd={weekEnd}
                   selectedTrainer={selectedTrainer}
@@ -234,6 +237,7 @@ export default function TrainerDashboard() {
                   onDeleteLateFee={isReadOnly ? undefined : deleteLateFee}
                   readOnly={isReadOnly}
                   weeklyNotes={weeklyNotes}
+                  isLoading={isWeeklyDataLoading}
                 />
               </Card>
               {!isReadOnly && (

@@ -5,19 +5,22 @@ import type {
   Trainer,
   TrainingMode,
   Client,
+  IncomeRate,
 } from '@/types'
 import type { WeeklyIncomeSummary } from '@/hooks/useWeeklyDashboardData'
 import { getClientPricePerClass } from '@/lib/pricing'
 import { getWeekRange } from '@/lib/date'
+import { getRateForClassCount } from '@/lib/incomeRates'
 
 /**
  * Get the trainer's rate for the week containing the given date.
- * Rate is 51% if >12 classes that week, otherwise 46%.
+ * Uses the trainer's configured income rates, or defaults to 46%/51%.
  */
 function getRateForSessionDate(
   sessionDate: string,
   trainerId: number,
   allSessions: Session[],
+  incomeRates: IncomeRate[] | undefined,
 ): number {
   const { start, end } = getWeekRange(sessionDate)
 
@@ -25,7 +28,7 @@ function getRateForSessionDate(
     (s) => s.trainerId === trainerId && s.date >= start && s.date <= end,
   )
 
-  return sessionsInWeek.length > 12 ? 0.51 : 0.46
+  return getRateForClassCount(incomeRates, sessionsInWeek.length)
 }
 
 export function computeIncomeSummary(
@@ -36,9 +39,10 @@ export function computeIncomeSummary(
   weeklyLateFees: LateFee[],
   trainerId: Trainer['id'],
   allSessions: Session[],
+  incomeRates?: IncomeRate[],
 ): WeeklyIncomeSummary {
   const totalClassesThisWeek = weeklySessions.length
-  const rate = totalClassesThisWeek > 12 ? 0.51 : 0.46
+  const rate = getRateForClassCount(incomeRates, totalClassesThisWeek)
 
   // ----- 1) Normal weekly class income -----
   const grossWeeklyAmount = weeklySessions.reduce((sum, s) => {
@@ -128,7 +132,7 @@ export function computeIncomeSummary(
       if (diffPerClass <= 0) continue
 
       // Deduct trainer share at the ORIGINAL week's rate (when session occurred)
-      const originalRate = getRateForSessionDate(s.date, trainerId, allSessions)
+      const originalRate = getRateForSessionDate(s.date, trainerId, allSessions, incomeRates)
       pkgAdjustment += diffPerClass * originalRate
     }
 

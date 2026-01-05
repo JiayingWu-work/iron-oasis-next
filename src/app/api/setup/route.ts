@@ -56,6 +56,18 @@ export async function POST() {
       ADD COLUMN IF NOT EXISTS location_override VARCHAR(10)
     `;
 
+    // Create trainer_income_rates table for customizable pay rate tiers
+    await sql`
+      CREATE TABLE IF NOT EXISTS trainer_income_rates (
+        id SERIAL PRIMARY KEY,
+        trainer_id INTEGER REFERENCES trainers(id) ON DELETE CASCADE,
+        min_classes INTEGER NOT NULL,
+        max_classes INTEGER,
+        rate DECIMAL(4,2) NOT NULL,
+        UNIQUE(trainer_id, min_classes)
+      )
+    `;
+
     return NextResponse.json({
       success: true,
       message: 'Database setup completed successfully'

@@ -49,6 +49,14 @@ export type ApiLateFeeWithClient = ApiLateFee & {
   client_name: string
 }
 
+export type ApiIncomeRate = {
+  id: number
+  trainer_id: number
+  min_classes: number
+  max_classes: number | null
+  rate: string // DECIMAL comes as string from DB
+}
+
 export type TrainerWeekResponse = {
   trainer: {
     id: number
@@ -59,6 +67,7 @@ export type TrainerWeekResponse = {
   packages: ApiPackage[]
   sessions: ApiSession[]
   lateFees: ApiLateFee[]
+  incomeRates: ApiIncomeRate[]
   weekStart: string
   weekEnd: string
 }

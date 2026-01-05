@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { computeIncomeSummary } from '@/lib/weeklyDashboard/computeIncomeSummary'
-import type { Client, Package, Session, LateFee } from '@/types'
+import type { Client, Package, Session, LateFee, IncomeRate } from '@/types'
+
+// Default income rates for tests (46% for 1-12 classes, 51% for 13+)
+const DEFAULT_INCOME_RATES: IncomeRate[] = [
+  { id: 1, trainerId: 1, minClasses: 1, maxClasses: 12, rate: 0.46 },
+  { id: 2, trainerId: 1, minClasses: 13, maxClasses: null, rate: 0.51 },
+]
 
 describe('computeIncomeSummary', () => {
   // Helper to create client with pricing fields based on tier
@@ -96,6 +102,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         sessions,
+        DEFAULT_INCOME_RATES,
       )
 
       expect(result.totalClassesThisWeek).toBe(10)
@@ -117,6 +124,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         sessions,
+        DEFAULT_INCOME_RATES,
       )
 
       expect(result.totalClassesThisWeek).toBe(15)
@@ -138,6 +146,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         sessions,
+        DEFAULT_INCOME_RATES,
       )
 
       expect(result.totalClassesThisWeek).toBe(12)
@@ -247,6 +256,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         sessions,
+        DEFAULT_INCOME_RATES,
       )
 
       // Client has tier 1 pricing: 10 sessions = $150/class
@@ -266,6 +276,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         sessions,
+        DEFAULT_INCOME_RATES,
       )
 
       // Client has tier 1 pricing: drop-in = 1 session = $150/class
@@ -289,6 +300,7 @@ describe('computeIncomeSummary', () => {
         lateFees,
         1,
         sessions,
+        DEFAULT_INCOME_RATES,
       )
 
       // Class income: $150 * 0.46 = $69
@@ -328,6 +340,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         [backfilledSession], // All sessions including backfilled one
+        DEFAULT_INCOME_RATES,
       )
 
       // Tier 1 client, 14 sessions = $140/class
@@ -354,6 +367,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         backfilledSessions,
+        DEFAULT_INCOME_RATES,
       )
 
       // 3 sessions * $10 diff * 0.46 rate = $13.80
@@ -395,6 +409,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         backfilledSessions,
+        DEFAULT_INCOME_RATES,
       )
 
       // 15 sessions * $10 diff * 0.51 rate (original week had >12) = $76.50
@@ -429,6 +444,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         backfilledSessions,
+        DEFAULT_INCOME_RATES,
       )
 
       // 10 sessions * $10 diff * 0.46 rate = $46.00
@@ -479,6 +495,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         allBackfilledSessions,
+        DEFAULT_INCOME_RATES,
       )
 
       // Single-class = $150, Package = $130, Diff = $20
@@ -501,6 +518,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         [session],
+        DEFAULT_INCOME_RATES,
       )
 
       expect(result.backfillAdjustment).toBe(0)
@@ -520,6 +538,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         [backfilledSession],
+        DEFAULT_INCOME_RATES,
       )
 
       expect(result.backfillAdjustment).toBe(0)
@@ -539,6 +558,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         [backfilledSession],
+        DEFAULT_INCOME_RATES,
       )
 
       // No diff since both are $150
@@ -559,6 +579,7 @@ describe('computeIncomeSummary', () => {
         [],
         1,
         [currentSession, backfilledSession],
+        DEFAULT_INCOME_RATES,
       )
 
       // Class income: $140 * 0.46 = $64.40

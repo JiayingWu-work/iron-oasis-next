@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { computeBreakdownRows } from '@/lib/weeklyDashboard/computeBreakdownRows'
-import type { Client, Package, Session, LateFee } from '@/types'
+import type { Client, Package, Session, LateFee, IncomeRate } from '@/types'
+
+// Default income rates for tests (46% for 1-12 classes, 51% for 13+)
+const DEFAULT_INCOME_RATES: IncomeRate[] = [
+  { id: 1, trainerId: 1, minClasses: 1, maxClasses: 12, rate: 0.46 },
+  { id: 2, trainerId: 1, minClasses: 13, maxClasses: null, rate: 0.51 },
+]
 
 describe('computeBreakdownRows', () => {
   const createClient = (
@@ -137,6 +143,7 @@ describe('computeBreakdownRows', () => {
       sessions,
       [],
       [],
+      DEFAULT_INCOME_RATES,
     )
 
     const sessionRow = result.find((r) => r.type === 'session')!
@@ -157,6 +164,7 @@ describe('computeBreakdownRows', () => {
       sessions,
       [],
       [],
+      DEFAULT_INCOME_RATES,
     )
 
     const sessionRow = result.find((r) => r.type === 'session')!
@@ -178,6 +186,7 @@ describe('computeBreakdownRows', () => {
       sessions,
       [],
       [],
+      DEFAULT_INCOME_RATES,
     )
 
     const sessionRows = result.filter((r) => r.type === 'session')

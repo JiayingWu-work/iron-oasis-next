@@ -1,11 +1,12 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import type { Client, Session, Package, Trainer, LateFee, Location } from '@/types'
+import type { Client, Session, Package, Trainer, LateFee, Location, IncomeRate } from '@/types'
 import { getWeekRange } from '@/lib/date'
 import {
   ApiClient,
   ApiPackage,
   ApiSession,
   ApiLateFee,
+  ApiIncomeRate,
   TrainerWeekResponse,
 } from '@/types/api'
 
@@ -16,12 +17,15 @@ export type TrainerWeekState = {
   packages: Package[]
   sessions: Session[]
   lateFees: LateFee[]
+  incomeRates: IncomeRate[]
+  isLoading: boolean
   setWeekStart: Dispatch<SetStateAction<string>>
   setWeekEnd: Dispatch<SetStateAction<string>>
   setClients: Dispatch<SetStateAction<Client[]>>
   setPackages: Dispatch<SetStateAction<Package[]>>
   setSessions: Dispatch<SetStateAction<Session[]>>
   setLateFees: Dispatch<SetStateAction<LateFee[]>>
+  setIncomeRates: Dispatch<SetStateAction<IncomeRate[]>>
 }
 
 export function useWeeklyState(
@@ -38,6 +42,8 @@ export function useWeeklyState(
   const [packages, setPackages] = useState<Package[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [lateFees, setLateFees] = useState<LateFee[]>([])
+  const [incomeRates, setIncomeRates] = useState<IncomeRate[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     if (!selectedTrainer) return
@@ -47,6 +53,7 @@ export function useWeeklyState(
     const abortController = new AbortController()
 
     async function load() {
+      setIsLoading(true)
       try {
         const res = await fetch(
           `/api/trainer/${trainerId}/week?date=${selectedDate}`,
@@ -121,10 +128,23 @@ export function useWeeklyState(
             amount: Number(f.amount),
           })),
         )
+
+        setIncomeRates(
+          (data.incomeRates ?? ([] as ApiIncomeRate[])).map((r) => ({
+            id: r.id,
+            trainerId: r.trainer_id,
+            minClasses: r.min_classes,
+            maxClasses: r.max_classes,
+            rate: parseFloat(r.rate),
+          })),
+        )
+
+        setIsLoading(false)
       } catch (error) {
         // Ignore abort errors - they're expected when trainer changes
         if (error instanceof Error && error.name === 'AbortError') return
         console.error('Failed to load dashboard data:', error)
+        setIsLoading(false)
       }
     }
 
@@ -142,11 +162,14 @@ export function useWeeklyState(
     packages,
     sessions,
     lateFees,
+    incomeRates,
+    isLoading,
     setWeekStart,
     setWeekEnd,
     setClients,
     setPackages,
     setSessions,
     setLateFees,
+    setIncomeRates,
   }
 }
