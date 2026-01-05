@@ -1,7 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import WeeklyDashboard from '@/components/tables/WeeklyDashboard'
-import type { Client, Session, Package, Trainer, LateFee } from '@/types'
+import type { Client, Session, Package, Trainer, LateFee, IncomeRate } from '@/types'
+
+// Default income rates for tests (46% for 1-12 classes, 51% for 13+)
+const DEFAULT_INCOME_RATES: IncomeRate[] = [
+  { id: 1, trainerId: 1, minClasses: 1, maxClasses: 12, rate: 0.46 },
+  { id: 2, trainerId: 1, minClasses: 13, maxClasses: null, rate: 0.51 },
+]
 
 describe('WeeklyDashboard', () => {
   const mockTrainer: Trainer = {
@@ -52,6 +58,7 @@ describe('WeeklyDashboard', () => {
     packages: mockPackages,
     sessions: mockSessions,
     lateFees: mockLateFees,
+    incomeRates: DEFAULT_INCOME_RATES,
     weekStart: '2025-01-13',
     weekEnd: '2025-01-19',
     selectedTrainer: mockTrainer,
