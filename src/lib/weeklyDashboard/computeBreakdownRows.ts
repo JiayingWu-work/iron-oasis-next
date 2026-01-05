@@ -4,9 +4,11 @@ import type {
   Session,
   LateFee,
   TrainingMode,
+  IncomeRate,
 } from '@/types'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
 import { getClientPricePerClass } from '@/lib/pricing'
+import { getRateForClassCount } from '@/lib/incomeRates'
 
 export function computeBreakdownRows(
   clients: Client[],
@@ -14,9 +16,10 @@ export function computeBreakdownRows(
   weeklySessions: Session[],
   weeklyPackages: Package[],
   weeklyLateFees: LateFee[],
+  incomeRates?: IncomeRate[],
 ): WeeklyBreakdownRow[] {
   const totalClassesThisWeek = weeklySessions.length
-  const rate = totalClassesThisWeek > 12 ? 0.51 : 0.46
+  const rate = getRateForClassCount(incomeRates, totalClassesThisWeek)
 
   const weeklyPackageRows: WeeklyBreakdownRow[] = weeklyPackages.map((p) => {
     const client = clients.find((c) => c.id === p.clientId)

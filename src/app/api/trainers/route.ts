@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 
-import type { Location } from '@/types'
+import type { Location, IncomeRate } from '@/types'
+import { validateIncomeRates } from '@/lib/incomeRates'
 
 type TrainerRow = {
   id: number
@@ -10,6 +11,14 @@ type TrainerRow = {
   email: string
   is_active: boolean
   location: Location
+}
+
+type IncomeRateRow = {
+  id: number
+  trainer_id: number
+  min_classes: number
+  max_classes: number | null
+  rate: string // DECIMAL comes as string from DB
 }
 
 export async function GET(req: NextRequest) {
@@ -44,6 +53,28 @@ export async function GET(req: NextRequest) {
           ORDER BY id;
         `) as TrainerRow[])
 
+    // Fetch income rates for all trainers
+    const incomeRateRows = (await sql`
+      SELECT id, trainer_id, min_classes, max_classes, rate
+      FROM trainer_income_rates
+      ORDER BY trainer_id, min_classes
+    `) as IncomeRateRow[]
+
+    // Group income rates by trainer_id
+    const ratesByTrainer = new Map<number, IncomeRate[]>()
+    for (const row of incomeRateRows) {
+      const rate: IncomeRate = {
+        id: row.id,
+        trainerId: row.trainer_id,
+        minClasses: row.min_classes,
+        maxClasses: row.max_classes,
+        rate: parseFloat(row.rate),
+      }
+      const existing = ratesByTrainer.get(row.trainer_id) || []
+      existing.push(rate)
+      ratesByTrainer.set(row.trainer_id, existing)
+    }
+
     const trainers = rows.map((row) => ({
       id: row.id,
       name: row.name,
@@ -51,6 +82,7 @@ export async function GET(req: NextRequest) {
       email: row.email,
       isActive: row.is_active ?? true,
       location: row.location ?? 'west',
+      incomeRates: ratesByTrainer.get(row.id) || [],
     }))
 
     return NextResponse.json({ trainers })
@@ -70,6 +102,7 @@ export async function POST(req: NextRequest) {
     const email = String(body.email ?? '').trim().toLowerCase()
     const tier = Number(body.tier)
     const location = (body.location === 'east' ? 'east' : 'west') as Location
+    const incomeRates = body.incomeRates as { minClasses: number; maxClasses: number | null; rate: number }[] | undefined
 
     if (!name || ![1, 2, 3].includes(tier)) {
       return NextResponse.json(
@@ -102,7 +135,40 @@ export async function POST(req: NextRequest) {
       RETURNING id, name, tier, email, location;
     `) as { id: number; name: string; tier: 1 | 2 | 3; email: string; location: Location }[]
 
-    return NextResponse.json({ ...rows[0], isActive: true }, { status: 201 })
+    const trainerId = rows[0].id
+
+    // Validate that income rates cover 1 to infinity with no gaps
+    const ratesError = validateIncomeRates(incomeRates)
+    if (ratesError) {
+      return NextResponse.json(
+        { error: ratesError },
+        { status: 400 },
+      )
+    }
+
+    const insertedRates: IncomeRate[] = []
+
+    for (const rate of incomeRates!) {
+      const rateRows = (await sql`
+        INSERT INTO trainer_income_rates (trainer_id, min_classes, max_classes, rate)
+        VALUES (${trainerId}, ${rate.minClasses}, ${rate.maxClasses}, ${rate.rate})
+        RETURNING id, trainer_id, min_classes, max_classes, rate
+      `) as IncomeRateRow[]
+
+      insertedRates.push({
+        id: rateRows[0].id,
+        trainerId: rateRows[0].trainer_id,
+        minClasses: rateRows[0].min_classes,
+        maxClasses: rateRows[0].max_classes,
+        rate: parseFloat(rateRows[0].rate),
+      })
+    }
+
+    return NextResponse.json({
+      ...rows[0],
+      isActive: true,
+      incomeRates: insertedRates,
+    }, { status: 201 })
   } catch (err) {
     console.error('POST /api/trainers error', err)
     return NextResponse.json(

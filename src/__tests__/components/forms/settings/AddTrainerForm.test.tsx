@@ -205,6 +205,10 @@ describe('AddTrainerForm', () => {
             email: 'alice@test.com',
             tier: 2,
             location: 'west',
+            incomeRates: [
+              { minClasses: 1, maxClasses: 12, rate: 0.46 },
+              { minClasses: 13, maxClasses: null, rate: 0.51 },
+            ],
           }),
         })
       })
@@ -306,6 +310,10 @@ describe('AddTrainerForm', () => {
             email: 'alice@test.com', // lowercased
             tier: 1,
             location: 'west',
+            incomeRates: [
+              { minClasses: 1, maxClasses: 12, rate: 0.46 },
+              { minClasses: 13, maxClasses: null, rate: 0.51 },
+            ],
           }),
         })
       })

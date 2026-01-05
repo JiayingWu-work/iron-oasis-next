@@ -56,6 +56,7 @@ export default function Select({
     <div
       ref={containerRef}
       className={`${styles.container} ${className || ''}`}
+      data-select-open={isOpen ? 'true' : undefined}
     >
       <button
         type="button"
