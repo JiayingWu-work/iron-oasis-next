@@ -52,9 +52,8 @@ export function useWeeklyState(
     const trainerId = selectedTrainer.id
     const abortController = new AbortController()
 
-    setIsLoading(true)
-
     async function load() {
+      setIsLoading(true)
       try {
         const res = await fetch(
           `/api/trainer/${trainerId}/week?date=${selectedDate}`,

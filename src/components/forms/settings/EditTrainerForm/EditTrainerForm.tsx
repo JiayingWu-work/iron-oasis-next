@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { X } from 'lucide-react'
-import type { Trainer, Location, IncomeRate } from '@/types'
+import type { Trainer, Location } from '@/types'
 import { Modal, FormField, Select } from '@/components'
 import { INITIAL_INCOME_RATES, validateIncomeRates } from '@/lib/incomeRates'
 import styles from './EditTrainerForm.module.css'
