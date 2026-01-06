@@ -126,9 +126,8 @@ export default function AddTrainerForm({
     [],
   )
 
-  // Check if all form fields are valid
-  const ratesValid = validateIncomeRates(incomeRates) === null
-  const isFormValid = name.trim() && email.trim() && isValidEmail(email.trim()) && ratesValid
+  // Only disable button if name is empty
+  const submitDisabled = !name.trim()
 
   return (
     <Modal
@@ -137,7 +136,7 @@ export default function AddTrainerForm({
       title="Add New Trainer"
       onSubmit={handleSubmit}
       submitLabel="Save Trainer"
-      submitDisabled={!isFormValid}
+      submitDisabled={submitDisabled}
       saving={saving}
       error={error}
     >
@@ -183,7 +182,7 @@ export default function AddTrainerForm({
       </FormField>
 
       <FormField
-        label="Pay Rate Tiers"
+        label="Pay Rates"
         hints={['Configure income rates based on weekly class count.']}
       >
         <div className={styles.rateTiers}>

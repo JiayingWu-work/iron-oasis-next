@@ -73,7 +73,7 @@ describe('LateFeeForm', () => {
       render(<LateFeeForm {...defaultProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText(/This fee is charged when clients cancel/)).toBeInTheDocument()
+        expect(screen.getByText(/Changes will apply to new late fees only/)).toBeInTheDocument()
       })
     })
   })

@@ -2,13 +2,14 @@
 
 import { useState, type FormEvent, useMemo } from 'react'
 import type { Client } from '@/types'
-import { formatDateToInput } from '@/lib/date'
 import DatePicker from '@/components/ui/DatePicker/DatePicker'
 import Select from '@/components/ui/Select/Select'
 import styles from './entry-bar.module.css'
 
 interface AddPackageFormProps {
   clients: Client[]
+  date: string
+  onDateChange: (value: string) => void
   onAddPackage: (
     clientId: number,
     sessionsPurchased: number,
@@ -19,12 +20,13 @@ interface AddPackageFormProps {
 
 export default function AddPackageForm({
   clients,
+  date,
+  onDateChange,
   onAddPackage,
   disabled = false,
 }: AddPackageFormProps) {
   const [clientId, setClientId] = useState<number>()
   const [sessionsPurchased, setSessionsPurchased] = useState(0)
-  const [startDate, setStartDate] = useState(formatDateToInput(new Date()))
 
   const clientOptions = useMemo(
     () => clients.map((c) => ({ value: c.id, label: c.name })),
@@ -34,7 +36,7 @@ export default function AddPackageForm({
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!clientId || sessionsPurchased <= 0) return
-    onAddPackage(clientId, sessionsPurchased, startDate)
+    onAddPackage(clientId, sessionsPurchased, date)
     setSessionsPurchased(0)
   }
 
@@ -70,7 +72,7 @@ export default function AddPackageForm({
           />
         </div>
         <div className={styles.fieldRow}>
-          <DatePicker value={startDate} onChange={setStartDate} disabled={disabled} />
+          <DatePicker value={date} onChange={onDateChange} disabled={disabled} />
         </div>
         <button
           className={styles.primaryButton}

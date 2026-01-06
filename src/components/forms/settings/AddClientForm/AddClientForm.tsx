@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import type { Trainer, TrainingMode, Location } from '@/types'
 import { Modal, FormField, Select } from '@/components'
 import styles from './AddClientForm.module.css'
@@ -26,7 +26,7 @@ export default function AddClientForm({
   const [mode, setMode] = useState<TrainingMode>('1v1')
   const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ReactNode>(null)
 
   // Fetch trainers when modal opens
   useEffect(() => {
@@ -56,6 +56,18 @@ export default function AddClientForm({
     e.preventDefault()
     if (!name.trim()) {
       setError('Please enter a client name')
+      return
+    }
+
+    // Validate name format for semi-private (1v2) - must contain "/"
+    if (mode === '1v2' && !name.includes('/')) {
+      setError(<>For 1v2 (semi-private), client name must include &quot;/&quot; to separate names, e.g. <strong>Alex Smith/Jamie Lee</strong></>)
+      return
+    }
+
+    // Validate name format for shared package (2v2) - must contain "+"
+    if (mode === '2v2' && !name.includes('+')) {
+      setError(<>For 2v2 (shared package), client name must include &quot;+&quot; between names, e.g. <strong>Alex Smith+Jamie Lee</strong></>)
       return
     }
 

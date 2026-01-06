@@ -185,7 +185,7 @@ describe('EditTrainerForm', () => {
       expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
     })
 
-    it('disables submit when email is empty', async () => {
+    it('enables submit when email is empty (validation on submit)', async () => {
       setupMockFetch()
       render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
 
@@ -203,7 +203,8 @@ describe('EditTrainerForm', () => {
       const emailInput = screen.getByDisplayValue('john@test.com')
       fireEvent.change(emailInput, { target: { value: '' } })
 
-      expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
+      // Button is enabled - validation happens on submit
+      expect(screen.getByRole('button', { name: 'Save Changes' })).not.toBeDisabled()
     })
   })
 
@@ -633,7 +634,7 @@ describe('EditTrainerForm', () => {
       })
     })
 
-    it('disables submit when rate tiers have gaps', async () => {
+    it('enables submit when rate tiers have gaps (validation on submit)', async () => {
       setupMockFetch()
       render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
 
@@ -653,11 +654,11 @@ describe('EditTrainerForm', () => {
       const maxInput = screen.getByDisplayValue('12')
       fireEvent.change(maxInput, { target: { value: '5' } })
 
-      // Submit should be disabled due to gap
-      expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
+      // Button is enabled - validation happens on submit
+      expect(screen.getByRole('button', { name: 'Save Changes' })).not.toBeDisabled()
     })
 
-    it('disables submit when rate is 0', async () => {
+    it('enables submit when rate is 0 (validation on submit)', async () => {
       setupMockFetch()
       render(<EditTrainerForm isOpen={true} onClose={() => {}} />)
 
@@ -677,8 +678,8 @@ describe('EditTrainerForm', () => {
       const rateInput = screen.getByDisplayValue('50')
       fireEvent.change(rateInput, { target: { value: '0' } })
 
-      // Submit should be disabled
-      expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
+      // Button is enabled - validation happens on submit
+      expect(screen.getByRole('button', { name: 'Save Changes' })).not.toBeDisabled()
     })
   })
 })

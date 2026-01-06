@@ -117,17 +117,18 @@ describe('AddTrainerForm', () => {
       expect(screen.getByRole('button', { name: 'Save Trainer' })).toBeDisabled()
     })
 
-    it('disables submit without email', () => {
+    it('enables submit without email (validation on submit)', () => {
       render(<AddTrainerForm isOpen={true} onClose={() => {}} />)
 
       // Enter name but not email
       const nameInput = screen.getByPlaceholderText('e.g. John Smith')
       fireEvent.change(nameInput, { target: { value: 'Alice' } })
 
-      expect(screen.getByRole('button', { name: 'Save Trainer' })).toBeDisabled()
+      // Button is enabled - validation happens on submit
+      expect(screen.getByRole('button', { name: 'Save Trainer' })).not.toBeDisabled()
     })
 
-    it('disables submit with invalid email', () => {
+    it('enables submit with invalid email (validation on submit)', () => {
       render(<AddTrainerForm isOpen={true} onClose={() => {}} />)
 
       // Enter name and invalid email
@@ -137,7 +138,8 @@ describe('AddTrainerForm', () => {
       const emailInput = screen.getByPlaceholderText('e.g. john@example.com')
       fireEvent.change(emailInput, { target: { value: 'invalid-email' } })
 
-      expect(screen.getByRole('button', { name: 'Save Trainer' })).toBeDisabled()
+      // Button is enabled - validation happens on submit
+      expect(screen.getByRole('button', { name: 'Save Trainer' })).not.toBeDisabled()
     })
 
     it('enables submit with valid name and email', () => {
@@ -345,7 +347,7 @@ describe('AddTrainerForm', () => {
     it('renders pay rate tiers section with default tier', () => {
       render(<AddTrainerForm isOpen={true} onClose={() => {}} />)
 
-      expect(screen.getByText('Pay Rate Tiers')).toBeInTheDocument()
+      expect(screen.getByText('Pay Rates')).toBeInTheDocument()
       expect(screen.getByText('+ Add Threshold')).toBeInTheDocument()
       // Default is 1 tier at 50%
       expect(screen.getByDisplayValue('50')).toBeInTheDocument()
@@ -481,7 +483,7 @@ describe('AddTrainerForm', () => {
       })
     })
 
-    it('disables submit when rate tiers have gaps', () => {
+    it('enables submit when rate tiers have gaps (validation on submit)', () => {
       render(<AddTrainerForm isOpen={true} onClose={() => {}} />)
 
       // Fill basic fields
@@ -503,11 +505,11 @@ describe('AddTrainerForm', () => {
       const firstMaxInput = maxInputs.find((input) => (input as HTMLInputElement).value === '10')
       fireEvent.change(firstMaxInput!, { target: { value: '5' } })
 
-      // Submit should be disabled due to gap
-      expect(screen.getByRole('button', { name: 'Save Trainer' })).toBeDisabled()
+      // Button is enabled - validation happens on submit
+      expect(screen.getByRole('button', { name: 'Save Trainer' })).not.toBeDisabled()
     })
 
-    it('disables submit when rate is 0', () => {
+    it('enables submit when rate is 0 (validation on submit)', () => {
       render(<AddTrainerForm isOpen={true} onClose={() => {}} />)
 
       // Fill basic fields
@@ -521,8 +523,8 @@ describe('AddTrainerForm', () => {
       const rateInput = screen.getByDisplayValue('50')
       fireEvent.change(rateInput, { target: { value: '0' } })
 
-      // Submit should be disabled
-      expect(screen.getByRole('button', { name: 'Save Trainer' })).toBeDisabled()
+      // Button is enabled - validation happens on submit
+      expect(screen.getByRole('button', { name: 'Save Trainer' })).not.toBeDisabled()
     })
 
     it('limits maximum of 6 rate tiers', () => {

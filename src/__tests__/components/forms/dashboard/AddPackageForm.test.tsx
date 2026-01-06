@@ -9,9 +9,13 @@ describe('AddPackageForm', () => {
     { id: 2, name: 'Bob', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true, location: 'west' },
   ]
 
+  const defaultDate = '2025-01-15'
+  const mockOnDateChange = vi.fn()
+
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2025, 0, 15))
+    mockOnDateChange.mockClear()
   })
 
   afterEach(() => {
@@ -20,36 +24,36 @@ describe('AddPackageForm', () => {
 
   describe('initial render', () => {
     it('renders form title', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
       expect(screen.getByRole('heading', { name: 'Add package' })).toBeInTheDocument()
     })
 
     it('renders client dropdown with placeholder', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
       expect(screen.getByText('Select client...')).toBeInTheDocument()
     })
 
     it('renders sessions input with placeholder', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
       expect(
         screen.getByPlaceholderText('Number of sessions (e.g. 14)'),
       ).toBeInTheDocument()
     })
 
-    it('renders date picker with today as default', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+    it('renders date picker with provided date', () => {
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
       expect(screen.getByText('January 15, 2025')).toBeInTheDocument()
     })
 
     it('submit button is disabled initially', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
       expect(screen.getByRole('button', { name: 'Add package' })).toBeDisabled()
     })
   })
 
   describe('client selection', () => {
     it('opens dropdown and shows client options', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       fireEvent.click(screen.getByText('Select client...'))
 
@@ -58,7 +62,7 @@ describe('AddPackageForm', () => {
     })
 
     it('selects a client from dropdown', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       // Open and select
       fireEvent.click(screen.getByText('Select client...'))
@@ -72,7 +76,7 @@ describe('AddPackageForm', () => {
 
   describe('sessions input', () => {
     it('accepts numeric input', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       const input = screen.getByPlaceholderText('Number of sessions (e.g. 14)')
       fireEvent.change(input, { target: { value: '10' } })
@@ -81,7 +85,7 @@ describe('AddPackageForm', () => {
     })
 
     it('handles empty input', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       const input = screen.getByPlaceholderText('Number of sessions (e.g. 14)')
       fireEvent.change(input, { target: { value: '10' } })
@@ -91,7 +95,7 @@ describe('AddPackageForm', () => {
     })
 
     it('handles invalid input gracefully', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       const input = screen.getByPlaceholderText('Number of sessions (e.g. 14)')
       fireEvent.change(input, { target: { value: 'abc' } })
@@ -102,8 +106,8 @@ describe('AddPackageForm', () => {
   })
 
   describe('date selection', () => {
-    it('opens date picker and allows date selection', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+    it('calls onDateChange when date is selected', () => {
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       // Open date picker
       fireEvent.click(screen.getByText('January 15, 2025'))
@@ -111,14 +115,13 @@ describe('AddPackageForm', () => {
       // Select a different day
       fireEvent.click(screen.getByRole('button', { name: '20' }))
 
-      // New date should be displayed
-      expect(screen.getByText('January 20, 2025')).toBeInTheDocument()
+      expect(mockOnDateChange).toHaveBeenCalledWith('2025-01-20')
     })
   })
 
   describe('form validation', () => {
     it('enables submit when client and sessions are valid', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       const submitButton = screen.getByRole('button', { name: 'Add package' })
       expect(submitButton).toBeDisabled()
@@ -139,7 +142,7 @@ describe('AddPackageForm', () => {
     })
 
     it('remains disabled with zero sessions', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       // Select client
       fireEvent.click(screen.getByText('Select client...'))
@@ -153,7 +156,7 @@ describe('AddPackageForm', () => {
     })
 
     it('remains disabled with negative sessions', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       // Select client
       fireEvent.click(screen.getByText('Select client...'))
@@ -171,7 +174,7 @@ describe('AddPackageForm', () => {
     it('calls onAddPackage with correct values', () => {
       const handleAddPackage = vi.fn()
       render(
-        <AddPackageForm clients={mockClients} onAddPackage={handleAddPackage} />,
+        <AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={handleAddPackage} />,
       )
 
       // Select client (Alice, id: 1)
@@ -189,7 +192,7 @@ describe('AddPackageForm', () => {
     })
 
     it('resets sessions count after submission', () => {
-      render(<AddPackageForm clients={mockClients} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       // Select client
       fireEvent.click(screen.getByText('Select client...'))
@@ -210,7 +213,7 @@ describe('AddPackageForm', () => {
     it('does not submit if validation fails', () => {
       const handleAddPackage = vi.fn()
       render(
-        <AddPackageForm clients={mockClients} onAddPackage={handleAddPackage} />,
+        <AddPackageForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={handleAddPackage} />,
       )
 
       // Only select client, no sessions
@@ -226,10 +229,10 @@ describe('AddPackageForm', () => {
       expect(handleAddPackage).not.toHaveBeenCalled()
     })
 
-    it('submits with custom date', () => {
+    it('submits with provided date', () => {
       const handleAddPackage = vi.fn()
       render(
-        <AddPackageForm clients={mockClients} onAddPackage={handleAddPackage} />,
+        <AddPackageForm clients={mockClients} date="2025-01-25" onDateChange={mockOnDateChange} onAddPackage={handleAddPackage} />,
       )
 
       // Select client
@@ -240,10 +243,6 @@ describe('AddPackageForm', () => {
       const input = screen.getByPlaceholderText('Number of sessions (e.g. 14)')
       fireEvent.change(input, { target: { value: '20' } })
 
-      // Change date
-      fireEvent.click(screen.getByText('January 15, 2025'))
-      fireEvent.click(screen.getByRole('button', { name: '25' }))
-
       // Submit
       fireEvent.click(screen.getByRole('button', { name: 'Add package' }))
 
@@ -253,7 +252,7 @@ describe('AddPackageForm', () => {
 
   describe('empty clients list', () => {
     it('renders dropdown with no options', () => {
-      render(<AddPackageForm clients={[]} onAddPackage={() => {}} />)
+      render(<AddPackageForm clients={[]} date={defaultDate} onDateChange={mockOnDateChange} onAddPackage={() => {}} />)
 
       fireEvent.click(screen.getByText('Select client...'))
 

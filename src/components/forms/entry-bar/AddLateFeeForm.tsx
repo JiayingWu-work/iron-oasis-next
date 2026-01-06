@@ -2,13 +2,14 @@
 
 import { useState, type FormEvent, useMemo } from 'react'
 import type { Client } from '@/types'
-import { formatDateToInput } from '@/lib/date'
 import DatePicker from '@/components/ui/DatePicker/DatePicker'
 import Select from '@/components/ui/Select/Select'
 import styles from './entry-bar.module.css'
 
 interface AddLateFeeFormProps {
   clients: Client[]
+  date: string
+  onDateChange: (value: string) => void
   onAddLateFee: (clientId: number, date: string) => void
   disabled?: boolean
   lateFeeAmount: number
@@ -16,12 +17,13 @@ interface AddLateFeeFormProps {
 
 export default function AddLateFeeForm({
   clients,
+  date,
+  onDateChange,
   onAddLateFee,
   disabled = false,
   lateFeeAmount,
 }: AddLateFeeFormProps) {
   const [clientId, setClientId] = useState<number>()
-  const [date, setDate] = useState(formatDateToInput(new Date()))
 
   const clientOptions = useMemo(
     () => clients.map((c) => ({ value: c.id, label: c.name })),
@@ -48,7 +50,7 @@ export default function AddLateFeeForm({
           />
         </div>
         <div className={styles.fieldRow}>
-          <DatePicker value={date} onChange={setDate} disabled={disabled} />
+          <DatePicker value={date} onChange={onDateChange} disabled={disabled} />
         </div>
         <button
           className={styles.primaryButton}

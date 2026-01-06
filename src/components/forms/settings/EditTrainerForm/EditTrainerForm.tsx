@@ -195,8 +195,8 @@ export default function EditTrainerForm({
     [],
   )
 
-  const ratesValid = validateIncomeRates(incomeRates) === null
-  const submitDisabled = selectedTrainerId === '' || !name.trim() || !email.trim() || !ratesValid
+  // Only disable button if no trainer selected or name is empty
+  const submitDisabled = selectedTrainerId === '' || !name.trim()
 
   return (
     <Modal
@@ -260,7 +260,7 @@ export default function EditTrainerForm({
           </FormField>
 
           <FormField
-            label="Pay Rate Tiers"
+            label="Pay Rates"
             hints={['Configure income rates based on weekly class count.']}
           >
             <div className={styles.rateTiers}>
