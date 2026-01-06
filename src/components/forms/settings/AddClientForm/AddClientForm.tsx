@@ -152,9 +152,9 @@ export default function AddClientForm({
         label="Client name"
         hints={
           mode === '1v2'
-            ? [<>For 1v2 clients, use name e.g. <strong>Alex and Jamie</strong></>]
+            ? [<>For 1v2 clients, use name e.g. <strong>Alex Smith/Jamie Lee</strong></>]
             : mode === '2v2'
-              ? [<>For 2v2 clients, use name e.g. <strong>Alex/Jamie</strong></>]
+              ? [<>For 2v2 clients, use name e.g. <strong>Alex Smith+Jamie Lee</strong></>]
               : undefined
         }
       >
@@ -162,9 +162,9 @@ export default function AddClientForm({
           className={styles.input}
           placeholder={
             mode === '1v2'
-              ? 'e.g. Alex and Jamie'
+              ? 'e.g. Alex Smith/Jamie Lee'
               : mode === '2v2'
-                ? 'e.g. Alex/Jamie'
+                ? 'e.g. Alex Smith+Jamie Lee'
                 : 'e.g. Alex Smith'
           }
           value={name}
