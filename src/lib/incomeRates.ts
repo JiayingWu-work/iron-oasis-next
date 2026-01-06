@@ -104,7 +104,7 @@ export function validateIncomeRates(
 
     // Next tier must start right after current tier ends
     if (next.minClasses !== current.maxClasses + 1) {
-      return `Gap in coverage: tier ${i + 1} ends at ${current.maxClasses} but tier ${i + 2} starts at ${next.minClasses}`
+      return `Gap in coverage: rate ${i + 1} ends at ${current.maxClasses} but rate ${i + 2} starts at ${next.minClasses}`
     }
   }
 

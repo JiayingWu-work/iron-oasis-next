@@ -9,9 +9,13 @@ describe('AddLateFeeForm', () => {
     { id: 2, name: 'Bob', trainerId: 1, mode: '1v1', tierAtSignup: 1, price1_12: 150, price13_20: 140, price21Plus: 130, modePremium: 20, createdAt: '2025-01-01', isActive: true, location: 'west' },
   ]
 
+  const defaultDate = '2025-01-15'
+  const mockOnDateChange = vi.fn()
+
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2025, 0, 15))
+    mockOnDateChange.mockClear()
   })
 
   afterEach(() => {
@@ -20,29 +24,29 @@ describe('AddLateFeeForm', () => {
 
   describe('initial render', () => {
     it('renders form title with fee amount', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
       expect(screen.getByText('Add $45 late fee')).toBeInTheDocument()
     })
 
     it('renders client dropdown with placeholder', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
       expect(screen.getByText('Select client...')).toBeInTheDocument()
     })
 
-    it('renders date picker with today as default', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+    it('renders date picker with provided date', () => {
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
       expect(screen.getByText('January 15, 2025')).toBeInTheDocument()
     })
 
     it('submit button is disabled initially (no client selected)', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
       expect(screen.getByRole('button', { name: 'Add late fee' })).toBeDisabled()
     })
   })
 
   describe('client selection', () => {
     it('opens dropdown and shows client options', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       fireEvent.click(screen.getByText('Select client...'))
 
@@ -51,7 +55,7 @@ describe('AddLateFeeForm', () => {
     })
 
     it('selects a client from dropdown', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       fireEvent.click(screen.getByText('Select client...'))
       fireEvent.click(screen.getByText('Alice'))
@@ -60,7 +64,7 @@ describe('AddLateFeeForm', () => {
     })
 
     it('enables submit button after selecting client', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       const submitButton = screen.getByRole('button', { name: 'Add late fee' })
       expect(submitButton).toBeDisabled()
@@ -73,8 +77,8 @@ describe('AddLateFeeForm', () => {
   })
 
   describe('date selection', () => {
-    it('allows changing the date', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+    it('calls onDateChange when date is changed', () => {
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       // Open date picker
       fireEvent.click(screen.getByText('January 15, 2025'))
@@ -82,11 +86,11 @@ describe('AddLateFeeForm', () => {
       // Select a different day
       fireEvent.click(screen.getByRole('button', { name: '10' }))
 
-      expect(screen.getByText('January 10, 2025')).toBeInTheDocument()
+      expect(mockOnDateChange).toHaveBeenCalledWith('2025-01-10')
     })
 
     it('can navigate to different month and select', () => {
-      render(<AddLateFeeForm clients={mockClients} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       // Open date picker
       fireEvent.click(screen.getByText('January 15, 2025'))
@@ -99,7 +103,7 @@ describe('AddLateFeeForm', () => {
       // Select Dec 20
       fireEvent.click(screen.getByRole('button', { name: '20' }))
 
-      expect(screen.getByText('December 20, 2024')).toBeInTheDocument()
+      expect(mockOnDateChange).toHaveBeenCalledWith('2024-12-20')
     })
   })
 
@@ -107,7 +111,7 @@ describe('AddLateFeeForm', () => {
     it('calls onAddLateFee with client ID and date', () => {
       const handleAddLateFee = vi.fn()
       render(
-        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
+        <AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
       )
 
       // Select client (Alice, id: 1)
@@ -120,19 +124,15 @@ describe('AddLateFeeForm', () => {
       expect(handleAddLateFee).toHaveBeenCalledWith(1, '2025-01-15')
     })
 
-    it('submits with custom date', () => {
+    it('submits with provided date', () => {
       const handleAddLateFee = vi.fn()
       render(
-        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
+        <AddLateFeeForm clients={mockClients} date="2025-01-05" onDateChange={mockOnDateChange} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
       )
 
       // Select client (Bob, id: 2)
       fireEvent.click(screen.getByText('Select client...'))
       fireEvent.click(screen.getByText('Bob'))
-
-      // Change date
-      fireEvent.click(screen.getByText('January 15, 2025'))
-      fireEvent.click(screen.getByRole('button', { name: '5' }))
 
       // Submit
       fireEvent.click(screen.getByRole('button', { name: 'Add late fee' }))
@@ -143,7 +143,7 @@ describe('AddLateFeeForm', () => {
     it('does not submit without client selected', () => {
       const handleAddLateFee = vi.fn()
       render(
-        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
+        <AddLateFeeForm clients={mockClients} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
       )
 
       // Try to submit without selecting client
@@ -158,7 +158,7 @@ describe('AddLateFeeForm', () => {
 
   describe('empty clients list', () => {
     it('shows no options message', () => {
-      render(<AddLateFeeForm clients={[]} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={[]} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       fireEvent.click(screen.getByText('Select client...'))
 
@@ -166,28 +166,24 @@ describe('AddLateFeeForm', () => {
     })
 
     it('keeps submit disabled with no clients', () => {
-      render(<AddLateFeeForm clients={[]} onAddLateFee={() => {}} lateFeeAmount={45} />)
+      render(<AddLateFeeForm clients={[]} date={defaultDate} onDateChange={mockOnDateChange} onAddLateFee={() => {}} lateFeeAmount={45} />)
 
       expect(screen.getByRole('button', { name: 'Add late fee' })).toBeDisabled()
     })
   })
 
   describe('user workflow', () => {
-    it('complete workflow: select client, change date, submit', () => {
+    it('complete workflow: select client and submit with date', () => {
       const handleAddLateFee = vi.fn()
       render(
-        <AddLateFeeForm clients={mockClients} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
+        <AddLateFeeForm clients={mockClients} date="2025-01-22" onDateChange={mockOnDateChange} onAddLateFee={handleAddLateFee} lateFeeAmount={45} />,
       )
 
       // Step 1: Select client
       fireEvent.click(screen.getByText('Select client...'))
       fireEvent.click(screen.getByText('Bob'))
 
-      // Step 2: Change date
-      fireEvent.click(screen.getByText('January 15, 2025'))
-      fireEvent.click(screen.getByRole('button', { name: '22' }))
-
-      // Step 3: Submit
+      // Step 2: Submit (date is already set via prop)
       fireEvent.click(screen.getByRole('button', { name: 'Add late fee' }))
 
       expect(handleAddLateFee).toHaveBeenCalledWith(2, '2025-01-22')

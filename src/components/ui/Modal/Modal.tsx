@@ -13,7 +13,7 @@ interface ModalProps {
   submitLabel?: string
   submitDisabled?: boolean
   saving?: boolean
-  error?: string | null
+  error?: ReactNode
 }
 
 export default function Modal({

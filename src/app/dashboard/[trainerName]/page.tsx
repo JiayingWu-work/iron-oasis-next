@@ -250,11 +250,15 @@ export default function TrainerDashboard() {
                     disabled={isReadOnly}
                   />
                   <AddPackageForm
+                    date={selectedDate}
+                    onDateChange={setSelectedDate}
                     clients={clients.filter((c) => c.isActive !== false)}
                     onAddPackage={addPackage}
                     disabled={isReadOnly}
                   />
                   <AddLateFeeForm
+                    date={selectedDate}
+                    onDateChange={setSelectedDate}
                     clients={clients.filter((c) => c.isActive !== false)}
                     onAddLateFee={addLateFee}
                     disabled={isReadOnly}

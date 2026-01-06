@@ -119,7 +119,10 @@ export default function LateFeeForm({
         <div className={styles.loading}>Loading...</div>
       ) : (
         <>
-          <FormField label="Late cancellation fee amount">
+          <FormField
+            label="Late cancellation fee amount"
+            hints={['Changes will apply to new late fees only.']}
+          >
             <div className={styles.inputWrapper}>
               <span className={styles.dollarSign}>$</span>
               <input
@@ -133,11 +136,6 @@ export default function LateFeeForm({
               />
             </div>
           </FormField>
-
-          <div className={styles.info}>
-            This fee is charged when clients cancel with less than 24 hours
-            notice. Changes will apply to new late fees only.
-          </div>
         </>
       )}
     </Modal>
