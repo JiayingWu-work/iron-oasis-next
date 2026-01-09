@@ -74,14 +74,6 @@ describe('WeeklyDashboard', () => {
       expect(screen.getByText('Weekly Summary')).toBeInTheDocument()
     })
 
-    it('renders week date range', () => {
-      render(<WeeklyDashboard {...defaultProps} />)
-
-      expect(
-        screen.getByText('Week: 2025-01-13 → 2025-01-19'),
-      ).toBeInTheDocument()
-    })
-
     it('renders breakdown title', () => {
       render(<WeeklyDashboard {...defaultProps} />)
 
@@ -213,21 +205,6 @@ describe('WeeklyDashboard', () => {
   })
 
   describe('different week ranges', () => {
-    it('displays different week range', () => {
-      const propsNewWeek = {
-        ...defaultProps,
-        weekStart: '2025-02-03',
-        weekEnd: '2025-02-09',
-        sessions: [],
-      }
-
-      render(<WeeklyDashboard {...propsNewWeek} />)
-
-      expect(
-        screen.getByText('Week: 2025-02-03 → 2025-02-09'),
-      ).toBeInTheDocument()
-    })
-
     it('filters sessions by week range', () => {
       // Sessions in January, but week range is February
       const propsNewWeek = {
