@@ -25,6 +25,7 @@
   color: var(--color-text-muted);
   text-align: center;
   border: 1px solid var(--color-border);
+  border-right: none;
   font-size: 0.8rem;
 }
 
@@ -35,6 +36,7 @@
 
 .headerCell:last-child {
   border-top-right-radius: var(--radius-md);
+  border-right: 1px solid var(--color-border);
 }
 
 .tierCell {
@@ -43,6 +45,8 @@
   color: var(--color-text-primary);
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
+  border-right: none;
+  border-top: none;
   white-space: nowrap;
 }
 
@@ -52,7 +56,13 @@
   color: var(--color-text-primary);
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
+  border-right: none;
+  border-top: none;
   font-variant-numeric: tabular-nums;
+}
+
+.priceCell:last-child {
+  border-right: 1px solid var(--color-border);
 }
 
 .inputWrapper {
