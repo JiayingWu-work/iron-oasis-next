@@ -1,8 +1,8 @@
 .input {
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  padding: 0.75rem 1rem;
-  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
   background: var(--color-bg-card);
   color: var(--color-text-primary);
   transition: all var(--transition-fast);
@@ -145,4 +145,50 @@
   background: var(--color-accent-subtle);
   border-color: var(--color-accent);
   border-style: solid;
+}
+
+/* Mobile responsive - keep pay rates on one line */
+@media (max-width: 640px) {
+  .rateTierCard {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .rateTierNumber {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.7rem;
+  }
+
+  .rateTierFields {
+    flex-wrap: nowrap;
+    gap: 0.375rem;
+  }
+
+  .rateTierLabel {
+    font-size: 0.7rem;
+  }
+
+  .rateInput {
+    width: 48px;
+    padding: 0.25rem 0.375rem;
+    font-size: 0.8rem;
+  }
+
+  .rateInputWide {
+    width: 52px;
+  }
+
+  .rateDash,
+  .ratePercent {
+    font-size: 0.8rem;
+  }
+
+  .rateTierGroup {
+    gap: 0.25rem;
+  }
+
+  .removeTierButton {
+    margin-left: 0.5rem;
+  }
 }

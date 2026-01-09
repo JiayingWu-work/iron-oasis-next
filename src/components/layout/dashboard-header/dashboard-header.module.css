@@ -97,6 +97,15 @@
     font-size: 0.8rem;
   }
 
+  .separator {
+    display: none;
+  }
+
+  .weekRange {
+    display: block;
+    margin-top: 0.125rem;
+  }
+
   .weekNav {
     gap: 0.5rem;
   }

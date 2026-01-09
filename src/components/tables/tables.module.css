@@ -32,6 +32,11 @@
 
 .table th:last-child {
   border-top-right-radius: var(--radius-md);
+  padding-right: 1rem;
+}
+
+.table td:last-child {
+  padding-right: 1rem;
 }
 
 .table tbody tr {
