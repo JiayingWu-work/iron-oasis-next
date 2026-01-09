@@ -20,7 +20,9 @@ export default function DashboardHeader({
       <div>
         <h2 className={styles.title}>Dashboard</h2>
         <p className={styles.subtitle}>
-          Trainer: <strong>{trainerName}</strong> · Week {weekStart} → {weekEnd}
+          Trainer: <strong>{trainerName}</strong>
+          <span className={styles.separator}> · </span>
+          <span className={styles.weekRange}>Week {weekStart} → {weekEnd}</span>
         </p>
       </div>
       <div className={styles.weekNav}>
