@@ -55,9 +55,6 @@ export default function WeeklyDashboard({
   return (
     <div>
       <h2>Weekly Summary</h2>
-      <p className={styles.hint}>
-        Week: {weekStart} → {weekEnd}
-      </p>
       <WeeklyClientTable rows={clientRows} />
       <WeeklyIncomeSummary
         totalClassesThisWeek={incomeSummary.totalClassesThisWeek}
