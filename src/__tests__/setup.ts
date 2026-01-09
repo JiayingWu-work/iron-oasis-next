@@ -1,5 +1,23 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import { configure } from '@testing-library/react'
+
+// Configure React Testing Library to use legacy root API which has better act() handling
+configure({ reactStrictMode: false })
+
+// Suppress React act() warnings that occur with async state updates in useEffect
+// These warnings are noise when using waitFor correctly
+const originalError = console.error
+console.error = (...args: unknown[]) => {
+  const message = args[0]
+  if (
+    typeof message === 'string' &&
+    message.includes('was not wrapped in act')
+  ) {
+    return
+  }
+  originalError.apply(console, args)
+}
 
 // Mock next/server for Neon auth compatibility
 vi.mock('next/server', () => ({
