@@ -159,3 +159,30 @@
   color: var(--color-text-muted);
   font-size: 0.9375rem;
 }
+
+/* Empty dashboard state (no trainers yet) */
+.emptyDashboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 2rem;
+}
+
+.emptyContent {
+  text-align: center;
+  padding: 3rem 4rem;
+}
+
+.emptyTitle {
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.emptyText {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  margin: 0;
+}
