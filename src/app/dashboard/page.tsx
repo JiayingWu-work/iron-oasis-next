@@ -39,6 +39,10 @@ export default function DashboardRouter() {
         }
 
         const { trainers } = await trainersRes.json()
+        if (trainers.length === 0) {
+          setError('No trainers found')
+          return
+        }
 
         // Check if user profile exists
         const profileRes = await fetch(`/api/user-profile?authUserId=${session!.user.id}`)
@@ -85,16 +89,6 @@ export default function DashboardRouter() {
             router.replace(`/dashboard/${toSlug(userTrainer.name, userTrainer.id)}`)
             return
           }
-        }
-
-        // If no trainers exist and user is owner, redirect to settings
-        if (trainers.length === 0) {
-          if (profile?.role === 'owner') {
-            router.replace('/settings')
-            return
-          }
-          setError('No trainers found. Please contact the gym owner.')
-          return
         }
 
         // Owner or no profile: redirect to first trainer
