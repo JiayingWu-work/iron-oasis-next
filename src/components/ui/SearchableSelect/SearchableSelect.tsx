@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ChevronDown, Check, Search } from 'lucide-react'
+import { ChevronDown, Check } from 'lucide-react'
 import styles from './SearchableSelect.module.css'
 
 interface SelectOption {
@@ -30,7 +30,6 @@ export default function SearchableSelect({
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
   const optionsRef = useRef<HTMLUListElement>(null)
 
   const filteredOptions = options.filter((option) =>
@@ -52,13 +51,6 @@ export default function SearchableSelect({
       document.addEventListener('mousedown', handleClickOutside)
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isOpen])
-
-  // Focus input when opened
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus()
-    }
   }, [isOpen])
 
   // Scroll highlighted option into view
@@ -108,6 +100,16 @@ export default function SearchableSelect({
         setIsOpen(false)
         setSearchQuery('')
         break
+      case 'Backspace':
+        setSearchQuery((prev) => prev.slice(0, -1))
+        setHighlightedIndex(0)
+        break
+      default:
+        // Type to filter - only single printable characters
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+          setSearchQuery((prev) => prev + e.key)
+          setHighlightedIndex(0)
+        }
     }
   }, [isOpen, filteredOptions, highlightedIndex, handleSelect])
 
@@ -154,24 +156,10 @@ export default function SearchableSelect({
 
       {isOpen && (
         <div className={styles.dropdown}>
-          <div className={styles.searchContainer}>
-            <Search className={styles.searchIcon} size={14} />
-            <input
-              ref={inputRef}
-              type="text"
-              className={styles.searchInput}
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setHighlightedIndex(0)
-              }}
-            />
-          </div>
           {options.length === 0 ? (
             <div className={styles.emptyState}>No options available</div>
           ) : filteredOptions.length === 0 ? (
-            <div className={styles.emptyState}>No matches found</div>
+            <div className={styles.emptyState}>No matches for &quot;{searchQuery}&quot;</div>
           ) : (
             <ul ref={optionsRef} className={styles.optionsList}>
               {filteredOptions.map((option, index) => (
