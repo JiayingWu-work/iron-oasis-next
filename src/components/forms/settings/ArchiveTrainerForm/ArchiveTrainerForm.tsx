@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import type { Trainer } from '@/types'
-import { Modal, FormField, Select } from '@/components'
+import { Modal, FormField, SearchableSelect } from '@/components'
 import styles from './ArchiveTrainerForm.module.css'
 
 interface ArchiveTrainerFormProps {
@@ -114,7 +114,7 @@ export default function ArchiveTrainerForm({
         ) : trainers.length === 0 ? (
           <div className={styles.empty}>No active trainers to archive</div>
         ) : (
-          <Select
+          <SearchableSelect
             value={selectedTrainerId}
             onChange={(val) => setSelectedTrainerId(Number(val))}
             options={trainerOptions}

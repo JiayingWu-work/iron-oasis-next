@@ -3,7 +3,7 @@
 import { useState, type FormEvent, useMemo } from 'react'
 import type { Client } from '@/types'
 import DatePicker from '@/components/ui/DatePicker/DatePicker'
-import Select from '@/components/ui/Select/Select'
+import SearchableSelect from '@/components/ui/SearchableSelect/SearchableSelect'
 import styles from './entry-bar.module.css'
 
 interface AddLateFeeFormProps {
@@ -41,7 +41,7 @@ export default function AddLateFeeForm({
       <h3 className={styles.title}>Add ${lateFeeAmount} late fee</h3>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.fieldRow}>
-          <Select
+          <SearchableSelect
             value={clientId}
             onChange={(val) => setClientId(Number(val))}
             options={clientOptions}

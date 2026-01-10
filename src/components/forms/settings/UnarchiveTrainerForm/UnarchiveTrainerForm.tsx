@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import type { Trainer } from '@/types'
-import { Modal, FormField, Select } from '@/components'
+import { Modal, FormField, SearchableSelect } from '@/components'
 import styles from './UnarchiveTrainerForm.module.css'
 
 interface UnarchiveTrainerFormProps {
@@ -116,7 +116,7 @@ export default function UnarchiveTrainerForm({
         ) : trainers.length === 0 ? (
           <div className={styles.empty}>No archived trainers to restore</div>
         ) : (
-          <Select
+          <SearchableSelect
             value={selectedTrainerId}
             onChange={(val) => setSelectedTrainerId(Number(val))}
             options={trainerOptions}

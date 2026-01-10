@@ -3,7 +3,7 @@
 import { useState, type FormEvent, useMemo } from 'react'
 import type { Client } from '@/types'
 import DatePicker from '@/components/ui/DatePicker/DatePicker'
-import Select from '@/components/ui/Select/Select'
+import SearchableSelect from '@/components/ui/SearchableSelect/SearchableSelect'
 import styles from './entry-bar.module.css'
 
 interface AddPackageFormProps {
@@ -45,7 +45,7 @@ export default function AddPackageForm({
       <h3 className={styles.title}>Add package</h3>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.fieldRow}>
-          <Select
+          <SearchableSelect
             value={clientId}
             onChange={(val) => setClientId(Number(val))}
             options={clientOptions}

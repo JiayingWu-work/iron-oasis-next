@@ -33,6 +33,7 @@ export { default as DatePicker } from './ui/DatePicker/DatePicker'
 export { default as DeleteButton } from './ui/DeleteButton/DeleteButton'
 export { default as FormField } from './ui/FormField/FormField'
 export { default as Select } from './ui/Select/Select'
+export { default as SearchableSelect } from './ui/SearchableSelect/SearchableSelect'
 export { default as SettingsCard } from './ui/SettingsCard/SettingsCard'
 export { default as Modal } from './ui/Modal/Modal'
 export {
