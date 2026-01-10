@@ -106,7 +106,11 @@ export function computeBreakdownRows(
     ...weeklyBonusRows,
     ...weeklySessionRows,
     ...weeklyLateFeeRows,
-  ].sort((a, b) => a.date.localeCompare(b.date))
+  ].sort((a, b) => {
+    // Sort by date first, then by client name so transactions for the same client are grouped
+    const dateCompare = a.date.localeCompare(b.date)
+    return dateCompare !== 0 ? dateCompare : a.clientName.localeCompare(b.clientName)
+  })
 
   return breakdownRows
 }
