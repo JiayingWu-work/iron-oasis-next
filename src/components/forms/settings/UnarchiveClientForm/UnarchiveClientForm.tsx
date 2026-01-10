@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import type { Client } from '@/types'
-import { Modal, FormField, Select } from '@/components'
+import { Modal, FormField, SearchableSelect } from '@/components'
 import styles from './UnarchiveClientForm.module.css'
 
 interface UnarchiveClientFormProps {
@@ -116,7 +116,7 @@ export default function UnarchiveClientForm({
         ) : clients.length === 0 ? (
           <div className={styles.empty}>No archived clients to restore</div>
         ) : (
-          <Select
+          <SearchableSelect
             value={selectedClientId}
             onChange={(val) => setSelectedClientId(Number(val))}
             options={clientOptions}

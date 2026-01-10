@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import type { Trainer, TrainingMode, Location } from '@/types'
-import { Modal, FormField, Select } from '@/components'
+import { Modal, FormField, Select, SearchableSelect } from '@/components'
 import styles from './AddClientForm.module.css'
 
 interface AddClientFormProps {
@@ -188,7 +188,7 @@ export default function AddClientForm({
         {loading ? (
           <div className={styles.loading}>Loading trainers...</div>
         ) : (
-          <Select
+          <SearchableSelect
             value={primaryTrainerId}
             onChange={(val) => {
               const newId = Number(val)
@@ -227,7 +227,7 @@ export default function AddClientForm({
             'The secondary trainer shares this package and splits sessions with the primary trainer.',
           ]}
         >
-          <Select
+          <SearchableSelect
             value={secondaryTrainerId}
             onChange={(val) =>
               setSecondaryTrainerId(val === '' ? '' : Number(val))

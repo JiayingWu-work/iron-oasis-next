@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import type { Client } from '@/types'
-import { Modal, FormField, Select } from '@/components'
+import { Modal, FormField, SearchableSelect } from '@/components'
 import styles from './ArchiveClientForm.module.css'
 
 interface ArchiveClientFormProps {
@@ -114,7 +114,7 @@ export default function ArchiveClientForm({
         ) : clients.length === 0 ? (
           <div className={styles.empty}>No active clients to archive</div>
         ) : (
-          <Select
+          <SearchableSelect
             value={selectedClientId}
             onChange={(val) => setSelectedClientId(Number(val))}
             options={clientOptions}

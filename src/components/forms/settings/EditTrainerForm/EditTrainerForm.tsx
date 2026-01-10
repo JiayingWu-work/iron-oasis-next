@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { X } from 'lucide-react'
 import type { Trainer, Location } from '@/types'
-import { Modal, FormField, Select } from '@/components'
+import { Modal, FormField, Select, SearchableSelect } from '@/components'
 import { INITIAL_INCOME_RATES, validateIncomeRates } from '@/lib/incomeRates'
 import styles from './EditTrainerForm.module.css'
 
@@ -213,7 +213,7 @@ export default function EditTrainerForm({
         {loading ? (
           <div className={styles.loading}>Loading trainers...</div>
         ) : (
-          <Select
+          <SearchableSelect
             value={selectedTrainerId}
             onChange={(val) => setSelectedTrainerId(Number(val))}
             options={trainerOptions}

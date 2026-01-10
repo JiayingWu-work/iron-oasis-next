@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import type { Client, Trainer } from '@/types'
-import { Modal, FormField, Select } from '@/components'
+import { Modal, FormField, SearchableSelect } from '@/components'
 import styles from './TransferClientForm.module.css'
 
 interface TransferClientFormProps {
@@ -159,7 +159,7 @@ export default function TransferClientForm({
         {loading ? (
           <div className={styles.loading}>Loading clients...</div>
         ) : (
-          <Select
+          <SearchableSelect
             value={selectedClientId}
             onChange={(val) => {
               setSelectedClientId(Number(val))
@@ -189,7 +189,7 @@ export default function TransferClientForm({
           ) : (
             <>
               <FormField label="New trainer">
-                <Select
+                <SearchableSelect
                   value={newTrainerId}
                   onChange={(val) => setNewTrainerId(Number(val))}
                   options={trainerOptions}

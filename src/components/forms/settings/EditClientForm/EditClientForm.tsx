@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import type { Client, Trainer, TrainingMode, Location } from '@/types'
-import { Modal, FormField, Select } from '@/components'
+import { Modal, FormField, Select, SearchableSelect } from '@/components'
 import styles from './EditClientForm.module.css'
 
 interface EditClientFormProps {
@@ -326,7 +326,7 @@ export default function EditClientForm({
         {loading ? (
           <div className={styles.loading}>Loading clients...</div>
         ) : (
-          <Select
+          <SearchableSelect
             value={selectedClientId}
             onChange={(val) => setSelectedClientId(Number(val))}
             options={clientOptions}
@@ -366,7 +366,7 @@ export default function EditClientForm({
           {modeTransition === 'add-secondary-trainer' && (
             <>
               <FormField label="Primary trainer (package owner)">
-                <Select
+                <SearchableSelect
                   value={primaryTrainerId}
                   onChange={(val) => {
                     const newId = Number(val)
@@ -379,7 +379,7 @@ export default function EditClientForm({
               </FormField>
 
               <FormField label="Secondary trainer">
-                <Select
+                <SearchableSelect
                   value={secondaryTrainerId}
                   onChange={(val) => setSecondaryTrainerId(Number(val))}
                   options={secondaryTrainerOptions}
@@ -395,7 +395,7 @@ export default function EditClientForm({
               label="Primary trainer"
               hints={['Secondary trainer will be removed from this client']}
             >
-              <Select
+              <SearchableSelect
                 value={primaryTrainerId}
                 onChange={(val) => setPrimaryTrainerId(Number(val))}
                 options={primaryTrainerOptions}
