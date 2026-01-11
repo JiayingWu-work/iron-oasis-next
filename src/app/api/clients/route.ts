@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, trainerId, secondaryTrainerId, mode, location: reqLocation } = await req.json()
+    const { name, trainerId, secondaryTrainerId, mode, location: reqLocation, customPricing, customModePremium } = await req.json()
     const location = (reqLocation === 'east' ? 'east' : 'west') as Location
 
     if (
@@ -118,8 +118,35 @@ export async function POST(req: NextRequest) {
 
     const trainerTier = (trainer?.tier ?? 1) as 1 | 2 | 3
 
-    // Get pricing snapshot for this trainer's tier
-    const pricingSnapshot = await getPricingSnapshotForTier(trainerTier)
+    // Get pricing - use custom pricing if provided, otherwise use tier-based pricing
+    let pricingSnapshot = await getPricingSnapshotForTier(trainerTier)
+
+    if (customPricing && typeof customPricing === 'object') {
+      const { price1_12, price13_20, price21Plus } = customPricing
+      if (
+        typeof price1_12 === 'number' && price1_12 > 0 &&
+        typeof price13_20 === 'number' && price13_20 > 0 &&
+        typeof price21Plus === 'number' && price21Plus > 0
+      ) {
+        // Use custom pricing
+        pricingSnapshot = {
+          ...pricingSnapshot,
+          price1_12,
+          price13_20,
+          price21Plus,
+        }
+      } else {
+        return NextResponse.json({ error: 'Invalid custom pricing values' }, { status: 400 })
+      }
+    }
+
+    // Override mode premium if custom value is provided for 1v2 mode
+    if (typeof customModePremium === 'number' && customModePremium >= 0) {
+      pricingSnapshot = {
+        ...pricingSnapshot,
+        modePremium: customModePremium,
+      }
+    }
 
     const [row] = (await sql`
       INSERT INTO clients (

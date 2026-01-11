@@ -16,7 +16,6 @@ export { default as AddTrainerSettingsForm } from './forms/settings/AddTrainerFo
 export { default as EditClientForm } from './forms/settings/EditClientForm/EditClientForm'
 export { default as EditTrainerForm } from './forms/settings/EditTrainerForm/EditTrainerForm'
 export { default as PricingTable } from './forms/settings/PricingTable/PricingTable'
-export { default as TransferClientForm } from './forms/settings/TransferClientForm/TransferClientForm'
 export { default as ArchiveClientForm } from './forms/settings/ArchiveClientForm/ArchiveClientForm'
 export { default as ArchiveTrainerForm } from './forms/settings/ArchiveTrainerForm/ArchiveTrainerForm'
 export { default as UnarchiveClientForm } from './forms/settings/UnarchiveClientForm/UnarchiveClientForm'

@@ -84,7 +84,6 @@ describe('SettingsPage', () => {
       await waitFor(() => {
         // Client Management
         expect(screen.getByText('Add Client')).toBeInTheDocument()
-        expect(screen.getByText('Transfer Client')).toBeInTheDocument()
         expect(screen.getByText('Edit Client')).toBeInTheDocument()
         expect(screen.getByText('Archive Client')).toBeInTheDocument()
         expect(screen.getByText('Unarchive Client')).toBeInTheDocument()
