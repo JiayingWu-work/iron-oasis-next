@@ -315,7 +315,7 @@ export default function AddClientForm({
           className={styles.specialPricingToggle}
           onClick={() => setSpecialPricing(!specialPricing)}
         >
-          {specialPricing ? '- Hide special pricing' : '+ Special pricing'}
+          {specialPricing ? '- Hide special package pricing' : '+ Special package pricing'}
         </button>
 
         {specialPricing && (

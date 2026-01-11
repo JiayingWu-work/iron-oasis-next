@@ -623,7 +623,7 @@ export default function EditClientForm({
               className={styles.specialPricingToggle}
               onClick={() => setSpecialPricing(!specialPricing)}
             >
-              {specialPricing ? '- Hide pricing override' : '+ Override pricing'}
+              {specialPricing ? '- Hide override package pricing' : '+ Override package pricing'}
             </button>
 
             {specialPricing && (
