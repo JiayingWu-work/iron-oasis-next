@@ -5,10 +5,14 @@ import type {
   LateFee,
   TrainingMode,
   IncomeRate,
+  Trainer,
 } from '@/types'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
 import { getClientPricePerClass } from '@/lib/pricing'
 import { getRateForClassCount } from '@/lib/incomeRates'
+
+// Personal client bonus: 10% added to trainer's rate when client is personal
+const PERSONAL_CLIENT_BONUS = 0.10
 
 export function computeBreakdownRows(
   clients: Client[],
@@ -16,6 +20,7 @@ export function computeBreakdownRows(
   weeklySessions: Session[],
   weeklyPackages: Package[],
   weeklyLateFees: LateFee[],
+  trainerId: Trainer['id'],
   incomeRates?: IncomeRate[],
 ): WeeklyBreakdownRow[] {
   const totalClassesThisWeek = weeklySessions.length
@@ -79,12 +84,17 @@ export function computeBreakdownRows(
       }
     }
 
+    // Apply personal client bonus: if the client is a personal client
+    // and the trainer is the primary trainer, add 10% to rate
+    const isPersonalClientSession = client?.isPersonalClient && client.trainerId === trainerId
+    const effectiveRate = isPersonalClientSession ? rate + PERSONAL_CLIENT_BONUS : rate
+
     return {
       id: s.id,
       date: s.date,
       clientName: client?.name ?? 'Unknown client',
       type: 'session',
-      amount: pricePerClass * rate,
+      amount: pricePerClass * effectiveRate,
       clientLocation: client?.location,
       locationOverride: s.locationOverride,
     }

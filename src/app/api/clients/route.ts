@@ -49,19 +49,22 @@ export async function GET(req: NextRequest) {
       created_at: string
       is_active: boolean
       location: Location
+      is_personal_client: boolean
     }
 
     const rows = activeOnly
       ? ((await sql`
           SELECT id, name, trainer_id, secondary_trainer_id, mode,
-                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active, location
+                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active, location,
+                 COALESCE(is_personal_client, false) as is_personal_client
           FROM clients
           WHERE is_active = true
           ORDER BY name ASC
         `) as ClientRow[])
       : ((await sql`
           SELECT id, name, trainer_id, secondary_trainer_id, mode,
-                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active, location
+                 tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active, location,
+                 COALESCE(is_personal_client, false) as is_personal_client
           FROM clients
           ORDER BY name ASC
         `) as ClientRow[])
@@ -80,6 +83,7 @@ export async function GET(req: NextRequest) {
       createdAt: row.created_at,
       isActive: row.is_active ?? true,
       location: row.location ?? 'west',
+      isPersonalClient: row.is_personal_client ?? false,
     }))
 
     return NextResponse.json(clients)
@@ -94,8 +98,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, trainerId, secondaryTrainerId, mode, location: reqLocation, customPricing, customModePremium } = await req.json()
+    const { name, trainerId, secondaryTrainerId, mode, location: reqLocation, customPricing, customModePremium, isPersonalClient } = await req.json()
     const location = (reqLocation === 'east' ? 'east' : 'west') as Location
+    const personalClient = isPersonalClient === true
 
     if (
       typeof name !== 'string' ||
@@ -151,14 +156,14 @@ export async function POST(req: NextRequest) {
     const [row] = (await sql`
       INSERT INTO clients (
         name, trainer_id, secondary_trainer_id, mode,
-        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location, is_personal_client
       )
       VALUES (
         ${name.trim()}, ${trainerId}, ${secondaryId}, ${trainingMode},
-        ${trainerTier}, ${pricingSnapshot.price1_12}, ${pricingSnapshot.price13_20}, ${pricingSnapshot.price21Plus}, ${pricingSnapshot.modePremium}, NOW(), ${location}
+        ${trainerTier}, ${pricingSnapshot.price1_12}, ${pricingSnapshot.price13_20}, ${pricingSnapshot.price21Plus}, ${pricingSnapshot.modePremium}, NOW(), ${location}, ${personalClient}
       )
       RETURNING id, name, trainer_id, secondary_trainer_id, mode,
-                tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+                tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location, is_personal_client
     `) as {
       id: number
       name: string
@@ -172,6 +177,7 @@ export async function POST(req: NextRequest) {
       mode_premium: number
       created_at: string
       location: Location
+      is_personal_client: boolean
     }[]
 
     return NextResponse.json({
@@ -188,6 +194,7 @@ export async function POST(req: NextRequest) {
       createdAt: row.created_at,
       location: row.location,
       isActive: true,
+      isPersonalClient: row.is_personal_client,
     })
   } catch (err) {
     console.error('Error creating client', err)

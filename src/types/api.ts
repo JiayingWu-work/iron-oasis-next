@@ -14,6 +14,7 @@ export type ApiClient = {
   created_at: string
   is_active?: boolean
   location?: Location
+  is_personal_client?: boolean
 }
 
 export type ApiPackage = {

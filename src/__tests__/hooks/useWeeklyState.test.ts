@@ -146,6 +146,7 @@ describe('useWeeklyState', () => {
       createdAt: '2025-01-01T00:00:00.000Z',
       isActive: true,
       location: 'west',
+      isPersonalClient: false,
     })
 
     expect(result.current.clients[1]).toEqual({
@@ -162,6 +163,7 @@ describe('useWeeklyState', () => {
       createdAt: '2025-01-02T00:00:00.000Z',
       isActive: true,
       location: 'west',
+      isPersonalClient: false,
     })
   })
 
@@ -307,6 +309,7 @@ describe('useWeeklyState', () => {
           createdAt: '2025-01-01',
           isActive: true,
           location: 'west',
+          isPersonalClient: false,
         },
       ])
     })

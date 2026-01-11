@@ -15,7 +15,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid client ID' }, { status: 400 })
     }
 
-    const { name, mode, trainerId, secondaryTrainerId, location, customPricing, customModePremium } = await req.json()
+    const { name, mode, trainerId, secondaryTrainerId, location, customPricing, customModePremium, isPersonalClient } = await req.json()
 
     if (typeof name !== 'string' || !name.trim()) {
       return NextResponse.json(
@@ -44,7 +44,11 @@ export async function PATCH(
       mode_premium: number
       created_at: string
       location: string
+      is_personal_client: boolean
     }
+
+    // Handle isPersonalClient update
+    const personalClientValue = typeof isPersonalClient === 'boolean' ? isPersonalClient : undefined
 
     let row: ClientRow
 
@@ -377,6 +381,18 @@ export async function PATCH(
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
     }
 
+    // Handle is_personal_client update separately (simpler than modifying all query branches)
+    let finalIsPersonalClient = row.is_personal_client ?? false
+    if (personalClientValue !== undefined) {
+      const [updatedRow] = (await sql`
+        UPDATE clients
+        SET is_personal_client = ${personalClientValue}
+        WHERE id = ${clientId}
+        RETURNING is_personal_client
+      `) as { is_personal_client: boolean }[]
+      finalIsPersonalClient = updatedRow?.is_personal_client ?? personalClientValue
+    }
+
     return NextResponse.json({
       id: row.id,
       name: row.name,
@@ -390,6 +406,7 @@ export async function PATCH(
       modePremium: Number(row.mode_premium),
       createdAt: row.created_at,
       location: row.location,
+      isPersonalClient: finalIsPersonalClient,
     })
   } catch (err) {
     console.error('Error updating client', err)

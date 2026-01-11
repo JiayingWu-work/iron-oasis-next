@@ -15,6 +15,7 @@ describe('computeIncomeSummary', () => {
     name: string,
     trainerId: number,
     tierAtSignup: 1 | 2 | 3 = 1,
+    isPersonalClient = false,
   ): Client => {
     // Default pricing based on tier (matches DEFAULT_PRICING in pricing.ts)
     const pricing = {
@@ -36,6 +37,7 @@ describe('computeIncomeSummary', () => {
       createdAt: '2025-01-01',
       isActive: true,
       location: 'west' as const,
+      isPersonalClient,
     }
   }
 
@@ -588,6 +590,158 @@ describe('computeIncomeSummary', () => {
       // Final: $64.40 + $50 - $4.60 = $109.80
       expect(result.backfillAdjustment).toBeCloseTo(4.6, 2)
       expect(result.finalWeeklyIncome).toBeCloseTo(109.8, 2)
+    })
+  })
+
+  describe('personal client bonus (10%)', () => {
+    it('adds 10% bonus to rate for personal client sessions', () => {
+      // Personal client owned by trainer 1
+      const clients = [createClient(1, 'Alice', 1, 1, true)]
+      const packages = [createPackage(1, 1, 1, 10, '2025-01-01')]
+      const sessions = [createSession(1, 1, 1, 1, '2025-01-06')]
+
+      const result = computeIncomeSummary(
+        clients,
+        packages,
+        sessions,
+        [],
+        [],
+        1, // Trainer 1 is the primary trainer
+        sessions,
+        DEFAULT_INCOME_RATES,
+      )
+
+      // Client has tier 1 pricing: 10 sessions = $150/class
+      // 1 class * $150 * (0.46 + 0.10) = $150 * 0.56 = $84
+      expect(result.totalClassesThisWeek).toBe(1)
+      expect(result.rate).toBe(0.46) // Base rate is still 46%
+      expect(result.finalWeeklyIncome).toBeCloseTo(84, 2)
+    })
+
+    it('does not apply bonus for non-personal clients', () => {
+      // Regular client (not personal)
+      const clients = [createClient(1, 'Alice', 1, 1, false)]
+      const packages = [createPackage(1, 1, 1, 10, '2025-01-01')]
+      const sessions = [createSession(1, 1, 1, 1, '2025-01-06')]
+
+      const result = computeIncomeSummary(
+        clients,
+        packages,
+        sessions,
+        [],
+        [],
+        1,
+        sessions,
+        DEFAULT_INCOME_RATES,
+      )
+
+      // Client has tier 1 pricing: 10 sessions = $150/class
+      // 1 class * $150 * 0.46 = $69
+      expect(result.finalWeeklyIncome).toBe(69)
+    })
+
+    it('does not apply bonus when trainer is not the primary trainer', () => {
+      // Personal client owned by trainer 2, but trainer 1 conducts the session
+      const clients = [createClient(1, 'Alice', 2, 1, true)] // trainerId = 2
+      const packages = [createPackage(1, 1, 1, 10, '2025-01-01')]
+      const sessions = [createSession(1, 1, 1, 1, '2025-01-06')] // session.trainerId = 1
+
+      const result = computeIncomeSummary(
+        clients,
+        packages,
+        sessions,
+        [],
+        [],
+        1, // Calculating for trainer 1 (not the package owner)
+        sessions,
+        DEFAULT_INCOME_RATES,
+      )
+
+      // Trainer 1 is not the primary trainer (client.trainerId = 2)
+      // So no personal client bonus applies
+      // 1 class * $150 * 0.46 = $69
+      expect(result.finalWeeklyIncome).toBe(69)
+    })
+
+    it('applies bonus with higher tier rate (13+ classes)', () => {
+      // Personal client with 15 classes this week
+      const clients = [createClient(1, 'Alice', 1, 1, true)]
+      const packages = [createPackage(1, 1, 1, 20, '2025-01-01')]
+      const sessions = Array.from({ length: 15 }, (_, i) =>
+        createSession(i + 1, 1, 1, 1, `2025-01-${String(i + 6).padStart(2, '0')}`),
+      )
+
+      const result = computeIncomeSummary(
+        clients,
+        packages,
+        sessions,
+        [],
+        [],
+        1,
+        sessions,
+        DEFAULT_INCOME_RATES,
+      )
+
+      // 15 classes = 51% rate, + 10% personal bonus = 61%
+      // 15 classes * $140/class * 0.61 = $1281
+      expect(result.totalClassesThisWeek).toBe(15)
+      expect(result.rate).toBe(0.51)
+      expect(result.finalWeeklyIncome).toBeCloseTo(1281, 2)
+    })
+
+    it('handles mix of personal and non-personal clients', () => {
+      const personalClient = createClient(1, 'Alice', 1, 1, true)
+      const regularClient = createClient(2, 'Bob', 1, 1, false)
+      const clients = [personalClient, regularClient]
+      const packages = [
+        createPackage(1, 1, 1, 10, '2025-01-01'),
+        createPackage(2, 2, 1, 10, '2025-01-01'),
+      ]
+      const sessions = [
+        createSession(1, 1, 1, 1, '2025-01-06'), // Personal client
+        createSession(2, 2, 1, 2, '2025-01-07'), // Regular client
+      ]
+
+      const result = computeIncomeSummary(
+        clients,
+        packages,
+        sessions,
+        [],
+        [],
+        1,
+        sessions,
+        DEFAULT_INCOME_RATES,
+      )
+
+      // 2 classes total = 46% base rate
+      // Personal client: $150 * 0.56 = $84
+      // Regular client: $150 * 0.46 = $69
+      // Total: $153
+      expect(result.totalClassesThisWeek).toBe(2)
+      expect(result.finalWeeklyIncome).toBe(153)
+    })
+
+    it('applies personal client bonus to backfill adjustment', () => {
+      // Personal client with backfilled session
+      const clients = [createClient(1, 'Alice', 1, 1, true)]
+      const pkg = createPackage(1, 1, 1, 14, '2025-01-06')
+      const backfilledSession = createSession(1, 1, 1, 1, '2025-01-01')
+
+      const result = computeIncomeSummary(
+        clients,
+        [pkg],
+        [], // No sessions this week
+        [pkg], // Package purchased this week
+        [],
+        1,
+        [backfilledSession],
+        DEFAULT_INCOME_RATES,
+      )
+
+      // Tier 1 client, 14 sessions = $140/class
+      // Single-class rate = $150
+      // Diff = $10 * (0.46 + 0.10) = $10 * 0.56 = $5.60
+      expect(result.backfillAdjustment).toBeCloseTo(5.6, 2)
     })
   })
 })

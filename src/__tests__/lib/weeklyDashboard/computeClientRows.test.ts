@@ -20,6 +20,7 @@ describe('computeClientRows', () => {
     createdAt: '2025-01-01',
     isActive: true,
     location: 'west',
+    isPersonalClient: false,
   })
 
   const createPackage = (

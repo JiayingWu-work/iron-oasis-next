@@ -88,6 +88,7 @@ export function useWeeklyState(
             createdAt: c.created_at,
             isActive: c.is_active ?? true,
             location: (c.location ?? 'west') as Location,
+            isPersonalClient: c.is_personal_client ?? false,
           })),
         )
 
