@@ -5,6 +5,12 @@ import type { Client, Trainer, TrainingMode, Location } from '@/types'
 import { Modal, FormField, Select, SearchableSelect } from '@/components'
 import styles from './EditClientForm.module.css'
 
+interface PricingRow {
+  tier: number
+  sessions_min: number
+  price: number
+}
+
 interface EditClientFormProps {
   isOpen: boolean
   onClose: () => void
@@ -20,18 +26,26 @@ export default function EditClientForm({
 }: EditClientFormProps) {
   const [clients, setClients] = useState<Client[]>([])
   const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [pricingData, setPricingData] = useState<PricingRow[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedClientId, setSelectedClientId] = useState<number | ''>('')
   const [name, setName] = useState('')
   const [mode, setMode] = useState<TrainingMode>('1v1')
   const [originalMode, setOriginalMode] = useState<TrainingMode>('1v1')
   const [primaryTrainerId, setPrimaryTrainerId] = useState<number | ''>('')
+  const [originalTrainerId, setOriginalTrainerId] = useState<number | ''>('')
   const [secondaryTrainerId, setSecondaryTrainerId] = useState<number | ''>('')
   const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<ReactNode>(null)
+  // Special pricing state
+  const [specialPricing, setSpecialPricing] = useState(false)
+  const [customPrice1_12, setCustomPrice1_12] = useState('')
+  const [customPrice13_20, setCustomPrice13_20] = useState('')
+  const [customPrice21Plus, setCustomPrice21Plus] = useState('')
+  const [customModePremium, setCustomModePremium] = useState('')
 
-  // Fetch clients and trainers when modal opens
+  // Fetch clients, trainers, and pricing when modal opens
   useEffect(() => {
     if (!isOpen) return
 
@@ -41,14 +55,19 @@ export default function EditClientForm({
       fetch('/api/trainers').then((res) =>
         res.ok ? res.json().then((d) => d.trainers || []) : [],
       ),
+      fetch('/api/pricing').then((res) =>
+        res.ok ? res.json().then((d) => d.pricing || []) : [],
+      ),
     ])
-      .then(([clientsData, trainersData]) => {
+      .then(([clientsData, trainersData, pricing]) => {
         setClients(clientsData)
         setTrainers(trainersData)
+        setPricingData(pricing)
       })
       .catch(() => {
         setClients([])
         setTrainers([])
+        setPricingData([])
       })
       .finally(() => setLoading(false))
   }, [isOpen])
@@ -61,9 +80,15 @@ export default function EditClientForm({
       setMode('1v1')
       setOriginalMode('1v1')
       setPrimaryTrainerId('')
+      setOriginalTrainerId('')
       setSecondaryTrainerId('')
       setLocation('west')
       setError(null)
+      setSpecialPricing(false)
+      setCustomPrice1_12('')
+      setCustomPrice13_20('')
+      setCustomPrice21Plus('')
+      setCustomModePremium('')
     }
   }, [isOpen])
 
@@ -74,8 +99,14 @@ export default function EditClientForm({
       setMode('1v1')
       setOriginalMode('1v1')
       setPrimaryTrainerId('')
+      setOriginalTrainerId('')
       setSecondaryTrainerId('')
       setLocation('west')
+      setSpecialPricing(false)
+      setCustomPrice1_12('')
+      setCustomPrice13_20('')
+      setCustomPrice21Plus('')
+      setCustomModePremium('')
       return
     }
 
@@ -86,8 +117,21 @@ export default function EditClientForm({
       setMode(clientMode)
       setOriginalMode(clientMode)
       setPrimaryTrainerId(client.trainerId)
+      setOriginalTrainerId(client.trainerId)
       setSecondaryTrainerId(client.secondaryTrainerId ?? '')
       setLocation(client.location ?? 'west')
+
+      // Pre-populate pricing fields with client's current prices
+      if (client.price1_12 !== undefined) {
+        setCustomPrice1_12(String(client.price1_12))
+        setCustomPrice13_20(String(client.price13_20))
+        setCustomPrice21Plus(String(client.price21Plus))
+      }
+
+      // Pre-populate mode premium for 1v2 clients
+      if (client.modePremium !== undefined) {
+        setCustomModePremium(String(client.modePremium))
+      }
     }
   }, [selectedClientId, clients])
 
@@ -133,7 +177,7 @@ export default function EditClientForm({
     if (originalMode === '1v1' && mode === '1v2') {
       return [
         <>
-          For 1v2 clients, use name e.g. <strong>Alex Smith/Jamie Lee</strong>
+          For 1v2 clients, use name e.g. <strong>Alex Smith / Jamie Lee</strong>
         </>,
         'Session pricing will be updated to semi-private rates',
       ]
@@ -150,7 +194,7 @@ export default function EditClientForm({
 
     if ((originalMode === '1v1' || originalMode === '1v2') && mode === '2v2') {
       return [
-        <>For 2v2 clients, use name e.g. <strong>Alex Smith+Jamie Lee</strong></>,
+        <>For 2v2 clients, use name e.g. <strong>Alex Smith + Jamie Lee</strong></>,
         'Session pricing will be updated to shared package rates',
       ]
     }
@@ -160,13 +204,65 @@ export default function EditClientForm({
       return [
         mode === '1v1'
           ? <>Update name to single client, e.g. <strong>Alex Smith</strong></>
-          : <>For 1v2 clients, use name e.g. <strong>Alex Smith/Jamie Lee</strong></>,
+          : <>For 1v2 clients, use name e.g. <strong>Alex Smith / Jamie Lee</strong></>,
         `Session pricing will be updated to ${targetDesc} rates`,
       ]
     }
 
     return undefined
   }, [modeTransition, originalMode, mode])
+
+  // Get selected client
+  const selectedClient = useMemo(
+    () => clients.find((c) => c.id === selectedClientId),
+    [clients, selectedClientId],
+  )
+
+  // Get current/original trainer info
+  const currentTrainer = useMemo(
+    () => trainers.find((t) => t.id === originalTrainerId),
+    [trainers, originalTrainerId],
+  )
+
+  // Get new trainer info when transferring
+  const newTrainer = useMemo(
+    () => trainers.find((t) => t.id === primaryTrainerId),
+    [trainers, primaryTrainerId],
+  )
+
+  // Check if this is a trainer transfer (non-2v2 clients only)
+  const isTrainerTransfer = useMemo(() => {
+    if (!originalTrainerId || !primaryTrainerId) return false
+    if (mode === '2v2') return false
+    return originalTrainerId !== primaryTrainerId
+  }, [originalTrainerId, primaryTrainerId, mode])
+
+  // Check if client has custom pricing (different from their tier's default)
+  const hasCustomPricing = useMemo(() => {
+    if (!selectedClient || !currentTrainer || pricingData.length === 0) return false
+
+    const tierPrices = pricingData.filter((p) => p.tier === currentTrainer.tier)
+    if (tierPrices.length === 0) return false
+
+    // Get tier-based prices for comparison
+    const tier1_12 = tierPrices.find((p) => p.sessions_min === 1)?.price
+    const tier13_20 = tierPrices.find((p) => p.sessions_min === 13)?.price
+    const tier21Plus = tierPrices.find((p) => p.sessions_min === 21)?.price
+
+    // Compare client's prices with tier-based prices
+    return (
+      selectedClient.price1_12 !== tier1_12 ||
+      selectedClient.price13_20 !== tier13_20 ||
+      selectedClient.price21Plus !== tier21Plus
+    )
+  }, [selectedClient, currentTrainer, pricingData])
+
+  // Auto-open special pricing when mode changes and client has custom pricing
+  useEffect(() => {
+    if (modeTransition && hasCustomPricing) {
+      setSpecialPricing(true)
+    }
+  }, [modeTransition, hasCustomPricing])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -181,15 +277,21 @@ export default function EditClientForm({
       return
     }
 
-    // Validate name format for semi-private (1v2) - must contain "/"
-    if (mode === '1v2' && !name.includes('/')) {
-      setError(<>For 1v2 (semi-private), client name must include &quot;/&quot; to separate names, e.g. <strong>Alex Smith/Jamie Lee</strong></>)
+    // Validate name format for semi-private (1v2) - must contain " / "
+    if (mode === '1v2' && !name.includes(' / ')) {
+      setError(<>For 1v2 (semi-private), client name must include &quot; / &quot; to separate names, e.g. <strong>Alex Smith / Jamie Lee</strong></>)
       return
     }
 
-    // Validate name format for shared package (2v2) - must contain "+"
-    if (mode === '2v2' && !name.includes('+')) {
-      setError(<>For 2v2 (shared package), client name must include &quot;+&quot; between names, e.g. <strong>Alex Smith+Jamie Lee</strong></>)
+    // Validate name format for shared package (2v2) - must contain " + "
+    if (mode === '2v2' && !name.includes(' + ')) {
+      setError(<>For 2v2 (shared package), client name must include &quot; + &quot; between names, e.g. <strong>Alex Smith + Jamie Lee</strong></>)
+      return
+    }
+
+    // Validate name format for private (1v1) - must NOT contain " / " or " + "
+    if (mode === '1v1' && (name.includes(' / ') || name.includes(' + '))) {
+      setError(<>For 1v1 (private), client name must be a single person without &quot; / &quot; or &quot; + &quot;, e.g. <strong>Alex Smith</strong></>)
       return
     }
 
@@ -211,6 +313,26 @@ export default function EditClientForm({
       return
     }
 
+    // Validate special pricing fields if enabled
+    if (specialPricing) {
+      const p1 = parseFloat(customPrice1_12)
+      const p2 = parseFloat(customPrice13_20)
+      const p3 = parseFloat(customPrice21Plus)
+      if (isNaN(p1) || isNaN(p2) || isNaN(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
+        setError('Please enter valid prices for all three tiers')
+        return
+      }
+    }
+
+    // Validate mode premium for 1v2 mode if provided (only when special pricing is open)
+    if (specialPricing && mode === '1v2' && customModePremium !== '') {
+      const mp = parseFloat(customModePremium)
+      if (isNaN(mp) || mp < 0) {
+        setError('Please enter a valid semi-private premium amount')
+        return
+      }
+    }
+
     setSaving(true)
     setError(null)
 
@@ -221,19 +343,42 @@ export default function EditClientForm({
         location: Location
         trainerId?: number
         secondaryTrainerId?: number | null
+        customPricing?: {
+          price1_12: number
+          price13_20: number
+          price21Plus: number
+        }
+        customModePremium?: number
       } = {
         name: name.trim(),
         mode,
         location,
       }
 
-      // Include trainer changes if mode involves trainer updates
+      // Include trainer changes if mode involves trainer updates or transfer
       if (modeTransition === 'add-secondary-trainer') {
         payload.trainerId = primaryTrainerId as number
         payload.secondaryTrainerId = secondaryTrainerId as number
       } else if (modeTransition === 'remove-secondary-trainer') {
         payload.trainerId = primaryTrainerId as number
         payload.secondaryTrainerId = null
+      } else if (isTrainerTransfer) {
+        // Trainer transfer for non-2v2 clients
+        payload.trainerId = primaryTrainerId as number
+      }
+
+      // Include custom pricing if user enabled it
+      if (specialPricing) {
+        payload.customPricing = {
+          price1_12: parseFloat(customPrice1_12),
+          price13_20: parseFloat(customPrice13_20),
+          price21Plus: parseFloat(customPrice21Plus),
+        }
+      }
+
+      // Include custom mode premium for 1v2 mode if provided (only when special pricing is open)
+      if (specialPricing && mode === '1v2' && customModePremium !== '') {
+        payload.customModePremium = parseFloat(customModePremium)
       }
 
       const res = await fetch(`/api/clients/${selectedClientId}`, {
@@ -305,11 +450,21 @@ export default function EditClientForm({
     [],
   )
 
+  const specialPricingValid =
+    !specialPricing ||
+    (customPrice1_12 !== '' &&
+      customPrice13_20 !== '' &&
+      customPrice21Plus !== '' &&
+      !isNaN(parseFloat(customPrice1_12)) &&
+      !isNaN(parseFloat(customPrice13_20)) &&
+      !isNaN(parseFloat(customPrice21Plus)))
+
   const submitDisabled =
     selectedClientId === '' ||
     !name.trim() ||
     (mode === '2v2' && (!primaryTrainerId || !secondaryTrainerId)) ||
-    (modeTransition === 'remove-secondary-trainer' && !primaryTrainerId)
+    (modeTransition === 'remove-secondary-trainer' && !primaryTrainerId) ||
+    !specialPricingValid
 
   return (
     <Modal
@@ -403,6 +558,126 @@ export default function EditClientForm({
               />
             </FormField>
           )}
+
+          {/* Transfer trainer field for non-2v2 clients */}
+          {mode !== '2v2' && !modeTransition && (
+            <FormField label="Trainer">
+              <SearchableSelect
+                value={primaryTrainerId}
+                onChange={(val) => setPrimaryTrainerId(Number(val))}
+                options={primaryTrainerOptions}
+                placeholder="Select trainer..."
+              />
+            </FormField>
+          )}
+
+          {/* Warning for clients with custom pricing being transferred */}
+          {isTrainerTransfer && hasCustomPricing && (
+            <div className={styles.warning}>
+              <strong>Custom pricing detected:</strong> This client has custom pricing (${selectedClient?.price1_12}/${selectedClient?.price13_20}/${selectedClient?.price21Plus} per session).
+              Transferring will reset to the new trainer&apos;s tier pricing unless you override below.
+            </div>
+          )}
+
+          {/* Info for tier change without custom pricing */}
+          {isTrainerTransfer && newTrainer && currentTrainer && newTrainer.tier !== currentTrainer.tier && !hasCustomPricing && (
+            <div className={styles.info}>
+              <strong>Pricing change:</strong> The new trainer (Tier{' '}
+              {newTrainer.tier}) has a {newTrainer.tier > currentTrainer.tier ? 'higher' : 'lower'} rate than the current
+              trainer (Tier {currentTrainer.tier}). New tier pricing will be applied unless you override below.
+            </div>
+          )}
+
+          {/* Warning for mode change with custom pricing */}
+          {modeTransition && hasCustomPricing && (
+            <div className={styles.warning}>
+              <strong>Custom pricing detected:</strong> This client has special pricing. Changing training mode will affect how pricing is applied. Please specify the pricing below.
+            </div>
+          )}
+
+          {/* Special pricing section */}
+          <div className={styles.specialPricingSection}>
+            <button
+              type="button"
+              className={styles.specialPricingToggle}
+              onClick={() => setSpecialPricing(!specialPricing)}
+            >
+              {specialPricing ? '- Hide pricing override' : '+ Override pricing'}
+            </button>
+
+            {specialPricing && (
+              <div className={styles.customPriceFields}>
+                <p className={styles.customPriceHint}>
+                  Override tier-based pricing with custom prices
+                </p>
+                <div className={mode === '1v2' ? styles.priceRowFour : styles.priceRow}>
+                  <FormField label="1-12 sessions">
+                    <div className={styles.priceInputWrapper}>
+                      <span className={styles.dollarSign}>$</span>
+                      <input
+                        type="number"
+                        className={styles.priceInput}
+                        placeholder="140"
+                        value={customPrice1_12}
+                        onChange={(e) => setCustomPrice1_12(e.target.value)}
+                        min="0"
+                        step="1"
+                      />
+                    </div>
+                  </FormField>
+                  <FormField label="13-20 sessions">
+                    <div className={styles.priceInputWrapper}>
+                      <span className={styles.dollarSign}>$</span>
+                      <input
+                        type="number"
+                        className={styles.priceInput}
+                        placeholder="130"
+                        value={customPrice13_20}
+                        onChange={(e) => setCustomPrice13_20(e.target.value)}
+                        min="0"
+                        step="1"
+                      />
+                    </div>
+                  </FormField>
+                  <FormField label="21+ sessions">
+                    <div className={styles.priceInputWrapper}>
+                      <span className={styles.dollarSign}>$</span>
+                      <input
+                        type="number"
+                        className={styles.priceInput}
+                        placeholder="120"
+                        value={customPrice21Plus}
+                        onChange={(e) => setCustomPrice21Plus(e.target.value)}
+                        min="0"
+                        step="1"
+                      />
+                    </div>
+                  </FormField>
+                  {mode === '1v2' && (
+                    <FormField label="Premium">
+                      <div className={styles.priceInputWrapper}>
+                        <span className={styles.dollarSign}>$</span>
+                        <input
+                          type="number"
+                          className={styles.priceInput}
+                          placeholder="20"
+                          value={customModePremium}
+                          onChange={(e) => setCustomModePremium(e.target.value)}
+                          min="0"
+                          step="1"
+                        />
+                      </div>
+                    </FormField>
+                  )}
+                </div>
+                {mode === '1v2' && (
+                  <p className={styles.premiumHint}>
+                    Extra amount charged per session for semi-private training. Default is $20.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </>
       )}
     </Modal>

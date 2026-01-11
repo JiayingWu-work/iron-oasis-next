@@ -28,3 +28,104 @@
   font-size: 0.875rem;
   color: var(--color-text-muted);
 }
+
+.specialPricingSection {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.75rem;
+}
+
+.specialPricingToggle {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: color var(--transition-fast);
+}
+
+.specialPricingToggle:hover {
+  color: var(--color-accent-hover);
+}
+
+.customPriceFields {
+  margin-top: 0.75rem;
+}
+
+.customPriceHint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.75rem 0;
+}
+
+.priceRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.priceRowFour {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.priceRowFour label {
+  font-size: 0.75rem;
+}
+
+.premiumHint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0.5rem 0 0 0;
+}
+
+.priceInputWrapper {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  transition: all var(--transition-fast);
+}
+
+.priceInputWrapper:hover {
+  border-color: var(--color-text-muted);
+}
+
+.priceInputWrapper:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
+}
+
+.dollarSign {
+  padding-left: 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.priceInput {
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.75rem 0.5rem 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  width: 100%;
+  outline: none;
+}
+
+.priceInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Hide number input spinners */
+.priceInput::-webkit-outer-spin-button,
+.priceInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.priceInput[type='number'] {
+  -moz-appearance: textfield;
+}

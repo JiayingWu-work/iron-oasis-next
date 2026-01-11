@@ -10,7 +10,6 @@ import {
   EditClientForm,
   EditTrainerForm,
   PricingTable,
-  TransferClientForm,
   ArchiveClientForm,
   ArchiveTrainerForm,
   UnarchiveClientForm,
@@ -22,7 +21,6 @@ import {
 } from '@/components'
 import {
   ArrowLeft,
-  ArrowLeftRight,
   UserPen,
   UserPlus,
   Archive,
@@ -40,7 +38,6 @@ export default function SettingsPage() {
   const [isAddTrainerOpen, setIsAddTrainerOpen] = useState(false)
   const [isEditClientOpen, setIsEditClientOpen] = useState(false)
   const [isEditTrainerOpen, setIsEditTrainerOpen] = useState(false)
-  const [isTransferClientOpen, setIsTransferClientOpen] = useState(false)
   const [isPricingTableOpen, setIsPricingTableOpen] = useState(false)
   const [isArchiveClientOpen, setIsArchiveClientOpen] = useState(false)
   const [isArchiveTrainerOpen, setIsArchiveTrainerOpen] = useState(false)
@@ -116,14 +113,8 @@ export default function SettingsPage() {
                 onClick={() => setIsAddClientOpen(true)}
               />
               <SettingsCard
-                title="Transfer Client"
-                description="Reassign a client to a different trainer"
-                icon={<ArrowLeftRight size={20} />}
-                onClick={() => setIsTransferClientOpen(true)}
-              />
-              <SettingsCard
                 title="Edit Client"
-                description="Update client name or training mode"
+                description="Update client details, transfer, or adjust pricing"
                 icon={<UserPen size={20} />}
                 onClick={() => setIsEditClientOpen(true)}
               />
@@ -230,17 +221,6 @@ export default function SettingsPage() {
         onClose={() => setIsEditTrainerOpen(false)}
         onSuccess={(trainerName) => {
           showSuccess(`${trainerName} updated successfully`)
-        }}
-        onError={(message) => {
-          showError(message)
-        }}
-      />
-
-      <TransferClientForm
-        isOpen={isTransferClientOpen}
-        onClose={() => setIsTransferClientOpen(false)}
-        onSuccess={(clientName, newTrainerName) => {
-          showSuccess(`${clientName} transferred to ${newTrainerName}`)
         }}
         onError={(message) => {
           showError(message)
