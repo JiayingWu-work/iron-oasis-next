@@ -75,8 +75,14 @@ export async function GET() {
       ORDER BY tier, sessions_min
     `) as PricingRow[]
 
-    // If empty, return defaults
+    // If empty, seed with defaults
     if (rows.length === 0) {
+      for (const row of DEFAULT_PRICING) {
+        await sql`
+          INSERT INTO pricing (tier, sessions_min, sessions_max, price, mode_1v2_premium)
+          VALUES (${row.tier}, ${row.sessions_min}, ${row.sessions_max}, ${row.price}, ${row.mode_1v2_premium})
+        `
+      }
       return NextResponse.json({ pricing: DEFAULT_PRICING })
     }
 
@@ -127,13 +133,16 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    // Update each pricing row
+    // Upsert each pricing row (insert or update)
     for (const row of pricing) {
       await sql`
-        UPDATE pricing
-        SET price = ${row.price},
-            mode_1v2_premium = ${row.mode_1v2_premium ?? 20}
-        WHERE tier = ${row.tier} AND sessions_min = ${row.sessions_min}
+        INSERT INTO pricing (tier, sessions_min, sessions_max, price, mode_1v2_premium)
+        VALUES (${row.tier}, ${row.sessions_min}, ${row.sessions_max}, ${row.price}, ${row.mode_1v2_premium ?? 20})
+        ON CONFLICT (tier, sessions_min)
+        DO UPDATE SET
+          price = EXCLUDED.price,
+          sessions_max = EXCLUDED.sessions_max,
+          mode_1v2_premium = EXCLUDED.mode_1v2_premium
       `
     }
 
