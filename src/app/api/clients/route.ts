@@ -31,6 +31,19 @@ export async function GET(req: NextRequest) {
       `
     }
 
+    // Check if is_personal_client column exists and add it if not
+    const isPersonalClientCheck = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_name = 'clients' AND column_name = 'is_personal_client'
+      ) as exists
+    `
+    if (!isPersonalClientCheck[0]?.exists) {
+      await sql`
+        ALTER TABLE clients ADD COLUMN is_personal_client BOOLEAN NOT NULL DEFAULT false
+      `
+    }
+
     // Check for active filter in query params
     const url = new URL(req.url)
     const activeOnly = url.searchParams.get('active') === 'true'

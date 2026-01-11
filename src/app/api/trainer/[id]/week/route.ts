@@ -66,6 +66,19 @@ export async function GET(req: NextRequest) {
     `
   }
 
+  // Auto-migrate: ensure is_personal_client column exists on clients table
+  const isPersonalClientCheck = await sql`
+    SELECT EXISTS (
+      SELECT FROM information_schema.columns
+      WHERE table_name = 'clients' AND column_name = 'is_personal_client'
+    ) as exists
+  `
+  if (!isPersonalClientCheck[0]?.exists) {
+    await sql`
+      ALTER TABLE clients ADD COLUMN is_personal_client BOOLEAN NOT NULL DEFAULT false
+    `
+  }
+
   // 1) trainer
   const trainerRows = (await sql`
     SELECT id, name, tier
