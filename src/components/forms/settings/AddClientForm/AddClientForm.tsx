@@ -322,7 +322,7 @@ export default function AddClientForm({
         {specialPricing && (
           <div className={styles.customPriceFields}>
             <p className={styles.customPriceHint}>
-              Enter custom prices for this client (overrides tier pricing)
+              Custom prices apply to all historical and future data. To preserve historical pricing, create a new client instead.
             </p>
             <div className={mode === '1v2' ? styles.priceRowFour : styles.priceRow}>
               <FormField label="1-12 sessions">
