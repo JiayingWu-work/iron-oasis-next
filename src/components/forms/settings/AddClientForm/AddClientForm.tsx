@@ -247,6 +247,7 @@ export default function AddClientForm({
           type="checkbox"
           id="personalClient"
           className={styles.checkbox}
+          data-custom-style
           checked={isPersonalClient}
           onChange={(e) => setIsPersonalClient(e.target.checked)}
         />

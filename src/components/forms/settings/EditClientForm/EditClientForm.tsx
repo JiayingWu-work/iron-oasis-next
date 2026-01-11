@@ -513,6 +513,7 @@ export default function EditClientForm({
               type="checkbox"
               id="editPersonalClient"
               className={styles.checkbox}
+              data-custom-style
               checked={isPersonalClient}
               onChange={(e) => setIsPersonalClient(e.target.checked)}
             />
