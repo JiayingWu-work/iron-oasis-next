@@ -27,6 +27,7 @@ export default function AddClientForm({
   const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<ReactNode>(null)
+  const [isPersonalClient, setIsPersonalClient] = useState(false)
   const [specialPricing, setSpecialPricing] = useState(false)
   const [customPrice1_12, setCustomPrice1_12] = useState('')
   const [customPrice13_20, setCustomPrice13_20] = useState('')
@@ -54,6 +55,7 @@ export default function AddClientForm({
       setMode('1v1')
       setLocation('west')
       setError(null)
+      setIsPersonalClient(false)
       setSpecialPricing(false)
       setCustomPrice1_12('')
       setCustomPrice13_20('')
@@ -112,6 +114,7 @@ export default function AddClientForm({
           secondaryTrainerId === '' ? null : secondaryTrainerId,
         mode,
         location,
+        isPersonalClient,
       }
 
       if (specialPricing) {
@@ -238,6 +241,20 @@ export default function AddClientForm({
           onChange={(e) => setName(e.target.value)}
         />
       </FormField>
+
+      <div className={styles.checkboxRow}>
+        <input
+          type="checkbox"
+          id="personalClient"
+          className={styles.checkbox}
+          checked={isPersonalClient}
+          onChange={(e) => setIsPersonalClient(e.target.checked)}
+        />
+        <label htmlFor="personalClient" className={styles.checkboxLabel}>
+          <span className={styles.checkboxLabelText}>Personal client</span>
+          <span className={styles.checkboxHint}>This trainer brought in this client (+10% to their pay rate)</span>
+        </label>
+      </div>
 
       <FormField label="Primary trainer (package owner)">
         {loading ? (

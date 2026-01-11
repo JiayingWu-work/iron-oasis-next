@@ -104,6 +104,7 @@ export function useWeeklyDashboardData({
       weeklySessions,
       weeklyPackages,
       weeklyLateFees,
+      selectedTrainer.id,
       incomeRates,
     )
 

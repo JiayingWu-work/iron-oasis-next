@@ -68,6 +68,12 @@ export async function POST() {
       )
     `;
 
+    // Add is_personal_client column to clients table (trainer brought in this client, +10% pay rate bonus)
+    await sql`
+      ALTER TABLE clients
+      ADD COLUMN IF NOT EXISTS is_personal_client BOOLEAN NOT NULL DEFAULT false
+    `;
+
     return NextResponse.json({
       success: true,
       message: 'Database setup completed successfully'

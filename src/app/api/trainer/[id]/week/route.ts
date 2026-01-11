@@ -104,7 +104,8 @@ export async function GET(req: NextRequest) {
             mode_premium,
             created_at,
             is_active,
-            location
+            location,
+            COALESCE(is_personal_client, false) as is_personal_client
     FROM clients
     WHERE trainer_id = ${trainerId}
         OR secondary_trainer_id = ${trainerId}

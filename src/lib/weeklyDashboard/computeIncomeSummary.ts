@@ -31,6 +31,9 @@ function getRateForSessionDate(
   return getRateForClassCount(incomeRates, sessionsInWeek.length)
 }
 
+// Personal client bonus: 10% added to trainer's rate when client is personal
+const PERSONAL_CLIENT_BONUS = 0.10
+
 export function computeIncomeSummary(
   clients: Client[],
   packages: Package[],
@@ -45,7 +48,8 @@ export function computeIncomeSummary(
   const rate = getRateForClassCount(incomeRates, totalClassesThisWeek)
 
   // ----- 1) Normal weekly class income -----
-  const grossWeeklyAmount = weeklySessions.reduce((sum, s) => {
+  // Now calculated per-session to account for personal client bonus
+  const classIncome = weeklySessions.reduce((sum, s) => {
     const directPkg = s.packageId
       ? packages.find((p) => p.id === s.packageId)
       : undefined
@@ -74,10 +78,13 @@ export function computeIncomeSummary(
       pricePerClass = getClientPricePerClass(client, 1, mode)
     }
 
-    return sum + pricePerClass
-  }, 0)
+    // Apply personal client bonus: if the client is a personal client
+    // and the trainer is the primary trainer (package owner), add 10% to rate
+    const isPersonalClientSession = client.isPersonalClient && client.trainerId === trainerId
+    const effectiveRate = isPersonalClientSession ? rate + PERSONAL_CLIENT_BONUS : rate
 
-  const classIncome = grossWeeklyAmount * rate
+    return sum + (pricePerClass * effectiveRate)
+  }, 0)
 
   // ----- 2) Sales bonus for packages sold by this trainer this week -----
   const bonusIncome = weeklyPackages.reduce((sum, p) => {
@@ -132,8 +139,11 @@ export function computeIncomeSummary(
       if (diffPerClass <= 0) continue
 
       // Deduct trainer share at the ORIGINAL week's rate (when session occurred)
+      // Also apply personal client bonus if applicable
       const originalRate = getRateForSessionDate(s.date, trainerId, allSessions, incomeRates)
-      pkgAdjustment += diffPerClass * originalRate
+      const isPersonalClientSession = client.isPersonalClient && client.trainerId === trainerId
+      const effectiveOriginalRate = isPersonalClientSession ? originalRate + PERSONAL_CLIENT_BONUS : originalRate
+      pkgAdjustment += diffPerClass * effectiveOriginalRate
     }
 
     return sum + pkgAdjustment

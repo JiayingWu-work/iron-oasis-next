@@ -38,6 +38,8 @@ export default function EditClientForm({
   const [location, setLocation] = useState<Location>('west')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<ReactNode>(null)
+  // Personal client state
+  const [isPersonalClient, setIsPersonalClient] = useState(false)
   // Special pricing state
   const [specialPricing, setSpecialPricing] = useState(false)
   const [customPrice1_12, setCustomPrice1_12] = useState('')
@@ -84,6 +86,7 @@ export default function EditClientForm({
       setSecondaryTrainerId('')
       setLocation('west')
       setError(null)
+      setIsPersonalClient(false)
       setSpecialPricing(false)
       setCustomPrice1_12('')
       setCustomPrice13_20('')
@@ -102,6 +105,7 @@ export default function EditClientForm({
       setOriginalTrainerId('')
       setSecondaryTrainerId('')
       setLocation('west')
+      setIsPersonalClient(false)
       setSpecialPricing(false)
       setCustomPrice1_12('')
       setCustomPrice13_20('')
@@ -120,6 +124,7 @@ export default function EditClientForm({
       setOriginalTrainerId(client.trainerId)
       setSecondaryTrainerId(client.secondaryTrainerId ?? '')
       setLocation(client.location ?? 'west')
+      setIsPersonalClient(client.isPersonalClient ?? false)
 
       // Pre-populate pricing fields with client's current prices
       if (client.price1_12 !== undefined) {
@@ -343,6 +348,7 @@ export default function EditClientForm({
         location: Location
         trainerId?: number
         secondaryTrainerId?: number | null
+        isPersonalClient: boolean
         customPricing?: {
           price1_12: number
           price13_20: number
@@ -353,6 +359,7 @@ export default function EditClientForm({
         name: name.trim(),
         mode,
         location,
+        isPersonalClient,
       }
 
       // Include trainer changes if mode involves trainer updates or transfer
@@ -500,6 +507,20 @@ export default function EditClientForm({
               onChange={(e) => setName(e.target.value)}
             />
           </FormField>
+
+          <div className={styles.checkboxRow}>
+            <input
+              type="checkbox"
+              id="editPersonalClient"
+              className={styles.checkbox}
+              checked={isPersonalClient}
+              onChange={(e) => setIsPersonalClient(e.target.checked)}
+            />
+            <label htmlFor="editPersonalClient" className={styles.checkboxLabel}>
+              <span className={styles.checkboxLabelText}>Personal client</span>
+              <span className={styles.checkboxHint}>This trainer brought in this client (+10% to their pay rate)</span>
+            </label>
+          </div>
 
           <FormField label="Training mode">
             <Select

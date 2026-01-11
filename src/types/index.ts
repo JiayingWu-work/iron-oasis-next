@@ -26,6 +26,7 @@ export interface Client {
   createdAt: string
   isActive: boolean
   location: Location
+  isPersonalClient: boolean // If true, trainer gets +10% on their pay rate for this client
 }
 
 export interface Package {
