@@ -65,3 +65,14 @@ export interface IncomeRate {
   maxClasses: number | null
   rate: number
 }
+
+export interface ClientPriceHistory {
+  id: number
+  clientId: number
+  effectiveDate: string
+  price1_12: number
+  price13_20: number
+  price21Plus: number
+  modePremium: number
+  reason: string | null
+}

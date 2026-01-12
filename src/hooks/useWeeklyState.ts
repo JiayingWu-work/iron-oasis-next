@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import type { Client, Session, Package, Trainer, LateFee, Location, IncomeRate } from '@/types'
+import type { Client, Session, Package, Trainer, LateFee, Location, IncomeRate, ClientPriceHistory } from '@/types'
 import { getWeekRange } from '@/lib/date'
 import {
   ApiClient,
@@ -7,6 +7,7 @@ import {
   ApiSession,
   ApiLateFee,
   ApiIncomeRate,
+  ApiClientPriceHistory,
   TrainerWeekResponse,
 } from '@/types/api'
 
@@ -18,6 +19,7 @@ export type TrainerWeekState = {
   sessions: Session[]
   lateFees: LateFee[]
   incomeRates: IncomeRate[]
+  clientPriceHistory: ClientPriceHistory[]
   isLoading: boolean
   setWeekStart: Dispatch<SetStateAction<string>>
   setWeekEnd: Dispatch<SetStateAction<string>>
@@ -26,6 +28,7 @@ export type TrainerWeekState = {
   setSessions: Dispatch<SetStateAction<Session[]>>
   setLateFees: Dispatch<SetStateAction<LateFee[]>>
   setIncomeRates: Dispatch<SetStateAction<IncomeRate[]>>
+  setClientPriceHistory: Dispatch<SetStateAction<ClientPriceHistory[]>>
 }
 
 export function useWeeklyState(
@@ -43,6 +46,7 @@ export function useWeeklyState(
   const [sessions, setSessions] = useState<Session[]>([])
   const [lateFees, setLateFees] = useState<LateFee[]>([])
   const [incomeRates, setIncomeRates] = useState<IncomeRate[]>([])
+  const [clientPriceHistory, setClientPriceHistory] = useState<ClientPriceHistory[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
@@ -140,6 +144,19 @@ export function useWeeklyState(
           })),
         )
 
+        setClientPriceHistory(
+          (data.clientPriceHistory ?? ([] as ApiClientPriceHistory[])).map((h) => ({
+            id: h.id,
+            clientId: h.client_id,
+            effectiveDate: h.effective_date.slice(0, 10),
+            price1_12: Number(h.price_1_12),
+            price13_20: Number(h.price_13_20),
+            price21Plus: Number(h.price_21_plus),
+            modePremium: Number(h.mode_premium),
+            reason: h.reason,
+          })),
+        )
+
         setIsLoading(false)
       } catch (error) {
         // Ignore abort errors - they're expected when trainer changes
@@ -164,6 +181,7 @@ export function useWeeklyState(
     sessions,
     lateFees,
     incomeRates,
+    clientPriceHistory,
     isLoading,
     setWeekStart,
     setWeekEnd,
@@ -172,5 +190,6 @@ export function useWeeklyState(
     setSessions,
     setLateFees,
     setIncomeRates,
+    setClientPriceHistory,
   }
 }

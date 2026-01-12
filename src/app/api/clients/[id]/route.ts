@@ -51,6 +51,7 @@ export async function PATCH(
     const personalClientValue = typeof isPersonalClient === 'boolean' ? isPersonalClient : undefined
 
     let row: ClientRow
+    let tierChangedDueToTransfer = false // Track if tier changed due to trainer transfer
 
     // If trainer IDs are provided, check if trainer is changing
     if (trainerId !== undefined) {
@@ -64,85 +65,123 @@ export async function PATCH(
 
       // Check if primary trainer is changing
       const [existingClient] = (await sql`
-        SELECT trainer_id FROM clients WHERE id = ${clientId}
-      `) as { trainer_id: number }[]
+        SELECT trainer_id, tier_at_signup FROM clients WHERE id = ${clientId}
+      `) as { trainer_id: number; tier_at_signup: number }[]
 
       const trainerChanged = primaryId !== null && primaryId !== existingClient?.trainer_id
+      const oldTier = existingClient?.tier_at_signup ?? 1
 
       if (trainerChanged && primaryId !== null) {
-        // Trainer is changing - check if custom pricing is provided
+        // Trainer is changing - check if tier is changing
         const [newTrainer] = (await sql`
           SELECT tier FROM trainers WHERE id = ${primaryId}
         `) as { tier: number }[]
 
         const newTier = (newTrainer?.tier ?? 1) as 1 | 2 | 3
+        const tierChanged = newTier !== oldTier
 
-        // Use custom pricing if provided, otherwise use tier-based pricing
-        let pricingToUse: { price1_12: number; price13_20: number; price21Plus: number; modePremium: number } =
-          await getPricingSnapshotForTier(newTier)
+        // Check if custom pricing is provided
+        const hasCustomPricing = customPricing && typeof customPricing === 'object'
+        const hasCustomModePremium = typeof customModePremium === 'number' && customModePremium >= 0
 
-        if (customPricing && typeof customPricing === 'object') {
-          const { price1_12, price13_20, price21Plus } = customPricing
-          if (
-            typeof price1_12 === 'number' && price1_12 > 0 &&
-            typeof price13_20 === 'number' && price13_20 > 0 &&
-            typeof price21Plus === 'number' && price21Plus > 0
-          ) {
+        if (tierChanged || hasCustomPricing || hasCustomModePremium) {
+          // Tier changed OR custom pricing provided - update pricing
+          let pricingToUse: { price1_12: number; price13_20: number; price21Plus: number; modePremium: number } =
+            await getPricingSnapshotForTier(newTier)
+
+          if (hasCustomPricing) {
+            const { price1_12, price13_20, price21Plus } = customPricing
+            if (
+              typeof price1_12 === 'number' && price1_12 > 0 &&
+              typeof price13_20 === 'number' && price13_20 > 0 &&
+              typeof price21Plus === 'number' && price21Plus > 0
+            ) {
+              pricingToUse = {
+                ...pricingToUse,
+                price1_12,
+                price13_20,
+                price21Plus,
+              }
+            } else {
+              return NextResponse.json({ error: 'Invalid custom pricing values' }, { status: 400 })
+            }
+          }
+
+          if (hasCustomModePremium) {
             pricingToUse = {
               ...pricingToUse,
-              price1_12,
-              price13_20,
-              price21Plus,
+              modePremium: customModePremium,
             }
-          } else {
-            return NextResponse.json({ error: 'Invalid custom pricing values' }, { status: 400 })
           }
+
+          const [result] = validLocation
+            ? (await sql`
+                UPDATE clients
+                SET
+                  name = ${name.trim()},
+                  mode = ${trainingMode},
+                  trainer_id = ${primaryId},
+                  secondary_trainer_id = ${secondaryId},
+                  tier_at_signup = ${newTier},
+                  price_1_12 = ${pricingToUse.price1_12},
+                  price_13_20 = ${pricingToUse.price13_20},
+                  price_21_plus = ${pricingToUse.price21Plus},
+                  mode_premium = ${pricingToUse.modePremium},
+                  location = ${validLocation}
+                WHERE id = ${clientId}
+                RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                          tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+              `) as ClientRow[]
+            : (await sql`
+                UPDATE clients
+                SET
+                  name = ${name.trim()},
+                  mode = ${trainingMode},
+                  trainer_id = ${primaryId},
+                  secondary_trainer_id = ${secondaryId},
+                  tier_at_signup = ${newTier},
+                  price_1_12 = ${pricingToUse.price1_12},
+                  price_13_20 = ${pricingToUse.price13_20},
+                  price_21_plus = ${pricingToUse.price21Plus},
+                  mode_premium = ${pricingToUse.modePremium}
+                WHERE id = ${clientId}
+                RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                          tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+              `) as ClientRow[]
+
+          row = result
+          // Track if tier changed (for price history update)
+          tierChangedDueToTransfer = tierChanged
+        } else {
+          // Same tier, no custom pricing - just update trainer, keep existing pricing
+          const [result] = validLocation
+            ? (await sql`
+                UPDATE clients
+                SET
+                  name = ${name.trim()},
+                  mode = ${trainingMode},
+                  trainer_id = ${primaryId},
+                  secondary_trainer_id = ${secondaryId},
+                  location = ${validLocation}
+                WHERE id = ${clientId}
+                RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                          tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+              `) as ClientRow[]
+            : (await sql`
+                UPDATE clients
+                SET
+                  name = ${name.trim()},
+                  mode = ${trainingMode},
+                  trainer_id = ${primaryId},
+                  secondary_trainer_id = ${secondaryId}
+                WHERE id = ${clientId}
+                RETURNING id, name, trainer_id, secondary_trainer_id, mode,
+                          tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
+              `) as ClientRow[]
+
+          row = result
+          // No tier change, no pricing update needed
         }
-
-        // Override mode premium if custom value is provided
-        if (typeof customModePremium === 'number' && customModePremium >= 0) {
-          pricingToUse = {
-            ...pricingToUse,
-            modePremium: customModePremium,
-          }
-        }
-
-        const [result] = validLocation
-          ? (await sql`
-              UPDATE clients
-              SET
-                name = ${name.trim()},
-                mode = ${trainingMode},
-                trainer_id = ${primaryId},
-                secondary_trainer_id = ${secondaryId},
-                tier_at_signup = ${newTier},
-                price_1_12 = ${pricingToUse.price1_12},
-                price_13_20 = ${pricingToUse.price13_20},
-                price_21_plus = ${pricingToUse.price21Plus},
-                mode_premium = ${pricingToUse.modePremium},
-                location = ${validLocation}
-              WHERE id = ${clientId}
-              RETURNING id, name, trainer_id, secondary_trainer_id, mode,
-                        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
-            `) as ClientRow[]
-          : (await sql`
-              UPDATE clients
-              SET
-                name = ${name.trim()},
-                mode = ${trainingMode},
-                trainer_id = ${primaryId},
-                secondary_trainer_id = ${secondaryId},
-                tier_at_signup = ${newTier},
-                price_1_12 = ${pricingToUse.price1_12},
-                price_13_20 = ${pricingToUse.price13_20},
-                price_21_plus = ${pricingToUse.price21Plus},
-                mode_premium = ${pricingToUse.modePremium}
-              WHERE id = ${clientId}
-              RETURNING id, name, trainer_id, secondary_trainer_id, mode,
-                        tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, location
-            `) as ClientRow[]
-
-        row = result
       } else if (customPricing && typeof customPricing === 'object' || typeof customModePremium === 'number') {
         // No trainer change but custom pricing or mode premium provided
         const price1_12 = customPricing?.price1_12
@@ -391,6 +430,24 @@ export async function PATCH(
         RETURNING is_personal_client
       `) as { is_personal_client: boolean }[]
       finalIsPersonalClient = updatedRow?.is_personal_client ?? personalClientValue
+    }
+
+    // If pricing was updated (custom pricing or tier changed due to transfer), insert a new entry into client_price_history
+    // Use NOW() timestamp - each entry has a unique timestamp so no conflicts
+    const pricingWasUpdated = (customPricing && typeof customPricing === 'object') || typeof customModePremium === 'number'
+    const shouldUpdatePriceHistory = pricingWasUpdated || tierChangedDueToTransfer
+    if (shouldUpdatePriceHistory) {
+      try {
+        const reason = pricingWasUpdated ? 'price_update' : 'tier_change'
+
+        await sql`
+          INSERT INTO client_price_history (client_id, effective_date, price_1_12, price_13_20, price_21_plus, mode_premium, reason)
+          VALUES (${clientId}, NOW(), ${Number(row.price_1_12)}, ${Number(row.price_13_20)}, ${Number(row.price_21_plus)}, ${Number(row.mode_premium)}, ${reason})
+        `
+      } catch (err) {
+        // Table might not exist yet - that's OK
+        console.warn('Could not insert into client_price_history:', err)
+      }
     }
 
     return NextResponse.json({

@@ -6,9 +6,10 @@ import type {
   TrainingMode,
   IncomeRate,
   Trainer,
+  ClientPriceHistory,
 } from '@/types'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
-import { getClientPricePerClass } from '@/lib/pricing'
+import { getClientPricePerClass, buildPriceHistoryLookup, getClientPricePerClassWithHistory } from '@/lib/pricing'
 import { getRateForClassCount } from '@/lib/incomeRates'
 
 // Personal client bonus: 10% added to trainer's rate when client is personal
@@ -22,15 +23,29 @@ export function computeBreakdownRows(
   weeklyLateFees: LateFee[],
   trainerId: Trainer['id'],
   incomeRates?: IncomeRate[],
+  clientPriceHistory?: ClientPriceHistory[],
 ): WeeklyBreakdownRow[] {
   const totalClassesThisWeek = weeklySessions.length
   const rate = getRateForClassCount(incomeRates, totalClassesThisWeek)
 
+  // Build price history lookup map for date-aware pricing
+  const priceHistoryLookup = clientPriceHistory
+    ? buildPriceHistoryLookup(clientPriceHistory)
+    : new Map<number, ClientPriceHistory[]>()
+
   const weeklyPackageRows: WeeklyBreakdownRow[] = weeklyPackages.map((p) => {
     const client = clients.find((c) => c.id === p.clientId)
     const mode: TrainingMode = p.mode ?? client?.mode ?? '1v1'
+    // Use date-aware pricing for package display
     const pricePerClass = client
-      ? getClientPricePerClass(client, p.sessionsPurchased, mode)
+      ? getClientPricePerClassWithHistory(
+          client.id,
+          p.startDate,
+          priceHistoryLookup,
+          client,
+          p.sessionsPurchased,
+          mode,
+        )
       : 0
     const totalSale = pricePerClass * p.sessionsPurchased
 
@@ -72,7 +87,11 @@ export function computeBreakdownRows(
 
     if (client) {
       if (directPkg && !isPrePackageSession) {
-        pricePerClass = getClientPricePerClass(
+        // Use date-aware pricing based on session date
+        pricePerClass = getClientPricePerClassWithHistory(
+          client.id,
+          s.date,
+          priceHistoryLookup,
           client,
           directPkg.sessionsPurchased,
           mode,
@@ -80,7 +99,14 @@ export function computeBreakdownRows(
       } else {
         // No packageId: always treat as pure drop-in at the single-class rate.
         mode = s.mode ?? client?.mode ?? '1v1'
-        pricePerClass = getClientPricePerClass(client, 1, mode)
+        pricePerClass = getClientPricePerClassWithHistory(
+          client.id,
+          s.date,
+          priceHistoryLookup,
+          client,
+          1,
+          mode,
+        )
       }
     }
 

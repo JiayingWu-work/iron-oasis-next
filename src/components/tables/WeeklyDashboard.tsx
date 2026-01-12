@@ -1,4 +1,4 @@
-import type { Client, Session, Package, Trainer, LateFee, IncomeRate } from '../../types'
+import type { Client, Session, Package, Trainer, LateFee, IncomeRate, ClientPriceHistory } from '../../types'
 import { useWeeklyDashboardData } from '@/hooks/useWeeklyDashboardData'
 import {
   WeeklyBreakdownTable,
@@ -14,6 +14,7 @@ export interface WeeklyDashboardProps {
   sessions: Session[]
   lateFees: LateFee[]
   incomeRates: IncomeRate[]
+  clientPriceHistory?: ClientPriceHistory[]
   weekStart: string
   weekEnd: string
   selectedTrainer: Trainer
@@ -31,6 +32,7 @@ export default function WeeklyDashboard({
   sessions,
   lateFees,
   incomeRates,
+  clientPriceHistory,
   weekStart,
   weekEnd,
   selectedTrainer,
@@ -47,6 +49,7 @@ export default function WeeklyDashboard({
     sessions,
     lateFees,
     incomeRates,
+    clientPriceHistory,
     weekStart,
     weekEnd,
     selectedTrainer,

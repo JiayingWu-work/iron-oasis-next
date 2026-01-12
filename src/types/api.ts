@@ -58,6 +58,17 @@ export type ApiIncomeRate = {
   rate: string // DECIMAL comes as string from DB
 }
 
+export type ApiClientPriceHistory = {
+  id: number
+  client_id: number
+  effective_date: string
+  price_1_12: number
+  price_13_20: number
+  price_21_plus: number
+  mode_premium: number
+  reason: string | null
+}
+
 export type TrainerWeekResponse = {
   trainer: {
     id: number
@@ -69,6 +80,7 @@ export type TrainerWeekResponse = {
   sessions: ApiSession[]
   lateFees: ApiLateFee[]
   incomeRates: ApiIncomeRate[]
+  clientPriceHistory?: ApiClientPriceHistory[] // Optional for backwards compatibility
   weekStart: string
   weekEnd: string
 }
