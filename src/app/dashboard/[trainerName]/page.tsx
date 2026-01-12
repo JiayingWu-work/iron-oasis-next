@@ -132,6 +132,7 @@ export default function TrainerDashboard() {
     sessions,
     lateFees,
     incomeRates,
+    clientPriceHistory,
     isLoading: isWeeklyDataLoading,
     setPackages,
     setSessions,
@@ -229,6 +230,7 @@ export default function TrainerDashboard() {
                   sessions={sessions}
                   lateFees={lateFees}
                   incomeRates={incomeRates}
+                  clientPriceHistory={clientPriceHistory}
                   weekStart={weekStart}
                   weekEnd={weekEnd}
                   selectedTrainer={selectedTrainer}

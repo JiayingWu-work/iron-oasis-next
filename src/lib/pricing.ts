@@ -16,6 +16,23 @@ export interface ClientPricing {
   modePremium: number
 }
 
+/** Price history entry for a client */
+export interface ClientPriceHistory {
+  id: number
+  clientId: number
+  effectiveDate: string
+  price1_12: number
+  price13_20: number
+  price21Plus: number
+  modePremium: number
+  reason: string | null
+}
+
+// In-memory cache for client price history (keyed by clientId)
+const priceHistoryCache: Map<number, ClientPriceHistory[]> = new Map()
+let priceHistoryCacheTimestamp: number = 0
+const PRICE_HISTORY_CACHE_TTL = 60000 // 1 minute cache
+
 // Default pricing values (used as fallback)
 const DEFAULT_PRICING: PricingRow[] = [
   { tier: 1, sessions_min: 1, sessions_max: 12, price: 150, mode_1v2_premium: 20 },
@@ -261,4 +278,277 @@ export async function getPricingSnapshotForTier(
   const modePremium = tierRow?.mode_1v2_premium ?? 20
 
   return { price1_12, price13_20, price21Plus, modePremium }
+}
+
+// ============================================================================
+// Client Price History Functions (for historical pricing lookups)
+// ============================================================================
+
+// Business timezone for price history comparisons (Eastern Time)
+const BUSINESS_TIMEZONE = 'America/New_York'
+
+/**
+ * Convert a UTC timestamp to a date string (YYYY-MM-DD) in Eastern Time.
+ * This is used to compare price history effective dates against session dates.
+ */
+function getEasternDateFromTimestamp(timestamp: string): string {
+  const date = new Date(timestamp)
+  // 'en-CA' locale gives YYYY-MM-DD format
+  return date.toLocaleDateString('en-CA', { timeZone: BUSINESS_TIMEZONE })
+}
+
+/**
+ * Load all price history for multiple clients (batch loading for efficiency)
+ * Called at the start of income calculations to preload cache
+ */
+export async function preloadClientPriceHistory(clientIds: number[]): Promise<void> {
+  if (clientIds.length === 0) return
+
+  const now = Date.now()
+
+  // Check if cache is still valid
+  if (now - priceHistoryCacheTimestamp < PRICE_HISTORY_CACHE_TTL) {
+    // Check if all requested clients are in cache
+    const allCached = clientIds.every(id => priceHistoryCache.has(id))
+    if (allCached) return
+  }
+
+  try {
+    const { sql } = await import('@/lib/db')
+
+    const rows = await sql`
+      SELECT id, client_id, effective_date, price_1_12, price_13_20, price_21_plus, mode_premium, reason
+      FROM client_price_history
+      WHERE client_id = ANY(${clientIds})
+      ORDER BY client_id, effective_date DESC
+    ` as {
+      id: number
+      client_id: number
+      effective_date: string
+      price_1_12: number
+      price_13_20: number
+      price_21_plus: number
+      mode_premium: number
+      reason: string | null
+    }[]
+
+    // Group by client ID and update cache
+    const grouped: Map<number, ClientPriceHistory[]> = new Map()
+    for (const row of rows) {
+      const entry: ClientPriceHistory = {
+        id: row.id,
+        clientId: row.client_id,
+        effectiveDate: row.effective_date,
+        price1_12: Number(row.price_1_12),
+        price13_20: Number(row.price_13_20),
+        price21Plus: Number(row.price_21_plus),
+        modePremium: Number(row.mode_premium),
+        reason: row.reason,
+      }
+
+      if (!grouped.has(row.client_id)) {
+        grouped.set(row.client_id, [])
+      }
+      grouped.get(row.client_id)!.push(entry)
+    }
+
+    // Update cache
+    for (const [clientId, history] of grouped) {
+      priceHistoryCache.set(clientId, history)
+    }
+
+    // Mark clients with no history (they'll fall back to client record)
+    for (const clientId of clientIds) {
+      if (!grouped.has(clientId)) {
+        priceHistoryCache.set(clientId, [])
+      }
+    }
+
+    priceHistoryCacheTimestamp = now
+  } catch (err) {
+    console.error('Failed to preload client price history:', err)
+    // Don't throw - we'll fall back to client records
+  }
+}
+
+/**
+ * Get the pricing that was effective for a client at a specific date.
+ * Uses cache if available, otherwise falls back to client record.
+ *
+ * @param clientId - The client ID
+ * @param date - The date to get pricing for (YYYY-MM-DD)
+ * @param clientFallback - The client object to fall back to if no history found
+ * @returns ClientPricing object
+ */
+export function getClientPricingAtDate(
+  clientId: number,
+  date: string,
+  clientFallback: Client | ClientPricing,
+): ClientPricing {
+  const history = priceHistoryCache.get(clientId)
+
+  if (history && history.length > 0) {
+    // Find the most recent entry that's on or before the given date in Eastern Time
+    // History is sorted by effective_date DESC
+    // Convert effective_date (UTC) to Eastern Time date for comparison
+
+    for (const entry of history) {
+      const entryEasternDate = getEasternDateFromTimestamp(entry.effectiveDate)
+      if (entryEasternDate <= date) {
+        return {
+          price1_12: entry.price1_12,
+          price13_20: entry.price13_20,
+          price21Plus: entry.price21Plus,
+          modePremium: entry.modePremium,
+        }
+      }
+    }
+
+    // If date is before all history entries, use the oldest entry
+    // (shouldn't happen normally, but safe fallback)
+    const oldest = history[history.length - 1]
+    return {
+      price1_12: oldest.price1_12,
+      price13_20: oldest.price13_20,
+      price21Plus: oldest.price21Plus,
+      modePremium: oldest.modePremium,
+    }
+  }
+
+  // No history in cache - fall back to client record
+  if ('price1_12' in clientFallback) {
+    return {
+      price1_12: clientFallback.price1_12,
+      price13_20: clientFallback.price13_20,
+      price21Plus: clientFallback.price21Plus,
+      modePremium: clientFallback.modePremium,
+    }
+  }
+
+  return clientFallback
+}
+
+/**
+ * Get price per class for a client at a specific date.
+ * This is the date-aware version of getClientPricePerClass.
+ */
+export function getClientPricePerClassAtDate(
+  clientId: number,
+  date: string,
+  clientFallback: Client | ClientPricing,
+  sessionsPurchased: number,
+  mode: TrainingMode = '1v1',
+): number {
+  const pricing = getClientPricingAtDate(clientId, date, clientFallback)
+  return getClientPricePerClass(pricing, sessionsPurchased, mode)
+}
+
+/**
+ * Clear the price history cache (useful for testing or after updates)
+ */
+export function clearPriceHistoryCache(): void {
+  priceHistoryCache.clear()
+  priceHistoryCacheTimestamp = 0
+}
+
+// ============================================================================
+// Client-side pricing lookup (using passed-in price history data)
+// ============================================================================
+
+/**
+ * Build a lookup map from client price history array.
+ * Returns a Map<clientId, ClientPriceHistory[]> with history sorted by effectiveDate DESC.
+ */
+export function buildPriceHistoryLookup(
+  priceHistory: ClientPriceHistory[],
+): Map<number, ClientPriceHistory[]> {
+  const lookup = new Map<number, ClientPriceHistory[]>()
+
+  for (const entry of priceHistory) {
+    if (!lookup.has(entry.clientId)) {
+      lookup.set(entry.clientId, [])
+    }
+    lookup.get(entry.clientId)!.push(entry)
+  }
+
+  // Sort each client's history by effectiveDate DESC
+  for (const [, history] of lookup) {
+    history.sort((a, b) => b.effectiveDate.localeCompare(a.effectiveDate))
+  }
+
+  return lookup
+}
+
+/**
+ * Get the pricing that was effective for a client at a specific date.
+ * Uses the provided lookup map (built from API response).
+ *
+ * @param clientId - The client ID
+ * @param date - The date to get pricing for (YYYY-MM-DD)
+ * @param priceHistoryLookup - Map from buildPriceHistoryLookup
+ * @param clientFallback - The client object to fall back to if no history found
+ * @returns ClientPricing object
+ */
+export function getClientPricingAtDateFromLookup(
+  clientId: number,
+  date: string,
+  priceHistoryLookup: Map<number, ClientPriceHistory[]>,
+  clientFallback: Client | ClientPricing,
+): ClientPricing {
+  const history = priceHistoryLookup.get(clientId)
+
+  if (history && history.length > 0) {
+    // Find the most recent entry that's on or before the given date in Eastern Time
+    // History is sorted by effectiveDate DESC
+    // Convert effective_date (UTC) to Eastern Time date for comparison
+
+    for (const entry of history) {
+      const entryEasternDate = getEasternDateFromTimestamp(entry.effectiveDate)
+      if (entryEasternDate <= date) {
+        return {
+          price1_12: entry.price1_12,
+          price13_20: entry.price13_20,
+          price21Plus: entry.price21Plus,
+          modePremium: entry.modePremium,
+        }
+      }
+    }
+
+    // If date is before all history entries, use the oldest entry
+    const oldest = history[history.length - 1]
+    return {
+      price1_12: oldest.price1_12,
+      price13_20: oldest.price13_20,
+      price21Plus: oldest.price21Plus,
+      modePremium: oldest.modePremium,
+    }
+  }
+
+  // No history found - fall back to client record
+  if ('price1_12' in clientFallback) {
+    return {
+      price1_12: clientFallback.price1_12,
+      price13_20: clientFallback.price13_20,
+      price21Plus: clientFallback.price21Plus,
+      modePremium: clientFallback.modePremium,
+    }
+  }
+
+  return clientFallback
+}
+
+/**
+ * Get price per class for a client at a specific date using a lookup map.
+ * This is the client-side version that uses passed-in price history.
+ */
+export function getClientPricePerClassWithHistory(
+  clientId: number,
+  date: string,
+  priceHistoryLookup: Map<number, ClientPriceHistory[]>,
+  clientFallback: Client | ClientPricing,
+  sessionsPurchased: number,
+  mode: TrainingMode = '1v1',
+): number {
+  const pricing = getClientPricingAtDateFromLookup(clientId, date, priceHistoryLookup, clientFallback)
+  return getClientPricePerClass(pricing, sessionsPurchased, mode)
 }

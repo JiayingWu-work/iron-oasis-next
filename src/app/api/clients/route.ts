@@ -193,6 +193,18 @@ export async function POST(req: NextRequest) {
       is_personal_client: boolean
     }[]
 
+    // Also insert initial pricing into client_price_history table with precise timestamp
+    // This is wrapped in try-catch to not fail client creation if history table doesn't exist yet
+    try {
+      await sql`
+        INSERT INTO client_price_history (client_id, effective_date, price_1_12, price_13_20, price_21_plus, mode_premium, reason)
+        VALUES (${row.id}, ${row.created_at}::timestamptz, ${pricingSnapshot.price1_12}, ${pricingSnapshot.price13_20}, ${pricingSnapshot.price21Plus}, ${pricingSnapshot.modePremium}, 'initial')
+      `
+    } catch (err) {
+      // Table might not exist yet - that's OK, will be created on first GET to /api/client-price-history
+      console.warn('Could not insert into client_price_history (table may not exist yet):', err)
+    }
+
     return NextResponse.json({
       id: row.id,
       name: row.name,

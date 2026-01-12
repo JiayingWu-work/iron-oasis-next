@@ -8,6 +8,7 @@ import type {
   ApiLateFee,
   TrainerWeekResponse,
   ApiIncomeRate,
+  ApiClientPriceHistory,
 } from '@/types/api'
 import { Trainer } from '@/types'
 
@@ -174,6 +175,32 @@ export async function GET(req: NextRequest) {
       AND date BETWEEN ${start} AND ${end}
   `) as ApiLateFee[]
 
+  // 6) client price history for all relevant clients
+  let priceHistoryRows: ApiClientPriceHistory[] = []
+  if (clientIds.length > 0) {
+    try {
+      // Check if table exists first
+      const tableCheck = await sql`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_name = 'client_price_history'
+        ) as exists
+      `
+
+      if (tableCheck[0]?.exists) {
+        priceHistoryRows = (await sql`
+          SELECT id, client_id, effective_date, price_1_12, price_13_20, price_21_plus, mode_premium, reason
+          FROM client_price_history
+          WHERE client_id = ANY(${clientIds})
+          ORDER BY client_id, effective_date DESC
+        `) as ApiClientPriceHistory[]
+      }
+    } catch (err) {
+      // Table might not exist yet - that's OK
+      console.warn('Could not fetch client_price_history:', err)
+    }
+  }
+
   const response: TrainerWeekResponse = {
     trainer,
     clients: clientRows,
@@ -181,6 +208,7 @@ export async function GET(req: NextRequest) {
     sessions: sessionRows,
     lateFees: lateFeeRows,
     incomeRates: incomeRateRows,
+    clientPriceHistory: priceHistoryRows,
     weekStart: start,
     weekEnd: end,
   }

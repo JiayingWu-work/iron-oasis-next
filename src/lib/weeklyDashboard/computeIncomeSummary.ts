@@ -6,9 +6,10 @@ import type {
   TrainingMode,
   Client,
   IncomeRate,
+  ClientPriceHistory,
 } from '@/types'
 import type { WeeklyIncomeSummary } from '@/hooks/useWeeklyDashboardData'
-import { getClientPricePerClass } from '@/lib/pricing'
+import { getClientPricePerClass, buildPriceHistoryLookup, getClientPricePerClassWithHistory } from '@/lib/pricing'
 import { getWeekRange } from '@/lib/date'
 import { getRateForClassCount } from '@/lib/incomeRates'
 
@@ -43,12 +44,18 @@ export function computeIncomeSummary(
   trainerId: Trainer['id'],
   allSessions: Session[],
   incomeRates?: IncomeRate[],
+  clientPriceHistory?: ClientPriceHistory[],
 ): WeeklyIncomeSummary {
   const totalClassesThisWeek = weeklySessions.length
   const rate = getRateForClassCount(incomeRates, totalClassesThisWeek)
 
+  // Build price history lookup map for date-aware pricing
+  const priceHistoryLookup = clientPriceHistory
+    ? buildPriceHistoryLookup(clientPriceHistory)
+    : new Map<number, ClientPriceHistory[]>()
+
   // ----- 1) Normal weekly class income -----
-  // Now calculated per-session to account for personal client bonus
+  // Now calculated per-session to account for personal client bonus and date-aware pricing
   const classIncome = weeklySessions.reduce((sum, s) => {
     const directPkg = s.packageId
       ? packages.find((p) => p.id === s.packageId)
@@ -67,7 +74,11 @@ export function computeIncomeSummary(
 
     if (directPkg && !isPrePackageSession) {
       // Has a concrete package (including rebalanced ones)
-      pricePerClass = getClientPricePerClass(
+      // Use date-aware pricing if history is available
+      pricePerClass = getClientPricePerClassWithHistory(
+        client.id,
+        s.date,
+        priceHistoryLookup,
         client,
         directPkg.sessionsPurchased,
         mode,
@@ -75,7 +86,14 @@ export function computeIncomeSummary(
     } else {
       // No packageId: always treat as pure drop-in at the single-class rate.
       mode = s.mode ?? client?.mode ?? '1v1'
-      pricePerClass = getClientPricePerClass(client, 1, mode)
+      pricePerClass = getClientPricePerClassWithHistory(
+        client.id,
+        s.date,
+        priceHistoryLookup,
+        client,
+        1,
+        mode,
+      )
     }
 
     // Apply personal client bonus: if the client is a personal client
@@ -104,9 +122,12 @@ export function computeIncomeSummary(
     const client = clients.find((c) => c.id === pkg.clientId)
     if (!client) return sum
 
-    // Per-class price for this package
+    // Per-class price for this package (use date-aware pricing)
     const pkgMode: TrainingMode = pkg.mode ?? client.mode ?? '1v1'
-    const pkgPricePerClass = getClientPricePerClass(
+    const pkgPricePerClass = getClientPricePerClassWithHistory(
+      client.id,
+      pkg.startDate,
+      priceHistoryLookup,
       client,
       pkg.sessionsPurchased,
       pkgMode,
@@ -131,7 +152,15 @@ export function computeIncomeSummary(
         s.mode ?? client.mode ?? pkgMode ?? '1v1'
 
       // What we originally paid that session as: single-class highest rate
-      const singleClassPrice = getClientPricePerClass(client, 1, sessionMode)
+      // Use date-aware pricing based on the session date
+      const singleClassPrice = getClientPricePerClassWithHistory(
+        client.id,
+        s.date,
+        priceHistoryLookup,
+        client,
+        1,
+        sessionMode,
+      )
 
       const diffPerClass = singleClassPrice - pkgPricePerClass
 
