@@ -75,6 +75,24 @@
   font-size: 0.75rem;
 }
 
+@media (max-width: 640px) {
+  .priceRow {
+    gap: 0.5rem;
+  }
+
+  .priceRow label {
+    font-size: 0.7rem;
+  }
+
+  .priceRowFour {
+    gap: 0.5rem;
+  }
+
+  .priceRowFour label {
+    font-size: 0.65rem;
+  }
+}
+
 .premiumHint {
   font-size: 0.75rem;
   color: var(--color-text-muted);
