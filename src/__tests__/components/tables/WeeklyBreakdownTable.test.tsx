@@ -89,7 +89,7 @@ describe('WeeklyBreakdownTable', () => {
       expect(screen.getByText('Late fee')).toBeInTheDocument()
     })
 
-    it('formats amounts with dollar sign and one decimal', () => {
+    it('formats amounts with dollar sign, no trailing zeros', () => {
       render(
         <WeeklyBreakdownTable
           rows={mockRows}
@@ -99,10 +99,10 @@ describe('WeeklyBreakdownTable', () => {
         />,
       )
 
-      expect(screen.getByText('$69.0')).toBeInTheDocument()
-      expect(screen.getByText('$1500.0')).toBeInTheDocument()
-      expect(screen.getByText('$50.0')).toBeInTheDocument()
-      expect(screen.getByText('$45.0')).toBeInTheDocument()
+      expect(screen.getByText('$69')).toBeInTheDocument()
+      expect(screen.getByText('$1500')).toBeInTheDocument()
+      expect(screen.getByText('$50')).toBeInTheDocument()
+      expect(screen.getByText('$45')).toBeInTheDocument()
     })
 
     it('displays dates', () => {

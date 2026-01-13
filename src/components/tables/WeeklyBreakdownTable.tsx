@@ -5,6 +5,11 @@ import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
 import { DeleteButton } from '@/components'
 import styles from './tables.module.css'
 
+/** Format price: show decimals only when needed ($77.00 → $77, $77.50 → $77.5) */
+function formatPrice(amount: number): string {
+  return `$${parseFloat(amount.toFixed(2))}`
+}
+
 interface WeeklyBreakdownTableProps {
   rows: WeeklyBreakdownRow[]
   onDeleteSession?: (id: number) => void
@@ -71,7 +76,7 @@ export default function WeeklyBreakdownTable({
                 ? 'Late fee'
                 : 'Class'}
             </td>
-            <td>${row.amount.toFixed(1)}</td>
+            <td>{formatPrice(row.amount)}</td>
             {!readOnly && (
               <td>
                 {row.type === 'session' && onDeleteSession && (

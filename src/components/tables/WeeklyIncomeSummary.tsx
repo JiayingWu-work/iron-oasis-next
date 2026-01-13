@@ -2,6 +2,11 @@ import type { IncomeRate } from '@/types'
 import { getActiveTier } from '@/lib/incomeRates'
 import styles from './tables.module.css'
 
+/** Format price: show decimals only when needed ($77.00 → $77, $77.50 → $77.5) */
+function formatPrice(amount: number): string {
+  return `$${parseFloat(amount.toFixed(2))}`
+}
+
 interface WeeklyIncomeSummaryProps {
   totalClassesThisWeek: number
   rate: number
@@ -66,14 +71,14 @@ export default function WeeklyIncomeSummary({
         ) : null}
       </div>
       {bonusIncome !== undefined && bonusIncome > 0 && (
-        <div>Sales bonus: ${bonusIncome.toFixed(1)}</div>
+        <div>Sales bonus: {formatPrice(bonusIncome)}</div>
       )}
       {lateFees !== undefined && lateFees > 0 && (
-        <div>Late fees: ${lateFees.toFixed(1)}</div>
+        <div>Late fees: {formatPrice(lateFees)}</div>
       )}
       {backfillAdjustment !== undefined && backfillAdjustment > 0 && (
         <div className={styles.incomeSummaryRow}>
-          <span>Backfill: -${backfillAdjustment.toFixed(1)}</span>
+          <span>Backfill: -{formatPrice(backfillAdjustment)}</span>
           <div className={styles.tooltipContainer}>
             <span className={styles.tooltipIcon}>?</span>
             <div className={styles.tooltipBubble}>
@@ -84,7 +89,7 @@ export default function WeeklyIncomeSummary({
         </div>
       )}
       <div className={styles.incomeSummaryTotal}>
-        Weekly income: ${finalWeeklyIncome.toFixed(1)}
+        Weekly income: {formatPrice(finalWeeklyIncome)}
       </div>
     </div>
   )
