@@ -64,7 +64,7 @@ describe('WeeklyIncomeSummary', () => {
         />,
       )
 
-      expect(screen.getByText('Sales bonus: $75.0')).toBeInTheDocument()
+      expect(screen.getByText('Sales bonus: $75')).toBeInTheDocument()
     })
 
     it('does not show bonus income when 0', () => {
@@ -104,7 +104,7 @@ describe('WeeklyIncomeSummary', () => {
         />,
       )
 
-      expect(screen.getByText('Late fees: $45.0')).toBeInTheDocument()
+      expect(screen.getByText('Late fees: $45')).toBeInTheDocument()
     })
 
     it('does not show late fees when 0', () => {
@@ -144,7 +144,7 @@ describe('WeeklyIncomeSummary', () => {
         />,
       )
 
-      expect(screen.getByText('Backfill: -$23.0')).toBeInTheDocument()
+      expect(screen.getByText('Backfill: -$23')).toBeInTheDocument()
     })
 
     it('does not show backfill when 0', () => {
@@ -216,10 +216,10 @@ describe('WeeklyIncomeSummary', () => {
 
       expect(screen.getByText('Classes this week: 12')).toBeInTheDocument()
       expect(screen.getByText('Rate: 46%')).toBeInTheDocument()
-      expect(screen.getByText('Sales bonus: $100.0')).toBeInTheDocument()
-      expect(screen.getByText('Late fees: $45.0')).toBeInTheDocument()
-      expect(screen.getByText('Backfill: -$20.0')).toBeInTheDocument()
-      expect(screen.getByText('Weekly income: $625.0')).toBeInTheDocument()
+      expect(screen.getByText('Sales bonus: $100')).toBeInTheDocument()
+      expect(screen.getByText('Late fees: $45')).toBeInTheDocument()
+      expect(screen.getByText('Backfill: -$20')).toBeInTheDocument()
+      expect(screen.getByText('Weekly income: $625')).toBeInTheDocument()
     })
 
     it('shows only applicable fields', () => {
@@ -235,7 +235,7 @@ describe('WeeklyIncomeSummary', () => {
       )
 
       expect(screen.getByText('Classes this week: 8')).toBeInTheDocument()
-      expect(screen.getByText('Sales bonus: $50.0')).toBeInTheDocument()
+      expect(screen.getByText('Sales bonus: $50')).toBeInTheDocument()
       expect(screen.queryByText(/Late fees/)).not.toBeInTheDocument()
       expect(screen.queryByText(/Backfill/)).not.toBeInTheDocument()
     })
@@ -252,7 +252,7 @@ describe('WeeklyIncomeSummary', () => {
       )
 
       expect(screen.getByText('Classes this week: 0')).toBeInTheDocument()
-      expect(screen.getByText('Weekly income: $0.0')).toBeInTheDocument()
+      expect(screen.getByText('Weekly income: $0')).toBeInTheDocument()
     })
 
     it('handles decimal income values', () => {
