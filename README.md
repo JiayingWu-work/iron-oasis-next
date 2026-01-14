@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Iron Oasis
+
+A gym management application for tracking trainers, clients, sessions, packages, and income designed for Iron Oasis NYC. Built for fitness businesses with multiple trainers and locations.
+
+## Features
+
+- **Weekly Dashboard** - View weekly breakdowns of sessions, income, and client activity for both trainers and owner of the gym
+- **Trainer Management** - Add, edit, and archive trainers with tiered pricing and location assignments
+- **Client Management** - Track clients with different training modes and pricing tiers
+- **Session Tracking** - Log training sessions with automatic package deduction
+- **Package Management** - Create and track session packages with sales bonuses
+- **Late Fee Tracking** - Record and manage late fees
+- **Role-Based Access** - Owner and trainer roles with appropriate permissions
+
+## Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org) with App Router
+- **Language**: TypeScript
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com)
+- **Database**: [Neon](https://neon.tech) (Serverless PostgreSQL)
+- **Authentication**: [Neon Auth](https://neon.tech/docs/guides/neon-auth)
+- **Icons**: [Lucide React](https://lucide.dev)
+- **Testing**: [Vitest](https://vitest.dev) + [Testing Library](https://testing-library.com)
 
 ## Getting Started
 
-Install dependencies (this automatically creates `.env.local` with the required environment variables):
+### Prerequisites
+
+- Node.js 18+
+- A [Neon](https://neon.tech) account with a database
+
+### Installation
+
+1. Install dependencies (this automatically creates `.env.local` from `.env.example`):
 
 ```bash
 npm install
 ```
 
-Then start the development server:
+2. Configure your environment variables in `.env.local`
+
+3. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command                 | Description              |
+| ----------------------- | ------------------------ |
+| `npm run dev`           | Start development server |
+| `npm run build`         | Build for production     |
+| `npm run start`         | Start production server  |
+| `npm run lint`          | Run ESLint               |
+| `npm test`              | Run tests in watch mode  |
+| `npm run test:run`      | Run tests once           |
+| `npm run test:coverage` | Run tests with coverage  |
