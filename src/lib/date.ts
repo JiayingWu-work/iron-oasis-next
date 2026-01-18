@@ -46,3 +46,16 @@ export function isWithinRange(dateStr: string, start: string, end: string) {
   const e = parseDate(end).getTime()
   return d >= s && d <= e
 }
+
+// Minimum week start date for trainer view (app go-live date)
+export const MIN_WEEK_START = '2026-01-12'
+
+export function isBeforeMinWeek(weekStart: string): boolean {
+  const current = parseDate(weekStart).getTime()
+  const min = parseDate(MIN_WEEK_START).getTime()
+  return current < min
+}
+
+export function isAtMinWeek(weekStart: string): boolean {
+  return weekStart === MIN_WEEK_START
+}

@@ -6,6 +6,7 @@ interface DashboardHeaderProps {
   weekEnd: string
   onPrev: () => void
   onNext: () => void
+  disablePrev?: boolean
 }
 
 export default function DashboardHeader({
@@ -14,6 +15,7 @@ export default function DashboardHeader({
   weekEnd,
   onPrev,
   onNext,
+  disablePrev = false,
 }: DashboardHeaderProps) {
   return (
     <header className={styles.header}>
@@ -26,7 +28,11 @@ export default function DashboardHeader({
         </p>
       </div>
       <div className={styles.weekNav}>
-        <button className={styles.weekBtn} onClick={onPrev}>
+        <button
+          className={styles.weekBtn}
+          onClick={onPrev}
+          disabled={disablePrev}
+        >
           <span className={styles.icon}>◀</span>
           <span className={styles.label}>Previous week</span>
         </button>
