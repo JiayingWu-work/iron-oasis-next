@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { formatDateToInput, shiftDateByDays } from '@/lib/date'
+import { formatDateToInput, shiftDateByDays, isAtMinWeek } from '@/lib/date'
 import { authClient } from '@/lib/auth/client'
 import {
   DashboardHeader,
@@ -157,7 +157,11 @@ export default function TrainerDashboard() {
     setLateFees,
   )
 
+  // Trainers cannot navigate before the minimum week (app go-live date)
+  const disablePrevWeek = isReadOnly && isAtMinWeek(weekStart)
+
   const handlePrevWeek = () => {
+    if (disablePrevWeek) return
     setSelectedDate((prev) => shiftDateByDays(prev, -7))
   }
 
@@ -216,6 +220,7 @@ export default function TrainerDashboard() {
                 weekEnd={weekEnd}
                 onPrev={handlePrevWeek}
                 onNext={handleNextWeek}
+                disablePrev={disablePrevWeek}
               />
             </div>
             <div
