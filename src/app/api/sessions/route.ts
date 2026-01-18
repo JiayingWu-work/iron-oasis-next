@@ -68,20 +68,51 @@ export async function POST(req: NextRequest) {
       clientModeMap.set(r.id, (r.mode as TrainingMode) ?? '1v1')
     }
 
+    // 3) Fetch existing sessions to know usage per package
+    const existingSessionRows = (await sql`
+      SELECT id, package_id
+      FROM sessions
+      WHERE client_id = ANY(${clientIds})
+        AND package_id IS NOT NULL
+    `) as { id: number; package_id: number }[]
+
+    // Build a map of session counts per package
+    const sessionCountByPkg = new Map<number, number>()
+    for (const s of existingSessionRows) {
+      sessionCountByPkg.set(s.package_id, (sessionCountByPkg.get(s.package_id) ?? 0) + 1)
+    }
+
     const newSessions: Session[] = []
 
-    // 3) Create a session for each clientId
+    // 4) Create a session for each clientId
     for (const clientId of clientIds) {
-      // All packages for this client (any trainer), sorted by start date
+      // All packages for this client (any trainer), sorted by start date (oldest first)
       const clientPkgs = allPackages
         .filter((p) => p.clientId === clientId)
         .sort((a, b) => a.startDate.localeCompare(b.startDate))
 
-      // If they have *any* package history, use the most recent package.
-      // This keeps "their rate" and allows remaining to go negative if they run out.
-      const pkg = clientPkgs[clientPkgs.length - 1] ?? null
+      // FIFO: Use the oldest package with remaining capacity.
+      // If all packages are full, fall back to the newest (allows going negative).
+      let pkg: Package | null = null
+      for (const p of clientPkgs) {
+        const used = sessionCountByPkg.get(p.id) ?? 0
+        if (used < p.sessionsPurchased) {
+          pkg = p
+          break
+        }
+      }
+      // Fallback to newest if all are full
+      if (!pkg && clientPkgs.length > 0) {
+        pkg = clientPkgs[clientPkgs.length - 1]
+      }
+
       const packageId = pkg ? pkg.id : null
       const clientMode = clientModeMap.get(clientId) ?? '1v1'
+
+      // Update in-memory count so subsequent sessions in this request use correct counts
+      if (packageId !== null) {
+        sessionCountByPkg.set(packageId, (sessionCountByPkg.get(packageId) ?? 0) + 1)
+      }
 
       const [inserted] = (await sql`
         INSERT INTO sessions (date, trainer_id, client_id, package_id, mode, location_override)
