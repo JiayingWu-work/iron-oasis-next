@@ -1,12 +1,90 @@
 import type { IncomeRate } from '@/types'
+import { getWeekRange } from '@/lib/date'
 
 /**
  * Initial income rates used when creating a new trainer.
  * Pre-filled in the form but must be explicitly saved.
+ * Note: effectiveWeek is set when saving, not in the initial template.
  */
-export const INITIAL_INCOME_RATES: Omit<IncomeRate, 'id' | 'trainerId'>[] = [
+export const INITIAL_INCOME_RATES: Omit<IncomeRate, 'id' | 'trainerId' | 'effectiveWeek'>[] = [
   { minClasses: 1, maxClasses: null, rate: 0.50 },
 ]
+
+/**
+ * Get the Monday of the current week as YYYY-MM-DD.
+ */
+export function getCurrentWeekMonday(): string {
+  const today = new Date()
+  const yyyy = today.getFullYear()
+  const mm = String(today.getMonth() + 1).padStart(2, '0')
+  const dd = String(today.getDate()).padStart(2, '0')
+  return getWeekRange(`${yyyy}-${mm}-${dd}`).start
+}
+
+/**
+ * Check if a date string is a Monday.
+ */
+export function isMonday(dateStr: string): boolean {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  return date.getDay() === 1 // Monday = 1
+}
+
+/**
+ * Filter income rates to get only those effective for a specific week.
+ * Returns the rates with the most recent effective_week that is <= the given week.
+ */
+export function getRatesEffectiveForWeek(
+  allRates: IncomeRate[] | undefined,
+  weekMonday: string,
+): IncomeRate[] {
+  if (!allRates || allRates.length === 0) {
+    return []
+  }
+
+  // Get all unique effective weeks that are <= the target week
+  const validEffectiveWeeks = [...new Set(
+    allRates
+      .filter((r) => r.effectiveWeek <= weekMonday)
+      .map((r) => r.effectiveWeek)
+  )]
+
+  if (validEffectiveWeeks.length === 0) {
+    // No rates effective for this week - return empty
+    // This shouldn't happen in practice if data is set up correctly
+    return []
+  }
+
+  // Find the most recent effective week
+  const mostRecentWeek = validEffectiveWeeks.sort().reverse()[0]
+
+  // Return all rates for that effective week
+  return allRates.filter((r) => r.effectiveWeek === mostRecentWeek)
+}
+
+/**
+ * Get the most recent effective week from a set of rates.
+ * Used to determine "current" rates for display in forms.
+ */
+export function getMostRecentEffectiveWeek(allRates: IncomeRate[] | undefined): string | null {
+  if (!allRates || allRates.length === 0) {
+    return null
+  }
+
+  const effectiveWeeks = [...new Set(allRates.map((r) => r.effectiveWeek))]
+  return effectiveWeeks.sort().reverse()[0] || null
+}
+
+/**
+ * Get all distinct effective weeks from a set of rates, sorted newest first.
+ */
+export function getDistinctEffectiveWeeks(allRates: IncomeRate[] | undefined): string[] {
+  if (!allRates || allRates.length === 0) {
+    return []
+  }
+
+  return [...new Set(allRates.map((r) => r.effectiveWeek))].sort().reverse()
+}
 
 /**
  * Get the income rate for a given class count based on trainer's rate tiers.

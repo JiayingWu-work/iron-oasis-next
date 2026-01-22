@@ -10,7 +10,7 @@ import type {
 } from '@/types'
 import type { WeeklyBreakdownRow } from '@/hooks/useWeeklyDashboardData'
 import { getClientPricePerClass, buildPriceHistoryLookup, getClientPricePerClassWithHistory } from '@/lib/pricing'
-import { getRateForClassCount } from '@/lib/incomeRates'
+import { getRateForClassCount, getRatesEffectiveForWeek } from '@/lib/incomeRates'
 
 // Personal client bonus: 10% added to trainer's rate when client is personal
 const PERSONAL_CLIENT_BONUS = 0.10
@@ -22,11 +22,18 @@ export function computeBreakdownRows(
   weeklyPackages: Package[],
   weeklyLateFees: LateFee[],
   trainerId: Trainer['id'],
-  incomeRates?: IncomeRate[],
+  allIncomeRates?: IncomeRate[],
   clientPriceHistory?: ClientPriceHistory[],
+  weekStart?: string, // Monday of the week being computed
 ): WeeklyBreakdownRow[] {
   const totalClassesThisWeek = weeklySessions.length
-  const rate = getRateForClassCount(incomeRates, totalClassesThisWeek)
+
+  // Get rates effective for this week (or use all rates if weekStart not provided)
+  const ratesForThisWeek = weekStart
+    ? getRatesEffectiveForWeek(allIncomeRates, weekStart)
+    : allIncomeRates
+
+  const rate = getRateForClassCount(ratesForThisWeek, totalClassesThisWeek)
 
   // Build price history lookup map for date-aware pricing
   const priceHistoryLookup = clientPriceHistory

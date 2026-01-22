@@ -38,7 +38,10 @@
   /* Status Colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
+  --color-warning-subtle: rgba(245, 158, 11, 0.1);
+  --color-warning-dark: #b45309;
   --color-error: #ef4444;
+  --color-error-subtle: rgba(239, 68, 68, 0.1);
 
   /* Borders */
   --color-border: #e2e8f0;

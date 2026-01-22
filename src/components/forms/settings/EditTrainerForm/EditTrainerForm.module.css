@@ -39,6 +39,16 @@
   line-height: 1.5;
 }
 
+.warning {
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  background: var(--color-warning-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning-dark);
+  line-height: 1.5;
+}
+
 /* Rate Tier Inputs */
 
 .rateTiers {

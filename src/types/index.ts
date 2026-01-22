@@ -64,6 +64,7 @@ export interface IncomeRate {
   minClasses: number
   maxClasses: number | null
   rate: number
+  effectiveWeek: string // YYYY-MM-DD (Monday of the week this rate starts applying)
 }
 
 export interface ClientPriceHistory {

@@ -3,9 +3,11 @@ import { computeIncomeSummary } from '@/lib/weeklyDashboard/computeIncomeSummary
 import type { Client, Package, Session, LateFee, IncomeRate } from '@/types'
 
 // Default income rates for tests (46% for 1-12 classes, 51% for 13+)
+// Uses effectiveWeek '2024-12-30' which is the Monday before all test dates
+// (Jan 1, 2025 falls in the week starting Dec 30, 2024)
 const DEFAULT_INCOME_RATES: IncomeRate[] = [
-  { id: 1, trainerId: 1, minClasses: 1, maxClasses: 12, rate: 0.46 },
-  { id: 2, trainerId: 1, minClasses: 13, maxClasses: null, rate: 0.51 },
+  { id: 1, trainerId: 1, minClasses: 1, maxClasses: 12, rate: 0.46, effectiveWeek: '2024-12-30' },
+  { id: 2, trainerId: 1, minClasses: 13, maxClasses: null, rate: 0.51, effectiveWeek: '2024-12-30' },
 ]
 
 describe('computeIncomeSummary', () => {

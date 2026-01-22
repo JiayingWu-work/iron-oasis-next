@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import type { IncomeRate } from '@/types';
-import { validateIncomeRates } from '@/lib/incomeRates';
+import { validateIncomeRates, getCurrentWeekMonday, isMonday, getMostRecentEffectiveWeek } from '@/lib/incomeRates';
 
 type IncomeRateRow = {
   id: number
@@ -9,6 +9,14 @@ type IncomeRateRow = {
   min_classes: number
   max_classes: number | null
   rate: string
+  effective_week: string | Date  // PostgreSQL DATE can come as Date object
+}
+
+// Normalize effective_week to string (YYYY-MM-DD)
+function normalizeEffectiveWeek(value: string | Date): string {
+  if (typeof value === 'string') return value
+  // Date object - convert to YYYY-MM-DD
+  return value.toISOString().split('T')[0]
 }
 
 export async function GET(
@@ -39,21 +47,31 @@ export async function GET(
       );
     }
 
-    // Fetch income rates for this trainer
-    const incomeRateRows = (await sql`
-      SELECT id, trainer_id, min_classes, max_classes, rate
+    // Fetch all income rates for this trainer
+    const allIncomeRateRows = (await sql`
+      SELECT id, trainer_id, min_classes, max_classes, rate, effective_week
       FROM trainer_income_rates
       WHERE trainer_id = ${trainerId}
-      ORDER BY min_classes
+      ORDER BY effective_week DESC, min_classes ASC
     `) as IncomeRateRow[]
 
-    const incomeRates: IncomeRate[] = incomeRateRows.map((row) => ({
+    // Convert to IncomeRate type (normalize effective_week to string)
+    const allIncomeRates: IncomeRate[] = allIncomeRateRows.map((row) => ({
       id: row.id,
       trainerId: row.trainer_id,
       minClasses: row.min_classes,
       maxClasses: row.max_classes,
       rate: parseFloat(row.rate),
+      effectiveWeek: normalizeEffectiveWeek(row.effective_week),
     }))
+
+    // Get the most recent effective week
+    const mostRecentWeek = getMostRecentEffectiveWeek(allIncomeRates)
+
+    // Filter to only the most recent rates (for display in forms)
+    const incomeRates = mostRecentWeek
+      ? allIncomeRates.filter((r) => r.effectiveWeek === mostRecentWeek)
+      : []
 
     const trainer = result[0] as { id: number; name: string; tier: number; email: string; is_active: boolean; location: string }
 
@@ -90,7 +108,7 @@ export async function PATCH(
   }
 
   try {
-    const { name, email, tier, location, incomeRates } = await request.json();
+    const { name, email, tier, location, incomeRates, effectiveWeek } = await request.json();
 
     // Validate name
     if (typeof name !== 'string' || !name.trim()) {
@@ -163,18 +181,29 @@ export async function PATCH(
         );
       }
 
-      // Delete existing rates
+      // Validate effective week if provided
+      const rateEffectiveWeek = effectiveWeek || getCurrentWeekMonday()
+
+      if (!isMonday(rateEffectiveWeek)) {
+        return NextResponse.json(
+          { error: 'Effective week must be a Monday' },
+          { status: 400 }
+        );
+      }
+
+      // Delete existing rates for this specific effective week (allows same-week updates)
       await sql`
         DELETE FROM trainer_income_rates
         WHERE trainer_id = ${trainerId}
+          AND effective_week = ${rateEffectiveWeek}
       `
 
-      // Insert new rates
+      // Insert new rates with the effective week
       for (const rate of incomeRates as { minClasses: number; maxClasses: number | null; rate: number }[]) {
         const rateRows = (await sql`
-          INSERT INTO trainer_income_rates (trainer_id, min_classes, max_classes, rate)
-          VALUES (${trainerId}, ${rate.minClasses}, ${rate.maxClasses}, ${rate.rate})
-          RETURNING id, trainer_id, min_classes, max_classes, rate
+          INSERT INTO trainer_income_rates (trainer_id, min_classes, max_classes, rate, effective_week)
+          VALUES (${trainerId}, ${rate.minClasses}, ${rate.maxClasses}, ${rate.rate}, ${rateEffectiveWeek})
+          RETURNING id, trainer_id, min_classes, max_classes, rate, effective_week
         `) as IncomeRateRow[]
 
         updatedIncomeRates.push({
@@ -183,24 +212,33 @@ export async function PATCH(
           minClasses: rateRows[0].min_classes,
           maxClasses: rateRows[0].max_classes,
           rate: parseFloat(rateRows[0].rate),
+          effectiveWeek: normalizeEffectiveWeek(rateRows[0].effective_week),
         })
       }
     } else {
-      // Fetch existing rates if not updating
+      // Fetch most recent rates if not updating
       const existingRates = (await sql`
-        SELECT id, trainer_id, min_classes, max_classes, rate
+        SELECT id, trainer_id, min_classes, max_classes, rate, effective_week
         FROM trainer_income_rates
         WHERE trainer_id = ${trainerId}
-        ORDER BY min_classes
+        ORDER BY effective_week DESC, min_classes ASC
       `) as IncomeRateRow[]
 
-      updatedIncomeRates = existingRates.map((row) => ({
-        id: row.id,
-        trainerId: row.trainer_id,
-        minClasses: row.min_classes,
-        maxClasses: row.max_classes,
-        rate: parseFloat(row.rate),
-      }))
+      // Get the most recent effective week (normalize to string for comparison)
+      const mostRecentWeek = existingRates.length > 0
+        ? normalizeEffectiveWeek(existingRates[0].effective_week)
+        : null
+
+      updatedIncomeRates = existingRates
+        .filter((row) => normalizeEffectiveWeek(row.effective_week) === mostRecentWeek)
+        .map((row) => ({
+          id: row.id,
+          trainerId: row.trainer_id,
+          minClasses: row.min_classes,
+          maxClasses: row.max_classes,
+          rate: parseFloat(row.rate),
+          effectiveWeek: normalizeEffectiveWeek(row.effective_week),
+        }))
     }
 
     return NextResponse.json({
