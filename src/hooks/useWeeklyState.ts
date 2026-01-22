@@ -141,6 +141,7 @@ export function useWeeklyState(
             minClasses: r.min_classes,
             maxClasses: r.max_classes,
             rate: parseFloat(r.rate),
+            effectiveWeek: r.effective_week,
           })),
         )
 

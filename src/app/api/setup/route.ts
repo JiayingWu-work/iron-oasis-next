@@ -64,8 +64,41 @@ export async function POST() {
         min_classes INTEGER NOT NULL,
         max_classes INTEGER,
         rate DECIMAL(4,2) NOT NULL,
-        UNIQUE(trainer_id, min_classes)
+        effective_week DATE NOT NULL DEFAULT '2025-01-01',
+        UNIQUE(trainer_id, min_classes, effective_week)
       )
+    `;
+
+    // Add effective_week column to trainer_income_rates if it doesn't exist (migration for existing tables)
+    await sql`
+      ALTER TABLE trainer_income_rates
+      ADD COLUMN IF NOT EXISTS effective_week DATE NOT NULL DEFAULT '2025-01-01'
+    `;
+
+    // Drop old unique constraint and add new one with effective_week
+    // This is idempotent - it handles both new and existing databases
+    await sql`
+      DO $$
+      BEGIN
+        -- Drop old constraint if it exists (trainer_id, min_classes)
+        IF EXISTS (
+          SELECT 1 FROM pg_constraint
+          WHERE conname = 'trainer_income_rates_trainer_id_min_classes_key'
+        ) THEN
+          ALTER TABLE trainer_income_rates
+          DROP CONSTRAINT trainer_income_rates_trainer_id_min_classes_key;
+        END IF;
+
+        -- Add new constraint if it doesn't exist (trainer_id, min_classes, effective_week)
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint
+          WHERE conname = 'trainer_income_rates_trainer_id_min_classes_effective_week_key'
+        ) THEN
+          ALTER TABLE trainer_income_rates
+          ADD CONSTRAINT trainer_income_rates_trainer_id_min_classes_effective_week_key
+          UNIQUE (trainer_id, min_classes, effective_week);
+        END IF;
+      END $$
     `;
 
     // Add is_personal_client column to clients table (trainer brought in this client, +10% pay rate bonus)

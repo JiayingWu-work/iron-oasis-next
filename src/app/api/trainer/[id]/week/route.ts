@@ -12,6 +12,12 @@ import type {
 } from '@/types/api'
 import { Trainer } from '@/types'
 
+// Normalize effective_week to string (YYYY-MM-DD) since PostgreSQL DATE can return as Date object
+function normalizeEffectiveWeek(value: string | Date): string {
+  if (typeof value === 'string') return value
+  return value.toISOString().split('T')[0]
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
 
@@ -96,13 +102,19 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // 1b) income rates for this trainer
-  const incomeRateRows = (await sql`
-    SELECT id, trainer_id, min_classes, max_classes, rate
+  // 1b) ALL income rates for this trainer (needed for historical backfill calculations)
+  const incomeRateRowsRaw = (await sql`
+    SELECT id, trainer_id, min_classes, max_classes, rate, effective_week
     FROM trainer_income_rates
     WHERE trainer_id = ${trainerId}
-    ORDER BY min_classes
-  `) as ApiIncomeRate[]
+    ORDER BY effective_week DESC, min_classes ASC
+  `) as (Omit<ApiIncomeRate, 'effective_week'> & { effective_week: string | Date })[]
+
+  // Normalize effective_week to YYYY-MM-DD string format
+  const incomeRateRows: ApiIncomeRate[] = incomeRateRowsRaw.map((row) => ({
+    ...row,
+    effective_week: normalizeEffectiveWeek(row.effective_week),
+  }))
 
   // 2) clients for this trainer
   const clientRows = (await sql`

@@ -6,6 +6,7 @@ import {
   computeIncomeSummary,
   computeBreakdownRows,
 } from '@/lib/weeklyDashboard'
+import { getRatesEffectiveForWeek } from '@/lib/incomeRates'
 
 export type CombinedRowType = 'session' | 'package' | 'bonus' | 'lateFee'
 
@@ -87,7 +88,7 @@ export function useWeeklyDashboardData({
       weeklySessions,
     )
 
-    // 2) Weekly income numbers (now uses date-aware pricing)
+    // 2) Weekly income numbers (now uses date-aware pricing and week-effective rates)
     const incomeSummary = computeIncomeSummary(
       clients,
       packages,
@@ -98,9 +99,10 @@ export function useWeeklyDashboardData({
       sessions,
       incomeRates,
       clientPriceHistory,
+      weekStart, // Pass weekStart for week-effective rate lookup
     )
 
-    // 3) Breakdown rows (now uses date-aware pricing)
+    // 3) Breakdown rows (now uses date-aware pricing and week-effective rates)
     const breakdownRows = computeBreakdownRows(
       clients,
       packages,
@@ -110,13 +112,17 @@ export function useWeeklyDashboardData({
       selectedTrainer.id,
       incomeRates,
       clientPriceHistory,
+      weekStart, // Pass weekStart for week-effective rate lookup
     )
+
+    // 4) Filter income rates to only those effective for this week (for display)
+    const effectiveIncomeRates = getRatesEffectiveForWeek(incomeRates, weekStart)
 
     return {
       clientRows,
       incomeSummary,
       breakdownRows,
-      incomeRates,
+      incomeRates: effectiveIncomeRates,
     }
   }, [
     clients,

@@ -43,7 +43,7 @@ export default function WeeklyDashboard({
   weeklyNotes,
   isLoading = false,
 }: WeeklyDashboardProps) {
-  const { clientRows, incomeSummary, breakdownRows } = useWeeklyDashboardData({
+  const { clientRows, incomeSummary, breakdownRows, incomeRates: effectiveIncomeRates } = useWeeklyDashboardData({
     clients,
     packages,
     sessions,
@@ -66,7 +66,7 @@ export default function WeeklyDashboard({
         lateFees={incomeSummary.lateFeeIncome}
         backfillAdjustment={incomeSummary.backfillAdjustment}
         finalWeeklyIncome={incomeSummary.finalWeeklyIncome}
-        incomeRates={incomeRates}
+        incomeRates={effectiveIncomeRates}
         isLoading={isLoading}
       />
       <WeeklyNotes

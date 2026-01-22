@@ -11,25 +11,29 @@ import type {
 import type { WeeklyIncomeSummary } from '@/hooks/useWeeklyDashboardData'
 import { getClientPricePerClass, buildPriceHistoryLookup, getClientPricePerClassWithHistory } from '@/lib/pricing'
 import { getWeekRange } from '@/lib/date'
-import { getRateForClassCount } from '@/lib/incomeRates'
+import { getRateForClassCount, getRatesEffectiveForWeek } from '@/lib/incomeRates'
 
 /**
  * Get the trainer's rate for the week containing the given date.
- * Uses the trainer's configured income rates, or defaults to 46%/51%.
+ * Uses the trainer's configured income rates effective for that week.
+ * All rates are passed in, and we filter to find the correct historical rates.
  */
 function getRateForSessionDate(
   sessionDate: string,
   trainerId: number,
   allSessions: Session[],
-  incomeRates: IncomeRate[] | undefined,
+  allIncomeRates: IncomeRate[] | undefined,
 ): number {
   const { start, end } = getWeekRange(sessionDate)
+
+  // Get rates effective for the week of this session
+  const ratesForWeek = getRatesEffectiveForWeek(allIncomeRates, start)
 
   const sessionsInWeek = allSessions.filter(
     (s) => s.trainerId === trainerId && s.date >= start && s.date <= end,
   )
 
-  return getRateForClassCount(incomeRates, sessionsInWeek.length)
+  return getRateForClassCount(ratesForWeek, sessionsInWeek.length)
 }
 
 // Personal client bonus: 10% added to trainer's rate when client is personal
@@ -43,11 +47,18 @@ export function computeIncomeSummary(
   weeklyLateFees: LateFee[],
   trainerId: Trainer['id'],
   allSessions: Session[],
-  incomeRates?: IncomeRate[],
+  allIncomeRates?: IncomeRate[],
   clientPriceHistory?: ClientPriceHistory[],
+  weekStart?: string, // Monday of the week being computed
 ): WeeklyIncomeSummary {
   const totalClassesThisWeek = weeklySessions.length
-  const rate = getRateForClassCount(incomeRates, totalClassesThisWeek)
+
+  // Get rates effective for this week (or use all rates if weekStart not provided)
+  const ratesForThisWeek = weekStart
+    ? getRatesEffectiveForWeek(allIncomeRates, weekStart)
+    : allIncomeRates
+
+  const rate = getRateForClassCount(ratesForThisWeek, totalClassesThisWeek)
 
   // Build price history lookup map for date-aware pricing
   const priceHistoryLookup = clientPriceHistory
@@ -168,8 +179,9 @@ export function computeIncomeSummary(
       if (diffPerClass <= 0) continue
 
       // Deduct trainer share at the ORIGINAL week's rate (when session occurred)
+      // Use allIncomeRates to look up historical rates
       // Also apply personal client bonus if applicable
-      const originalRate = getRateForSessionDate(s.date, trainerId, allSessions, incomeRates)
+      const originalRate = getRateForSessionDate(s.date, trainerId, allSessions, allIncomeRates)
       const isPersonalClientSession = client.isPersonalClient && client.trainerId === trainerId
       const effectiveOriginalRate = isPersonalClientSession ? originalRate + PERSONAL_CLIENT_BONUS : originalRate
       pkgAdjustment += diffPerClass * effectiveOriginalRate

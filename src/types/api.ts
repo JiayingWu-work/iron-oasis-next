@@ -56,6 +56,7 @@ export type ApiIncomeRate = {
   min_classes: number
   max_classes: number | null
   rate: string // DECIMAL comes as string from DB
+  effective_week: string // YYYY-MM-DD (Monday of the week this rate starts applying)
 }
 
 export type ApiClientPriceHistory = {

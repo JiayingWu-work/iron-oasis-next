@@ -4,9 +4,10 @@ import WeeklyDashboard from '@/components/tables/WeeklyDashboard'
 import type { Client, Session, Package, Trainer, LateFee, IncomeRate } from '@/types'
 
 // Default income rates for tests (46% for 1-12 classes, 51% for 13+)
+// Uses effectiveWeek '2025-01-01' which is before all test dates
 const DEFAULT_INCOME_RATES: IncomeRate[] = [
-  { id: 1, trainerId: 1, minClasses: 1, maxClasses: 12, rate: 0.46 },
-  { id: 2, trainerId: 1, minClasses: 13, maxClasses: null, rate: 0.51 },
+  { id: 1, trainerId: 1, minClasses: 1, maxClasses: 12, rate: 0.46, effectiveWeek: '2025-01-01' },
+  { id: 2, trainerId: 1, minClasses: 13, maxClasses: null, rate: 0.51, effectiveWeek: '2025-01-01' },
 ]
 
 describe('WeeklyDashboard', () => {

@@ -3,8 +3,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { X } from 'lucide-react'
 import type { Trainer, Location } from '@/types'
-import { Modal, FormField, Select, SearchableSelect } from '@/components'
-import { INITIAL_INCOME_RATES, validateIncomeRates } from '@/lib/incomeRates'
+import { Modal, FormField, Select, SearchableSelect, DatePicker } from '@/components'
+import { INITIAL_INCOME_RATES, validateIncomeRates, getCurrentWeekMonday, getDistinctEffectiveWeeks } from '@/lib/incomeRates'
+import { getWeekRange } from '@/lib/date'
 import styles from './EditTrainerForm.module.css'
 
 interface EditTrainerFormProps {
@@ -36,6 +37,9 @@ export default function EditTrainerForm({
   const [tier, setTier] = useState<1 | 2 | 3>(1)
   const [location, setLocation] = useState<Location>('west')
   const [incomeRates, setIncomeRates] = useState<RateTierInput[]>([])
+  const [originalIncomeRates, setOriginalIncomeRates] = useState<RateTierInput[]>([])
+  const [effectiveWeek, setEffectiveWeek] = useState<string>(getCurrentWeekMonday())
+  const [showSameWeekWarning, setShowSameWeekWarning] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -64,6 +68,9 @@ export default function EditTrainerForm({
       setTier(1)
       setLocation('west')
       setIncomeRates([])
+      setOriginalIncomeRates([])
+      setEffectiveWeek(getCurrentWeekMonday())
+      setShowSameWeekWarning(false)
       setError(null)
     }
   }, [isOpen])
@@ -75,6 +82,17 @@ export default function EditTrainerForm({
     return trainer?.tier ?? null
   }, [selectedTrainerId, trainers])
 
+  // Get all existing effective weeks for the selected trainer (for same-week warning)
+  const existingEffectiveWeeks = useMemo(() => {
+    if (selectedTrainerId === '') return []
+    const trainer = trainers.find((t) => t.id === selectedTrainerId)
+    if (!trainer?.incomeRates) return []
+    return getDistinctEffectiveWeeks(trainer.incomeRates)
+  }, [selectedTrainerId, trainers])
+
+  // Check if selected effective week already has rates
+  const hasRatesForSelectedWeek = existingEffectiveWeeks.includes(effectiveWeek)
+
   // Update form fields when trainer is selected
   useEffect(() => {
     if (selectedTrainerId === '') {
@@ -83,6 +101,8 @@ export default function EditTrainerForm({
       setTier(1)
       setLocation('west')
       setIncomeRates([])
+      setOriginalIncomeRates([])
+      setEffectiveWeek(getCurrentWeekMonday())
       return
     }
 
@@ -101,8 +121,26 @@ export default function EditTrainerForm({
           }))
         : INITIAL_INCOME_RATES.map((r) => ({ ...r }))
       setIncomeRates(rates)
+      // Store original rates to detect changes
+      setOriginalIncomeRates(rates.map((r) => ({ ...r })))
+      // Reset effective week to current week when trainer changes
+      setEffectiveWeek(getCurrentWeekMonday())
     }
   }, [selectedTrainerId, trainers])
+
+  // Check if rates have been modified from the original
+  const ratesHaveChanged = useMemo(() => {
+    if (incomeRates.length !== originalIncomeRates.length) return true
+    return incomeRates.some((rate, idx) => {
+      const original = originalIncomeRates[idx]
+      if (!original) return true
+      return (
+        rate.minClasses !== original.minClasses ||
+        rate.maxClasses !== original.maxClasses ||
+        rate.rate !== original.rate
+      )
+    })
+  }, [incomeRates, originalIncomeRates])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -135,20 +173,33 @@ export default function EditTrainerForm({
       return
     }
 
+    // Check if we need to show same-week warning (only if rates changed)
+    if (ratesHaveChanged && hasRatesForSelectedWeek && !showSameWeekWarning) {
+      setShowSameWeekWarning(true)
+      return
+    }
+
     setSaving(true)
     setError(null)
 
     try {
+      // Only include incomeRates and effectiveWeek if rates have changed
+      const payload: Record<string, unknown> = {
+        name: name.trim(),
+        email: email.trim(),
+        tier,
+        location,
+      }
+
+      if (ratesHaveChanged) {
+        payload.incomeRates = incomeRates
+        payload.effectiveWeek = effectiveWeek
+      }
+
       const res = await fetch(`/api/trainers/${selectedTrainerId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          tier,
-          location,
-          incomeRates,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
@@ -166,7 +217,24 @@ export default function EditTrainerForm({
       onError?.(errorMessage)
     } finally {
       setSaving(false)
+      setShowSameWeekWarning(false)
     }
+  }
+
+  // Handle effective week change - snap to Monday of selected week
+  const handleEffectiveWeekChange = (dateStr: string) => {
+    // Snap to Monday of the selected week
+    const monday = getWeekRange(dateStr).start
+    setEffectiveWeek(monday)
+    // Reset same-week warning when week changes
+    setShowSameWeekWarning(false)
+  }
+
+  // Format effective week for display
+  const formatWeekDisplay = (dateStr: string): string => {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    const date = new Date(year, month - 1, day)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
   const trainerOptions = useMemo(
@@ -358,6 +426,32 @@ export default function EditTrainerForm({
               )}
             </div>
           </FormField>
+
+          {ratesHaveChanged && (
+            <>
+              <FormField
+                label="Apply new rates starting from week"
+                hints={['Select which week these rates should start applying. Previous weeks will keep their original rates.']}
+              >
+                <DatePicker
+                  value={effectiveWeek}
+                  onChange={handleEffectiveWeekChange}
+                />
+              </FormField>
+
+              <div className={styles.info}>
+                These rates will apply to the week of <strong>{formatWeekDisplay(effectiveWeek)}</strong> and onwards.
+                Previous weeks will retain their original rates.
+              </div>
+
+              {showSameWeekWarning && (
+                <div className={styles.warning}>
+                  <strong>Warning:</strong> Rates have already been updated earlier for this week.
+                  Click &quot;Save Changes&quot; again to confirm and overwrite.
+                </div>
+              )}
+            </>
+          )}
 
           {originalTier !== null && tier !== originalTier && (
             <div className={styles.info}>
