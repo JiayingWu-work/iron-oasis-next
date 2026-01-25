@@ -73,7 +73,7 @@ export default function WeeklyDashboard({
         trainerId={selectedTrainer.id}
         weekStart={weekStart}
         readOnly
-        externalNotes={weeklyNotes}
+        externalNotes={weeklyNotes || undefined}
       />
       <h3 className={styles.breakdownTitle}>Breakdown of the week</h3>
       <WeeklyBreakdownTable
