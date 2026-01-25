@@ -1,15 +1,27 @@
-import { redirect } from 'next/navigation'
-import { neonAuth } from '@neondatabase/neon-js/auth/next'
+'use client'
 
-export default async function Page() {
-  const { user } = await neonAuth()
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { authClient } from '@/lib/auth/client'
+import { Spinner } from '@/components'
 
-  // If not logged in, redirect to sign in
-  if (!user?.id) {
-    redirect('/auth/sign-in')
-  }
+export default function Page() {
+  const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
 
-  // All authenticated users go to dashboard
-  // Role-based restrictions are handled in the dashboard page
-  redirect('/dashboard')
+  useEffect(() => {
+    if (isPending) return
+
+    if (!session?.user?.id) {
+      router.replace('/auth/sign-in')
+    } else {
+      router.replace('/dashboard')
+    }
+  }, [session, isPending, router])
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Spinner size="lg" />
+    </div>
+  )
 }
