@@ -128,7 +128,7 @@ export default function UnarchiveClientForm({
       {selectedClient && (
         <div className={styles.info}>
           <strong>{selectedClient.name}</strong> will be restored and appear in
-          the Add Classes dropdown and other selection lists.
+          the dashboard and all dropdowns.
         </div>
       )}
     </Modal>

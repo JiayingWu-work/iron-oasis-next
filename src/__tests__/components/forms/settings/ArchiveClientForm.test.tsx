@@ -100,7 +100,7 @@ describe('ArchiveClientForm', () => {
       fireEvent.click(screen.getByText('Alice'))
 
       await waitFor(() => {
-        expect(screen.getByText(/will be hidden from the Add Classes dropdown/)).toBeInTheDocument()
+        expect(screen.getByText(/will be hidden from the dashboard starting from the week of/)).toBeInTheDocument()
       })
     })
   })
