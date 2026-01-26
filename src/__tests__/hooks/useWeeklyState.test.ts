@@ -147,6 +147,7 @@ describe('useWeeklyState', () => {
       isActive: true,
       location: 'west',
       isPersonalClient: false,
+      archivedAt: null,
     })
 
     expect(result.current.clients[1]).toEqual({
@@ -164,6 +165,7 @@ describe('useWeeklyState', () => {
       isActive: true,
       location: 'west',
       isPersonalClient: false,
+      archivedAt: null,
     })
   })
 

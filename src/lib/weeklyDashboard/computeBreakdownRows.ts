@@ -38,15 +38,21 @@ export function computeBreakdownRows(
   weekStart?: string, // Monday of the week being computed
 ): WeeklyBreakdownRow[] {
   // Filter out data for clients archived before this week
-  const visibleClientIds = new Set(
-    clients
-      .filter((c) => isClientVisibleForWeek(c, weekStart))
-      .map((c) => c.id)
-  )
+  // Build a map of clientId -> isVisible for known clients
+  const clientVisibility = new Map<number, boolean>()
+  for (const c of clients) {
+    clientVisibility.set(c.id, isClientVisibleForWeek(c, weekStart))
+  }
 
-  const filteredWeeklySessions = weeklySessions.filter((s) => visibleClientIds.has(s.clientId))
-  const filteredWeeklyPackages = weeklyPackages.filter((p) => visibleClientIds.has(p.clientId))
-  const filteredWeeklyLateFees = weeklyLateFees.filter((f) => visibleClientIds.has(f.clientId))
+  // Helper: include if client is unknown (not in clients array) or is visible
+  const isClientIdVisible = (clientId: number) => {
+    if (!clientVisibility.has(clientId)) return true // Unknown client - show as "Unknown client"
+    return clientVisibility.get(clientId) === true
+  }
+
+  const filteredWeeklySessions = weeklySessions.filter((s) => isClientIdVisible(s.clientId))
+  const filteredWeeklyPackages = weeklyPackages.filter((p) => isClientIdVisible(p.clientId))
+  const filteredWeeklyLateFees = weeklyLateFees.filter((f) => isClientIdVisible(f.clientId))
 
   const totalClassesThisWeek = filteredWeeklySessions.length
 
