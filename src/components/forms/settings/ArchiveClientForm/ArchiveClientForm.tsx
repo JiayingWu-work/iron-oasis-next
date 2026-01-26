@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import type { Client } from '@/types'
-import { Modal, FormField, SearchableSelect } from '@/components'
+import { Modal, FormField, SearchableSelect, DatePicker } from '@/components'
+import { getWeekRange } from '@/lib/date'
+import { getCurrentWeekMonday } from '@/lib/incomeRates'
 import styles from './ArchiveClientForm.module.css'
 
 interface ArchiveClientFormProps {
@@ -21,6 +23,7 @@ export default function ArchiveClientForm({
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedClientId, setSelectedClientId] = useState<number | ''>('')
+  const [effectiveWeek, setEffectiveWeek] = useState<string>(getCurrentWeekMonday())
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -44,9 +47,16 @@ export default function ArchiveClientForm({
   useEffect(() => {
     if (!isOpen) {
       setSelectedClientId('')
+      setEffectiveWeek(getCurrentWeekMonday())
       setError(null)
     }
   }, [isOpen])
+
+  // Snap any selected date to Monday of that week
+  const handleEffectiveWeekChange = (dateStr: string) => {
+    const monday = getWeekRange(dateStr).start
+    setEffectiveWeek(monday)
+  }
 
   const selectedClient = useMemo(
     () => clients.find((c) => c.id === selectedClientId),
@@ -68,7 +78,7 @@ export default function ArchiveClientForm({
       const res = await fetch(`/api/clients/${selectedClientId}/archive`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: false }),
+        body: JSON.stringify({ isActive: false, effectiveWeek }),
       })
 
       if (!res.ok) {
@@ -124,11 +134,30 @@ export default function ArchiveClientForm({
       </FormField>
 
       {selectedClient && (
-        <div className={styles.info}>
-          <strong>{selectedClient.name}</strong> will be hidden from the Add
-          Classes dropdown and other selection lists. Historical session data
-          will be preserved.
-        </div>
+        <>
+          <FormField
+            label="Archive starting from week"
+            hints={['Select which week this client should be archived. They will still appear in weeks before this date.']}
+          >
+            <DatePicker
+              value={effectiveWeek}
+              onChange={handleEffectiveWeekChange}
+            />
+          </FormField>
+
+          <div className={styles.info}>
+            <strong>{selectedClient.name}</strong> will be hidden from the
+            dashboard starting from the week of <strong>{effectiveWeek}</strong>.
+            Historical data before this date will still show this client.
+          </div>
+
+          <div className={styles.warning}>
+            Note: Any sessions, packages, or late fees already added for this
+            client on or after <strong>{effectiveWeek}</strong> will also be
+            hidden from the dashboard. Please verify this client has no data
+            for this week before archiving.
+          </div>
+        </>
       )}
     </Modal>
   )

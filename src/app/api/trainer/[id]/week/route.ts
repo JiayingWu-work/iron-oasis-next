@@ -86,6 +86,23 @@ export async function GET(req: NextRequest) {
     `
   }
 
+  // Auto-migrate: ensure archived_at column exists on clients table
+  const archivedAtCheck = await sql`
+    SELECT EXISTS (
+      SELECT FROM information_schema.columns
+      WHERE table_name = 'clients' AND column_name = 'archived_at'
+    ) as exists
+  `
+  if (!archivedAtCheck[0]?.exists) {
+    await sql`
+      ALTER TABLE clients ADD COLUMN archived_at DATE
+    `
+    // Backfill existing archived clients with 2026-01-26
+    await sql`
+      UPDATE clients SET archived_at = '2026-01-26' WHERE is_active = false AND archived_at IS NULL
+    `
+  }
+
   // 1) trainer
   const trainerRows = (await sql`
     SELECT id, name, tier
@@ -131,7 +148,8 @@ export async function GET(req: NextRequest) {
             created_at,
             is_active,
             location,
-            COALESCE(is_personal_client, false) as is_personal_client
+            COALESCE(is_personal_client, false) as is_personal_client,
+            archived_at
     FROM clients
     WHERE trainer_id = ${trainerId}
         OR secondary_trainer_id = ${trainerId}

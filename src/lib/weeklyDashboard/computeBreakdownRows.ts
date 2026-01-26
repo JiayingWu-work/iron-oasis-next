@@ -15,6 +15,17 @@ import { getRateForClassCount, getRatesEffectiveForWeek } from '@/lib/incomeRate
 // Personal client bonus: 10% added to trainer's rate when client is personal
 const PERSONAL_CLIENT_BONUS = 0.10
 
+// Helper to check if a client is visible for the given week
+function isClientVisibleForWeek(client: Client | undefined, weekStart?: string): boolean {
+  if (!client) return true // Show "Unknown client" rows
+  if (!weekStart) return true // No week filtering
+  if (!client.archivedAt) return true // Not archived
+  // Normalize archivedAt to YYYY-MM-DD format (first 10 chars) for comparison
+  const archiveDate = client.archivedAt.slice(0, 10)
+  // Show only if archive date is after the week start (hide starting from archive week)
+  return archiveDate > weekStart
+}
+
 export function computeBreakdownRows(
   clients: Client[],
   packages: Package[],
@@ -26,7 +37,18 @@ export function computeBreakdownRows(
   clientPriceHistory?: ClientPriceHistory[],
   weekStart?: string, // Monday of the week being computed
 ): WeeklyBreakdownRow[] {
-  const totalClassesThisWeek = weeklySessions.length
+  // Filter out data for clients archived before this week
+  const visibleClientIds = new Set(
+    clients
+      .filter((c) => isClientVisibleForWeek(c, weekStart))
+      .map((c) => c.id)
+  )
+
+  const filteredWeeklySessions = weeklySessions.filter((s) => visibleClientIds.has(s.clientId))
+  const filteredWeeklyPackages = weeklyPackages.filter((p) => visibleClientIds.has(p.clientId))
+  const filteredWeeklyLateFees = weeklyLateFees.filter((f) => visibleClientIds.has(f.clientId))
+
+  const totalClassesThisWeek = filteredWeeklySessions.length
 
   // Get rates effective for this week (or use all rates if weekStart not provided)
   const ratesForThisWeek = weekStart
@@ -40,7 +62,7 @@ export function computeBreakdownRows(
     ? buildPriceHistoryLookup(clientPriceHistory)
     : new Map<number, ClientPriceHistory[]>()
 
-  const weeklyPackageRows: WeeklyBreakdownRow[] = weeklyPackages.map((p) => {
+  const weeklyPackageRows: WeeklyBreakdownRow[] = filteredWeeklyPackages.map((p) => {
     const client = clients.find((c) => c.id === p.clientId)
     const mode: TrainingMode = p.mode ?? client?.mode ?? '1v1'
     // Use date-aware pricing for package display
@@ -65,7 +87,7 @@ export function computeBreakdownRows(
     }
   })
 
-  const weeklyBonusRows: WeeklyBreakdownRow[] = weeklyPackages
+  const weeklyBonusRows: WeeklyBreakdownRow[] = filteredWeeklyPackages
     .filter((p) => (p.salesBonus ?? 0) > 0)
     .map((p) => {
       const client = clients.find((c) => c.id === p.clientId)
@@ -78,7 +100,7 @@ export function computeBreakdownRows(
       }
     })
 
-  const weeklySessionRows: WeeklyBreakdownRow[] = weeklySessions.map((s) => {
+  const weeklySessionRows: WeeklyBreakdownRow[] = filteredWeeklySessions.map((s) => {
     const client = clients.find((c) => c.id === s.clientId)
 
     // Try direct package match first (normal case)
@@ -133,7 +155,7 @@ export function computeBreakdownRows(
     }
   })
 
-  const weeklyLateFeeRows: WeeklyBreakdownRow[] = weeklyLateFees.map((f) => {
+  const weeklyLateFeeRows: WeeklyBreakdownRow[] = filteredWeeklyLateFees.map((f) => {
     const client = clients.find((c) => c.id === f.clientId)
     return {
       id: f.id,

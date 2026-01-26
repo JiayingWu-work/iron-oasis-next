@@ -39,6 +39,17 @@ function getRateForSessionDate(
 // Personal client bonus: 10% added to trainer's rate when client is personal
 const PERSONAL_CLIENT_BONUS = 0.10
 
+// Helper to check if a client is visible for the given week
+function isClientVisibleForWeek(client: Client | undefined, weekStart?: string): boolean {
+  if (!client) return true // Show "Unknown client" entries
+  if (!weekStart) return true // No week filtering
+  if (!client.archivedAt) return true // Not archived
+  // Normalize archivedAt to YYYY-MM-DD format (first 10 chars) for comparison
+  const archiveDate = client.archivedAt.slice(0, 10)
+  // Show only if archive date is after the week start (hide starting from archive week)
+  return archiveDate > weekStart
+}
+
 export function computeIncomeSummary(
   clients: Client[],
   packages: Package[],
@@ -51,7 +62,18 @@ export function computeIncomeSummary(
   clientPriceHistory?: ClientPriceHistory[],
   weekStart?: string, // Monday of the week being computed
 ): WeeklyIncomeSummary {
-  const totalClassesThisWeek = weeklySessions.length
+  // Filter out data for clients archived before this week
+  const visibleClientIds = new Set(
+    clients
+      .filter((c) => isClientVisibleForWeek(c, weekStart))
+      .map((c) => c.id)
+  )
+
+  const filteredWeeklySessions = weeklySessions.filter((s) => visibleClientIds.has(s.clientId))
+  const filteredWeeklyPackages = weeklyPackages.filter((p) => visibleClientIds.has(p.clientId))
+  const filteredWeeklyLateFees = weeklyLateFees.filter((f) => visibleClientIds.has(f.clientId))
+
+  const totalClassesThisWeek = filteredWeeklySessions.length
 
   // Get rates effective for this week (or use all rates if weekStart not provided)
   const ratesForThisWeek = weekStart
@@ -67,7 +89,7 @@ export function computeIncomeSummary(
 
   // ----- 1) Normal weekly class income -----
   // Now calculated per-session to account for personal client bonus and date-aware pricing
-  const classIncome = weeklySessions.reduce((sum, s) => {
+  const classIncome = filteredWeeklySessions.reduce((sum, s) => {
     const directPkg = s.packageId
       ? packages.find((p) => p.id === s.packageId)
       : undefined
@@ -116,20 +138,20 @@ export function computeIncomeSummary(
   }, 0)
 
   // ----- 2) Sales bonus for packages sold by this trainer this week -----
-  const bonusIncome = weeklyPackages.reduce((sum, p) => {
+  const bonusIncome = filteredWeeklyPackages.reduce((sum, p) => {
     if (p.trainerId !== trainerId) return sum
     return sum + (p.salesBonus ?? 0)
   }, 0)
 
   // ----- 3) Late fee income -----
-  const lateFeeIncome = weeklyLateFees.reduce((sum, f) => sum + f.amount, 0)
+  const lateFeeIncome = filteredWeeklyLateFees.reduce((sum, f) => sum + f.amount, 0)
 
   // ----- 4) Backfill adjustment: deduct overpaid amount for old sessions -----
   // When a package is purchased with a start date in the past, sessions that occurred
   // before that date get retroactively assigned to the package. We need to deduct
   // the difference between the single-class rate (originally paid) and the package rate.
   // Each session's adjustment uses the rate from the week when that session occurred.
-  const backfillAdjustment = weeklyPackages.reduce((sum, pkg) => {
+  const backfillAdjustment = filteredWeeklyPackages.reduce((sum, pkg) => {
     const client = clients.find((c) => c.id === pkg.clientId)
     if (!client) return sum
 
