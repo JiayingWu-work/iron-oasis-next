@@ -80,12 +80,13 @@ export function useWeeklyDashboardData({
       isWithinRange(f.date, weekStart, weekEnd),
     )
 
-    // 1) Per-client summary rows
+    // 1) Per-client summary rows (filtered by archive date)
     const clientRows = computeClientRows(
       clients,
       packages,
       sessions,
       weeklySessions,
+      weekStart, // Pass weekStart to filter archived clients
     )
 
     // 2) Weekly income numbers (now uses date-aware pricing and week-effective rates)

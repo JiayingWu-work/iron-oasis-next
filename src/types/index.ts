@@ -27,6 +27,7 @@ export interface Client {
   isActive: boolean
   location: Location
   isPersonalClient: boolean // If true, trainer gets +10% on their pay rate for this client
+  archivedAt?: string | null // YYYY-MM-DD (Monday) - when client was archived, null if active
 }
 
 export interface Package {

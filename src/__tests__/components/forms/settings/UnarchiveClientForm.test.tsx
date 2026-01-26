@@ -103,7 +103,7 @@ describe('UnarchiveClientForm', () => {
       fireEvent.click(screen.getByText('Alice'))
 
       await waitFor(() => {
-        expect(screen.getByText(/will be restored and appear in the Add Classes dropdown/)).toBeInTheDocument()
+        expect(screen.getByText(/will be restored and appear in the dashboard and all dropdowns/)).toBeInTheDocument()
       })
     })
   })

@@ -44,6 +44,23 @@ export async function GET(req: NextRequest) {
       `
     }
 
+    // Check if archived_at column exists and add it if not
+    const archivedAtCheck = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_name = 'clients' AND column_name = 'archived_at'
+      ) as exists
+    `
+    if (!archivedAtCheck[0]?.exists) {
+      await sql`
+        ALTER TABLE clients ADD COLUMN archived_at DATE
+      `
+      // Backfill existing archived clients with 2026-01-26
+      await sql`
+        UPDATE clients SET archived_at = '2026-01-26' WHERE is_active = false AND archived_at IS NULL
+      `
+    }
+
     // Check for active filter in query params
     const url = new URL(req.url)
     const activeOnly = url.searchParams.get('active') === 'true'
@@ -63,13 +80,14 @@ export async function GET(req: NextRequest) {
       is_active: boolean
       location: Location
       is_personal_client: boolean
+      archived_at: string | null
     }
 
     const rows = activeOnly
       ? ((await sql`
           SELECT id, name, trainer_id, secondary_trainer_id, mode,
                  tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active, location,
-                 COALESCE(is_personal_client, false) as is_personal_client
+                 COALESCE(is_personal_client, false) as is_personal_client, archived_at
           FROM clients
           WHERE is_active = true
           ORDER BY name ASC
@@ -77,7 +95,7 @@ export async function GET(req: NextRequest) {
       : ((await sql`
           SELECT id, name, trainer_id, secondary_trainer_id, mode,
                  tier_at_signup, price_1_12, price_13_20, price_21_plus, mode_premium, created_at, is_active, location,
-                 COALESCE(is_personal_client, false) as is_personal_client
+                 COALESCE(is_personal_client, false) as is_personal_client, archived_at
           FROM clients
           ORDER BY name ASC
         `) as ClientRow[])
@@ -97,6 +115,7 @@ export async function GET(req: NextRequest) {
       isActive: row.is_active ?? true,
       location: row.location ?? 'west',
       isPersonalClient: row.is_personal_client ?? false,
+      archivedAt: row.archived_at,
     }))
 
     return NextResponse.json(clients)

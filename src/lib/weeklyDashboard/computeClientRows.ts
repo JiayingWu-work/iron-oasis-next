@@ -6,8 +6,21 @@ export function computeClientRows(
   packages: Package[],
   sessions: Session[],
   weeklySessions: Session[],
+  weekStart?: string, // Monday of the week being viewed
 ): WeeklyClientRow[] {
-  const clientRows: WeeklyClientRow[] = clients.map((client) => {
+  // Filter out clients that were archived on or before the current week
+  const visibleClients = weekStart
+    ? clients.filter((client) => {
+        // If client has no archivedAt date, they're active - show them
+        if (!client.archivedAt) return true
+        // Normalize archivedAt to YYYY-MM-DD format (first 10 chars) for comparison
+        const archiveDate = client.archivedAt.slice(0, 10)
+        // Show client only if their archive date is after the week start (hide starting from archive week)
+        return archiveDate > weekStart
+      })
+    : clients
+
+  const clientRows: WeeklyClientRow[] = visibleClients.map((client) => {
     const clientPackages = packages
       .filter((p) => p.clientId === client.id)
       .sort((a, b) => a.startDate.localeCompare(b.startDate))
