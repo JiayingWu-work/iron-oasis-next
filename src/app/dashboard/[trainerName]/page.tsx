@@ -77,6 +77,14 @@ export default function TrainerDashboard() {
     }
   }, [trainerFromUrl, selectedTrainerId, setSelectedTrainerId])
 
+  // Redirect to sign-in if session expired
+  useEffect(() => {
+    if (isPending) return
+    if (!session?.user?.id) {
+      router.replace('/auth/sign-in')
+    }
+  }, [session, isPending, router])
+
   // Check user role and verify access
   useEffect(() => {
     if (isPending || userRole) return
