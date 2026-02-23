@@ -71,7 +71,10 @@ describe('WeeklyNotes', () => {
 
       render(<WeeklyNotes trainerId={5} weekStart="2025-02-03" />)
 
-      expect(fetch).toHaveBeenCalledWith('/api/weekly-notes?trainerId=5&weekStart=2025-02-03')
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/weekly-notes?trainerId=5&weekStart=2025-02-03',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
     })
 
     it('displays fetched notes in textarea', async () => {
@@ -273,7 +276,10 @@ describe('WeeklyNotes', () => {
         expect(screen.getByDisplayValue('Week 2 notes')).toBeInTheDocument()
       })
 
-      expect(fetch).toHaveBeenCalledWith('/api/weekly-notes?trainerId=1&weekStart=2025-01-20')
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/weekly-notes?trainerId=1&weekStart=2025-01-20',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
     })
 
     it('clears notes when trainerId changes', async () => {
@@ -299,7 +305,10 @@ describe('WeeklyNotes', () => {
         expect(screen.getByDisplayValue('Trainer 2 notes')).toBeInTheDocument()
       })
 
-      expect(fetch).toHaveBeenCalledWith('/api/weekly-notes?trainerId=2&weekStart=2025-01-13')
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/weekly-notes?trainerId=2&weekStart=2025-01-13',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
     })
   })
 
