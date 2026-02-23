@@ -29,7 +29,10 @@ export default function DashboardRouter() {
 
   useEffect(() => {
     if (isPending) return
-    if (!session?.user?.id) return
+    if (!session?.user?.id) {
+      router.replace('/auth/sign-in')
+      return
+    }
 
     async function determineRedirect() {
       try {
