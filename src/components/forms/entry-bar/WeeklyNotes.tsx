@@ -24,11 +24,16 @@ export default function WeeklyNotes({
   const displayNotes = externalNotes !== undefined ? externalNotes : notes
 
   useEffect(() => {
-    // Clear immediately when week/trainer changes
+    // Clear immediately when week/trainer changes (including parent state)
     setNotes('')
     setSavedNotes('')
+    onNotesChange?.('')
 
-    fetch(`/api/weekly-notes?trainerId=${trainerId}&weekStart=${weekStart}`)
+    const controller = new AbortController()
+
+    fetch(`/api/weekly-notes?trainerId=${trainerId}&weekStart=${weekStart}`, {
+      signal: controller.signal,
+    })
       .then((res) => (res.ok ? res.json() : { notes: '' }))
       .then((data) => {
         const fetchedNotes = data.notes ?? ''
@@ -36,11 +41,14 @@ export default function WeeklyNotes({
         setSavedNotes(fetchedNotes)
         onNotesChange?.(fetchedNotes)
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err.name === 'AbortError') return
         setNotes('')
         setSavedNotes('')
         onNotesChange?.('')
       })
+
+    return () => controller.abort()
   }, [trainerId, weekStart, onNotesChange])
 
   const handleSave = async () => {
