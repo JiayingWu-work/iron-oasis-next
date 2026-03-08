@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { isWithinRange } from '@/lib/date'
-import type { Client, Package, Session, Trainer, LateFee, Location, IncomeRate, ClientPriceHistory } from '@/types'
+import type { Client, Package, Session, Trainer, LateFee, TrialSession, Location, IncomeRate, ClientPriceHistory } from '@/types'
 import {
   computeClientRows,
   computeIncomeSummary,
@@ -8,7 +8,7 @@ import {
 } from '@/lib/weeklyDashboard'
 import { getRatesEffectiveForWeek } from '@/lib/incomeRates'
 
-export type CombinedRowType = 'session' | 'package' | 'bonus' | 'lateFee'
+export type CombinedRowType = 'session' | 'package' | 'bonus' | 'lateFee' | 'trialSession'
 
 export interface WeeklyClientRow {
   clientId: number
@@ -25,6 +25,7 @@ export interface WeeklyIncomeSummary {
   rate: number
   bonusIncome: number
   lateFeeIncome: number
+  trialSessionIncome: number
   backfillAdjustment: number
   finalWeeklyIncome: number
 }
@@ -44,6 +45,7 @@ interface UseWeeklyDashboardArgs {
   packages: Package[]
   sessions: Session[]
   lateFees: LateFee[]
+  trialSessions: TrialSession[]
   incomeRates: IncomeRate[]
   clientPriceHistory?: ClientPriceHistory[]
   weekStart: string
@@ -56,6 +58,7 @@ export function useWeeklyDashboardData({
   packages,
   sessions,
   lateFees,
+  trialSessions,
   incomeRates,
   clientPriceHistory,
   weekStart,
@@ -80,6 +83,10 @@ export function useWeeklyDashboardData({
       isWithinRange(f.date, weekStart, weekEnd),
     )
 
+    const weeklyTrialSessions = trialSessions.filter((t) =>
+      isWithinRange(t.date, weekStart, weekEnd),
+    )
+
     // 1) Per-client summary rows (filtered by archive date)
     const clientRows = computeClientRows(
       clients,
@@ -96,6 +103,7 @@ export function useWeeklyDashboardData({
       weeklySessions,
       weeklyPackages,
       weeklyLateFees,
+      weeklyTrialSessions,
       selectedTrainer.id,
       sessions,
       incomeRates,
@@ -110,6 +118,7 @@ export function useWeeklyDashboardData({
       weeklySessions,
       weeklyPackages,
       weeklyLateFees,
+      weeklyTrialSessions,
       selectedTrainer.id,
       incomeRates,
       clientPriceHistory,
@@ -130,6 +139,7 @@ export function useWeeklyDashboardData({
     packages,
     sessions,
     lateFees,
+    trialSessions,
     incomeRates,
     clientPriceHistory,
     weekStart,

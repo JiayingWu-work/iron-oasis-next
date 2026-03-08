@@ -124,6 +124,7 @@ describe('Income consistency between summary and breakdown', () => {
       weeklySessions,
       weeklyPackages,
       weeklyLateFees,
+      [],
       trainerId,
       allSessions,
       incomeRates,
@@ -135,6 +136,7 @@ describe('Income consistency between summary and breakdown', () => {
       weeklySessions,
       weeklyPackages,
       weeklyLateFees,
+      [],
       trainerId,
       incomeRates,
     )

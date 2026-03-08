@@ -1,4 +1,4 @@
-import type { Client, Session, Package, Trainer, LateFee, IncomeRate, ClientPriceHistory } from '../../types'
+import type { Client, Session, Package, Trainer, LateFee, TrialSession, IncomeRate, ClientPriceHistory } from '../../types'
 import { useWeeklyDashboardData } from '@/hooks/useWeeklyDashboardData'
 import {
   WeeklyBreakdownTable,
@@ -13,6 +13,7 @@ export interface WeeklyDashboardProps {
   packages: Package[]
   sessions: Session[]
   lateFees: LateFee[]
+  trialSessions: TrialSession[]
   incomeRates: IncomeRate[]
   clientPriceHistory?: ClientPriceHistory[]
   weekStart: string
@@ -21,6 +22,7 @@ export interface WeeklyDashboardProps {
   onDeleteSession?: (id: number) => void
   onDeletePackage?: (id: number) => void
   onDeleteLateFee?: (id: number) => void
+  onDeleteTrialSession?: (id: number) => void
   readOnly?: boolean
   weeklyNotes?: string
   isLoading?: boolean
@@ -31,6 +33,7 @@ export default function WeeklyDashboard({
   packages,
   sessions,
   lateFees,
+  trialSessions,
   incomeRates,
   clientPriceHistory,
   weekStart,
@@ -39,6 +42,7 @@ export default function WeeklyDashboard({
   onDeleteSession,
   onDeletePackage,
   onDeleteLateFee,
+  onDeleteTrialSession,
   readOnly = false,
   weeklyNotes,
   isLoading = false,
@@ -48,6 +52,7 @@ export default function WeeklyDashboard({
     packages,
     sessions,
     lateFees,
+    trialSessions,
     incomeRates,
     clientPriceHistory,
     weekStart,
@@ -64,6 +69,7 @@ export default function WeeklyDashboard({
         rate={incomeSummary.rate}
         bonusIncome={incomeSummary.bonusIncome}
         lateFees={incomeSummary.lateFeeIncome}
+        trialSessions={incomeSummary.trialSessionIncome}
         backfillAdjustment={incomeSummary.backfillAdjustment}
         finalWeeklyIncome={incomeSummary.finalWeeklyIncome}
         incomeRates={effectiveIncomeRates}
@@ -81,6 +87,7 @@ export default function WeeklyDashboard({
         onDeleteSession={onDeleteSession}
         onDeletePackage={onDeletePackage}
         onDeleteLateFee={onDeleteLateFee}
+        onDeleteTrialSession={onDeleteTrialSession}
         readOnly={readOnly}
       />
     </div>

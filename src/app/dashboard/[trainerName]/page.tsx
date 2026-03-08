@@ -10,6 +10,7 @@ import {
   AddClassesForm,
   AddPackageForm,
   AddLateFeeForm,
+  AddTrialSessionForm,
   SideBar,
   Card,
   WeeklyNotes,
@@ -21,6 +22,7 @@ import {
   useSessionActions,
   usePackageActions,
   useLateFeeActions,
+  useTrialSessionActions,
 } from '@/hooks'
 import { Menu } from 'lucide-react'
 import styles from '../page.module.css'
@@ -49,6 +51,7 @@ export default function TrainerDashboard() {
   const [userRole, setUserRole] = useState<'owner' | 'trainer' | null>(null)
   const [trainerIdForUser, setTrainerIdForUser] = useState<number | null>(null)
   const [lateFeeAmount, setLateFeeAmount] = useState<number>(45)
+  const [trialSessionFee, setTrialSessionFee] = useState<number>(15)
   const [weeklyNotes, setWeeklyNotes] = useState<string>('')
 
   const handleNotesChange = useCallback((notes: string) => {
@@ -115,6 +118,18 @@ export default function TrainerDashboard() {
       .catch(() => {})
   }, [])
 
+  // Fetch trial session fee
+  useEffect(() => {
+    fetch('/api/trial-sessions/amount')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.amount) {
+          setTrialSessionFee(data.amount)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   // Redirect trainer to their own dashboard if accessing wrong one
   useEffect(() => {
     if (userRole !== 'trainer' || !trainerIdForUser || !trainers.length) return
@@ -139,12 +154,14 @@ export default function TrainerDashboard() {
     packages,
     sessions,
     lateFees,
+    trialSessions,
     incomeRates,
     clientPriceHistory,
     isLoading: isWeeklyDataLoading,
     setPackages,
     setSessions,
     setLateFees,
+    setTrialSessions,
   } = weeklyState
 
   const { addSessions, deleteSession } = useSessionActions(
@@ -163,6 +180,11 @@ export default function TrainerDashboard() {
   const { addLateFee, deleteLateFee } = useLateFeeActions(
     selectedTrainer,
     setLateFees,
+  )
+
+  const { addTrialSession, deleteTrialSession } = useTrialSessionActions(
+    selectedTrainer,
+    setTrialSessions,
   )
 
   // Trainers cannot navigate before the minimum week (app go-live date)
@@ -242,6 +264,7 @@ export default function TrainerDashboard() {
                   packages={packages}
                   sessions={sessions}
                   lateFees={lateFees}
+                  trialSessions={trialSessions}
                   incomeRates={incomeRates}
                   clientPriceHistory={clientPriceHistory}
                   weekStart={weekStart}
@@ -250,6 +273,7 @@ export default function TrainerDashboard() {
                   onDeleteSession={isReadOnly ? undefined : deleteSession}
                   onDeletePackage={isReadOnly ? undefined : deletePackage}
                   onDeleteLateFee={isReadOnly ? undefined : deleteLateFee}
+                  onDeleteTrialSession={isReadOnly ? undefined : deleteTrialSession}
                   readOnly={isReadOnly}
                   weeklyNotes={weeklyNotes}
                   isLoading={isWeeklyDataLoading}
@@ -278,6 +302,13 @@ export default function TrainerDashboard() {
                     onAddLateFee={addLateFee}
                     disabled={isReadOnly}
                     lateFeeAmount={lateFeeAmount}
+                  />
+                  <AddTrialSessionForm
+                    date={selectedDate}
+                    onDateChange={setSelectedDate}
+                    onAddTrialSession={addTrialSession}
+                    disabled={isReadOnly}
+                    trialSessionFee={trialSessionFee}
                   />
                   <WeeklyNotes
                     trainerId={selectedTrainer.id}

@@ -59,6 +59,7 @@ describe('WeeklyDashboard', () => {
     packages: mockPackages,
     sessions: mockSessions,
     lateFees: mockLateFees,
+    trialSessions: [],
     incomeRates: DEFAULT_INCOME_RATES,
     weekStart: '2025-01-13',
     weekEnd: '2025-01-19',

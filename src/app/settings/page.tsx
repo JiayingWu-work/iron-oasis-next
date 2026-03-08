@@ -15,6 +15,7 @@ import {
   UnarchiveClientForm,
   UnarchiveTrainerForm,
   LateFeeForm,
+  TrialSessionFeeForm,
   ToastContainer,
   useToast,
   Spinner,
@@ -27,6 +28,7 @@ import {
   ArchiveRestore,
   DollarSign,
   Clock,
+  Footprints,
 } from 'lucide-react'
 import styles from './page.module.css'
 
@@ -44,6 +46,7 @@ export default function SettingsPage() {
   const [isUnarchiveClientOpen, setIsUnarchiveClientOpen] = useState(false)
   const [isUnarchiveTrainerOpen, setIsUnarchiveTrainerOpen] = useState(false)
   const [isLateFeeOpen, setIsLateFeeOpen] = useState(false)
+  const [isTrialSessionFeeOpen, setIsTrialSessionFeeOpen] = useState(false)
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   // Check user role
@@ -178,6 +181,12 @@ export default function SettingsPage() {
                 icon={<Clock size={20} />}
                 onClick={() => setIsLateFeeOpen(true)}
               />
+              <SettingsCard
+                title="Update Trial Session Fee"
+                description="Adjust the onboarding trial session fee"
+                icon={<Footprints size={20} />}
+                onClick={() => setIsTrialSessionFeeOpen(true)}
+              />
             </div>
           </div>
         </div>
@@ -287,6 +296,17 @@ export default function SettingsPage() {
         onClose={() => setIsLateFeeOpen(false)}
         onSuccess={() => {
           showSuccess('Late fee updated successfully')
+        }}
+        onError={(message) => {
+          showError(message)
+        }}
+      />
+
+      <TrialSessionFeeForm
+        isOpen={isTrialSessionFeeOpen}
+        onClose={() => setIsTrialSessionFeeOpen(false)}
+        onSuccess={() => {
+          showSuccess('Trial session fee updated successfully')
         }}
         onError={(message) => {
           showError(message)

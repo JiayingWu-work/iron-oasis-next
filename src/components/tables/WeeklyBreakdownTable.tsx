@@ -15,6 +15,7 @@ interface WeeklyBreakdownTableProps {
   onDeleteSession?: (id: number) => void
   onDeletePackage?: (id: number) => void
   onDeleteLateFee?: (id: number) => void
+  onDeleteTrialSession?: (id: number) => void
   readOnly?: boolean
 }
 
@@ -23,6 +24,7 @@ export default function WeeklyBreakdownTable({
   onDeleteSession,
   onDeletePackage,
   onDeleteLateFee,
+  onDeleteTrialSession,
   readOnly = false,
 }: WeeklyBreakdownTableProps) {
   const [deletingKey, setDeletingKey] = useState<string | null>(null)
@@ -35,6 +37,7 @@ export default function WeeklyBreakdownTable({
       if (type === 'session' && onDeleteSession) await onDeleteSession(id)
       if (type === 'package' && onDeletePackage) await onDeletePackage(id)
       if (type === 'lateFee' && onDeleteLateFee) await onDeleteLateFee(id)
+      if (type === 'trialSession' && onDeleteTrialSession) await onDeleteTrialSession(id)
     } finally {
       setDeletingKey(null)
     }
@@ -74,6 +77,8 @@ export default function WeeklyBreakdownTable({
                 ? 'Package purchase'
                 : row.type === 'lateFee'
                 ? 'Late fee'
+                : row.type === 'trialSession'
+                ? 'Trial fee'
                 : 'Class'}
             </td>
             <td>{formatPrice(row.amount)}</td>
@@ -95,6 +100,12 @@ export default function WeeklyBreakdownTable({
                   <DeleteButton
                     deleting={deletingKey === `lateFee-${row.id}`}
                     onClick={() => handleDelete('lateFee', row.id as number)}
+                  />
+                )}
+                {row.type === 'trialSession' && onDeleteTrialSession && (
+                  <DeleteButton
+                    deleting={deletingKey === `trialSession-${row.id}`}
+                    onClick={() => handleDelete('trialSession', row.id as number)}
                   />
                 )}
               </td>

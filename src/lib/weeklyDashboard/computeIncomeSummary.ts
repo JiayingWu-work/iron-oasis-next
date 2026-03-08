@@ -2,6 +2,7 @@ import type {
   Package,
   Session,
   LateFee,
+  TrialSession,
   Trainer,
   TrainingMode,
   Client,
@@ -56,6 +57,7 @@ export function computeIncomeSummary(
   weeklySessions: Session[],
   weeklyPackages: Package[],
   weeklyLateFees: LateFee[],
+  weeklyTrialSessions: TrialSession[],
   trainerId: Trainer['id'],
   allSessions: Session[],
   allIncomeRates?: IncomeRate[],
@@ -152,6 +154,9 @@ export function computeIncomeSummary(
   // ----- 3) Late fee income -----
   const lateFeeIncome = filteredWeeklyLateFees.reduce((sum, f) => sum + f.amount, 0)
 
+  // ----- 3b) Trial session income -----
+  const trialSessionIncome = weeklyTrialSessions.reduce((sum, t) => sum + t.amount, 0)
+
   // ----- 4) Backfill adjustment: deduct overpaid amount for old sessions -----
   // When a package is purchased with a start date in the past, sessions that occurred
   // before that date get retroactively assigned to the package. We need to deduct
@@ -220,13 +225,14 @@ export function computeIncomeSummary(
 
   // ----- 5) Final income -----
   const finalWeeklyIncome =
-    classIncome + bonusIncome + lateFeeIncome - backfillAdjustment
+    classIncome + bonusIncome + lateFeeIncome + trialSessionIncome - backfillAdjustment
 
   return {
     totalClassesThisWeek,
     rate,
     bonusIncome,
     lateFeeIncome,
+    trialSessionIncome,
     backfillAdjustment,
     finalWeeklyIncome,
   }
