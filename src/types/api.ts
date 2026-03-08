@@ -51,6 +51,13 @@ export type ApiLateFeeWithClient = ApiLateFee & {
   client_name: string
 }
 
+export type ApiTrialSession = {
+  id: number
+  trainer_id: number
+  date: string
+  amount: number
+}
+
 export type ApiIncomeRate = {
   id: number
   trainer_id: number
@@ -81,6 +88,7 @@ export type TrainerWeekResponse = {
   packages: ApiPackage[]
   sessions: ApiSession[]
   lateFees: ApiLateFee[]
+  trialSessions: ApiTrialSession[]
   incomeRates: ApiIncomeRate[]
   clientPriceHistory?: ApiClientPriceHistory[] // Optional for backwards compatibility
   weekStart: string

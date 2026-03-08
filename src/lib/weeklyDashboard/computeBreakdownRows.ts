@@ -3,6 +3,7 @@ import type {
   Package,
   Session,
   LateFee,
+  TrialSession,
   TrainingMode,
   IncomeRate,
   Trainer,
@@ -32,6 +33,7 @@ export function computeBreakdownRows(
   weeklySessions: Session[],
   weeklyPackages: Package[],
   weeklyLateFees: LateFee[],
+  weeklyTrialSessions: TrialSession[],
   trainerId: Trainer['id'],
   allIncomeRates?: IncomeRate[],
   clientPriceHistory?: ClientPriceHistory[],
@@ -172,11 +174,20 @@ export function computeBreakdownRows(
     }
   })
 
+  const weeklyTrialSessionRows: WeeklyBreakdownRow[] = weeklyTrialSessions.map((t) => ({
+    id: t.id,
+    date: t.date,
+    clientName: 'N/A',
+    type: 'trialSession',
+    amount: t.amount,
+  }))
+
   const breakdownRows: WeeklyBreakdownRow[] = [
     ...weeklyPackageRows,
     ...weeklyBonusRows,
     ...weeklySessionRows,
     ...weeklyLateFeeRows,
+    ...weeklyTrialSessionRows,
   ].sort((a, b) => {
     // Sort by date first, then by client name so transactions for the same client are grouped
     const dateCompare = a.date.localeCompare(b.date)

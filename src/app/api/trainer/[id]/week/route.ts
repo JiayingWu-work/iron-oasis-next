@@ -6,6 +6,7 @@ import type {
   ApiPackage,
   ApiSession,
   ApiLateFee,
+  ApiTrialSession,
   TrainerWeekResponse,
   ApiIncomeRate,
   ApiClientPriceHistory,
@@ -205,7 +206,28 @@ export async function GET(req: NextRequest) {
       AND date BETWEEN ${start} AND ${end}
   `) as ApiLateFee[]
 
-  // 6) client price history for all relevant clients
+  // 6) trial sessions in this week (for this trainer)
+  let trialSessionRows: ApiTrialSession[] = []
+  try {
+    const tableCheck = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_name = 'trial_sessions'
+      ) as exists
+    `
+    if (tableCheck[0]?.exists) {
+      trialSessionRows = (await sql`
+        SELECT id, trainer_id, date, amount
+        FROM trial_sessions
+        WHERE trainer_id = ${trainerId}
+          AND date BETWEEN ${start} AND ${end}
+      `) as ApiTrialSession[]
+    }
+  } catch (err) {
+    console.warn('Could not fetch trial_sessions:', err)
+  }
+
+  // 7) client price history for all relevant clients
   let priceHistoryRows: ApiClientPriceHistory[] = []
   if (clientIds.length > 0) {
     try {
@@ -237,6 +259,7 @@ export async function GET(req: NextRequest) {
     packages: packageRows,
     sessions: sessionRows,
     lateFees: lateFeeRows,
+    trialSessions: trialSessionRows,
     incomeRates: incomeRateRows,
     clientPriceHistory: priceHistoryRows,
     weekStart: start,

@@ -68,6 +68,13 @@ export interface IncomeRate {
   effectiveWeek: string // YYYY-MM-DD (Monday of the week this rate starts applying)
 }
 
+export type TrialSession = {
+  id: number
+  trainerId: number
+  date: string
+  amount: number
+}
+
 export interface ClientPriceHistory {
   id: number
   clientId: number

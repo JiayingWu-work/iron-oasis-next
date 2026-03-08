@@ -8,6 +8,7 @@ export { default as WeeklyIncomeSummary } from './tables/WeeklyIncomeSummary'
 export { default as AddClassesForm } from './forms/entry-bar/AddClassesForm'
 export { default as AddPackageForm } from './forms/entry-bar/AddPackageForm'
 export { default as AddLateFeeForm } from './forms/entry-bar/AddLateFeeForm'
+export { default as AddTrialSessionForm } from './forms/entry-bar/AddTrialSessionForm'
 export { default as WeeklyNotes } from './forms/entry-bar/WeeklyNotes'
 
 // Forms - Settings
@@ -21,6 +22,7 @@ export { default as ArchiveTrainerForm } from './forms/settings/ArchiveTrainerFo
 export { default as UnarchiveClientForm } from './forms/settings/UnarchiveClientForm/UnarchiveClientForm'
 export { default as UnarchiveTrainerForm } from './forms/settings/UnarchiveTrainerForm/UnarchiveTrainerForm'
 export { default as LateFeeForm } from './forms/settings/LateFeeForm/LateFeeForm'
+export { default as TrialSessionFeeForm } from './forms/settings/TrialSessionFeeForm/TrialSessionFeeForm'
 
 // Layout
 export { default as DashboardHeader } from './layout/dashboard-header/DashboardHeader'

@@ -12,6 +12,7 @@ interface WeeklyIncomeSummaryProps {
   rate: number
   bonusIncome?: number
   lateFees?: number
+  trialSessions?: number
   backfillAdjustment?: number
   finalWeeklyIncome: number
   incomeRates?: IncomeRate[]
@@ -34,6 +35,7 @@ export default function WeeklyIncomeSummary({
   rate,
   bonusIncome,
   lateFees,
+  trialSessions,
   backfillAdjustment,
   finalWeeklyIncome,
   incomeRates,
@@ -75,6 +77,9 @@ export default function WeeklyIncomeSummary({
       )}
       {lateFees !== undefined && lateFees > 0 && (
         <div>Late fees: {formatPrice(lateFees)}</div>
+      )}
+      {trialSessions !== undefined && trialSessions > 0 && (
+        <div>Trial fees: {formatPrice(trialSessions)}</div>
       )}
       {backfillAdjustment !== undefined && backfillAdjustment > 0 && (
         <div className={styles.incomeSummaryRow}>

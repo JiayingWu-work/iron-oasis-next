@@ -1,11 +1,12 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import type { Client, Session, Package, Trainer, LateFee, Location, IncomeRate, ClientPriceHistory } from '@/types'
+import type { Client, Session, Package, Trainer, LateFee, TrialSession, Location, IncomeRate, ClientPriceHistory } from '@/types'
 import { getWeekRange } from '@/lib/date'
 import {
   ApiClient,
   ApiPackage,
   ApiSession,
   ApiLateFee,
+  ApiTrialSession,
   ApiIncomeRate,
   ApiClientPriceHistory,
   TrainerWeekResponse,
@@ -18,6 +19,7 @@ export type TrainerWeekState = {
   packages: Package[]
   sessions: Session[]
   lateFees: LateFee[]
+  trialSessions: TrialSession[]
   incomeRates: IncomeRate[]
   clientPriceHistory: ClientPriceHistory[]
   isLoading: boolean
@@ -27,6 +29,7 @@ export type TrainerWeekState = {
   setPackages: Dispatch<SetStateAction<Package[]>>
   setSessions: Dispatch<SetStateAction<Session[]>>
   setLateFees: Dispatch<SetStateAction<LateFee[]>>
+  setTrialSessions: Dispatch<SetStateAction<TrialSession[]>>
   setIncomeRates: Dispatch<SetStateAction<IncomeRate[]>>
   setClientPriceHistory: Dispatch<SetStateAction<ClientPriceHistory[]>>
 }
@@ -45,6 +48,7 @@ export function useWeeklyState(
   const [packages, setPackages] = useState<Package[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [lateFees, setLateFees] = useState<LateFee[]>([])
+  const [trialSessions, setTrialSessions] = useState<TrialSession[]>([])
   const [incomeRates, setIncomeRates] = useState<IncomeRate[]>([])
   const [clientPriceHistory, setClientPriceHistory] = useState<ClientPriceHistory[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -135,6 +139,15 @@ export function useWeeklyState(
           })),
         )
 
+        setTrialSessions(
+          (data.trialSessions ?? ([] as ApiTrialSession[])).map((t) => ({
+            id: t.id,
+            trainerId: t.trainer_id,
+            date: t.date.slice(0, 10),
+            amount: Number(t.amount),
+          })),
+        )
+
         setIncomeRates(
           (data.incomeRates ?? ([] as ApiIncomeRate[])).map((r) => ({
             id: r.id,
@@ -182,6 +195,7 @@ export function useWeeklyState(
     packages,
     sessions,
     lateFees,
+    trialSessions,
     incomeRates,
     clientPriceHistory,
     isLoading,
@@ -191,6 +205,7 @@ export function useWeeklyState(
     setPackages,
     setSessions,
     setLateFees,
+    setTrialSessions,
     setIncomeRates,
     setClientPriceHistory,
   }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { computeIncomeSummary } from '@/lib/weeklyDashboard/computeIncomeSummary'
-import type { Client, Package, Session, LateFee, IncomeRate } from '@/types'
+import type { Client, Package, Session, LateFee, IncomeRate, TrialSession } from '@/types'
 
 // Default income rates for tests (46% for 1-12 classes, 51% for 13+)
 // Uses effectiveWeek '2024-12-30' which is the Monday before all test dates
@@ -104,6 +104,7 @@ describe('computeIncomeSummary', () => {
         sessions,
         [],
         [],
+        [],
         1,
         sessions,
         DEFAULT_INCOME_RATES,
@@ -126,6 +127,7 @@ describe('computeIncomeSummary', () => {
         sessions,
         [],
         [],
+        [],
         1,
         sessions,
         DEFAULT_INCOME_RATES,
@@ -146,6 +148,7 @@ describe('computeIncomeSummary', () => {
         clients,
         packages,
         sessions,
+        [],
         [],
         [],
         1,
@@ -172,6 +175,7 @@ describe('computeIncomeSummary', () => {
         [],
         weeklyPackages,
         [],
+        [],
         1,
         [],
       )
@@ -192,6 +196,7 @@ describe('computeIncomeSummary', () => {
         [],
         weeklyPackages,
         [],
+        [],
         1, // Trainer 1
         [],
       )
@@ -210,6 +215,7 @@ describe('computeIncomeSummary', () => {
         [],
         [],
         weeklyPackages,
+        [],
         [],
         1,
         [],
@@ -233,6 +239,7 @@ describe('computeIncomeSummary', () => {
         [],
         [],
         lateFees,
+        [],
         1,
         [],
       )
@@ -241,7 +248,7 @@ describe('computeIncomeSummary', () => {
     })
 
     it('returns 0 when no late fees exist', () => {
-      const result = computeIncomeSummary([], [], [], [], [], 1, [])
+      const result = computeIncomeSummary([], [], [], [], [], [], 1, [])
       expect(result.lateFeeIncome).toBe(0)
     })
   })
@@ -256,6 +263,7 @@ describe('computeIncomeSummary', () => {
         clients,
         packages,
         sessions,
+        [],
         [],
         [],
         1,
@@ -276,6 +284,7 @@ describe('computeIncomeSummary', () => {
         clients,
         [],
         sessions,
+        [],
         [],
         [],
         1,
@@ -302,6 +311,7 @@ describe('computeIncomeSummary', () => {
         sessions,
         [packages[0]], // Weekly package with bonus
         lateFees,
+        [],
         1,
         sessions,
         DEFAULT_INCOME_RATES,
@@ -317,11 +327,12 @@ describe('computeIncomeSummary', () => {
     })
 
     it('returns 0 when no activity this week', () => {
-      const result = computeIncomeSummary([], [], [], [], [], 1, [])
+      const result = computeIncomeSummary([], [], [], [], [], [], 1, [])
 
       expect(result.totalClassesThisWeek).toBe(0)
       expect(result.bonusIncome).toBe(0)
       expect(result.lateFeeIncome).toBe(0)
+      expect(result.trialSessionIncome).toBe(0)
       expect(result.finalWeeklyIncome).toBe(0)
     })
   })
@@ -341,6 +352,7 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [], // No sessions this week
         [pkg], // Package purchased this week
+        [],
         [],
         1,
         [backfilledSession], // All sessions including backfilled one
@@ -368,6 +380,7 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [],
         [pkg],
+        [],
         [],
         1,
         backfilledSessions,
@@ -411,6 +424,7 @@ describe('computeIncomeSummary', () => {
         [], // No sessions THIS week (Jan 13-19)
         [pkg], // Package purchased this week
         [],
+        [],
         1,
         backfilledSessions,
         DEFAULT_INCOME_RATES,
@@ -445,6 +459,7 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [],
         [pkg],
+        [],
         [],
         1,
         backfilledSessions,
@@ -497,6 +512,7 @@ describe('computeIncomeSummary', () => {
         [],
         [pkg],
         [],
+        [],
         1,
         allBackfilledSessions,
         DEFAULT_INCOME_RATES,
@@ -520,6 +536,7 @@ describe('computeIncomeSummary', () => {
         [session],
         [pkg],
         [],
+        [],
         1,
         [session],
         DEFAULT_INCOME_RATES,
@@ -539,6 +556,7 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [],
         [], // Package NOT in weeklyPackages (was purchased before this week)
+        [],
         [],
         1,
         [backfilledSession],
@@ -560,6 +578,7 @@ describe('computeIncomeSummary', () => {
         [],
         [pkg],
         [],
+        [],
         1,
         [backfilledSession],
         DEFAULT_INCOME_RATES,
@@ -580,6 +599,7 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [currentSession],
         [pkg],
+        [],
         [],
         1,
         [currentSession, backfilledSession],
@@ -608,6 +628,7 @@ describe('computeIncomeSummary', () => {
         sessions,
         [],
         [],
+        [],
         1, // Trainer 1 is the primary trainer
         sessions,
         DEFAULT_INCOME_RATES,
@@ -632,6 +653,7 @@ describe('computeIncomeSummary', () => {
         sessions,
         [],
         [],
+        [],
         1,
         sessions,
         DEFAULT_INCOME_RATES,
@@ -652,6 +674,7 @@ describe('computeIncomeSummary', () => {
         clients,
         packages,
         sessions,
+        [],
         [],
         [],
         1, // Calculating for trainer 1 (not the package owner)
@@ -677,6 +700,7 @@ describe('computeIncomeSummary', () => {
         clients,
         packages,
         sessions,
+        [],
         [],
         [],
         1,
@@ -710,6 +734,7 @@ describe('computeIncomeSummary', () => {
         sessions,
         [],
         [],
+        [],
         1,
         sessions,
         DEFAULT_INCOME_RATES,
@@ -734,6 +759,7 @@ describe('computeIncomeSummary', () => {
         [pkg],
         [], // No sessions this week
         [pkg], // Package purchased this week
+        [],
         [],
         1,
         [backfilledSession],
